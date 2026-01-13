@@ -7,7 +7,6 @@ playwright
 pypdf
 typing 
 datetime
-os
 json
 uuid
 sqlalchemy
