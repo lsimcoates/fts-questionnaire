@@ -289,7 +289,7 @@ export default function HairAndInfluencingSection({ register, watch, setValue })
 
       <hr style={styles.hr} />
 
-      <h2 style={styles.h2}>Influencing Factors – Please select from the following</h2>
+      <h2 style={styles.h2}>Influencing Factors</h2>
 
       {/* Pregnant */}
       <div style={styles.field}>
@@ -446,7 +446,7 @@ const styles = {
     padding: 16,
     marginBottom: 16,
   },
-  h2: { marginBottom: 12 },
+  h2: { marginBottom: 12, color: "#904369" },
   hr: { margin: "18px 0", border: "none", borderTop: "1px solid #eee" },
 
   row: { display: "flex", gap: 18, flexWrap: "wrap", alignItems: "flex-end" },

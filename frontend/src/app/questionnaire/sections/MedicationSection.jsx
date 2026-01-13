@@ -66,7 +66,7 @@ const styles = {
     padding: 16,
     marginBottom: 16,
   },
-  h2: { marginBottom: 12 },
+  h2: { marginBottom: 12, color: "#904369" },
   field: { display: "flex", flexDirection: "column", gap: 8 },
   label: { fontWeight: 600 },
   inline: { display: "flex", gap: 18, alignItems: "center" },

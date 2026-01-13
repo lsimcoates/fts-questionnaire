@@ -124,7 +124,7 @@ const styles = {
     padding: 16,
     marginBottom: 16,
   },
-  h2: { marginBottom: 8 },
+  h2: { marginBottom: 8, color: "#904369" },
   infoText: { fontSize: 14, marginBottom: 12, lineHeight: 1.4 },
 
   tableWrapper: { overflowX: "auto" },

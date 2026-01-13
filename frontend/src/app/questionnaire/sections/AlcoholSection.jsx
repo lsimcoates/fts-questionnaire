@@ -132,7 +132,7 @@ const styles = {
     padding: 16,
     marginBottom: 16,
   },
-  h2: { marginBottom: 12 },
+  h2: { marginBottom: 12, color: "#904369" },
   row: { display: "flex", gap: 18, flexWrap: "wrap", alignItems: "flex-end" },
   field: { display: "flex", flexDirection: "column", gap: 8, marginBottom: 14 },
   label: { fontWeight: 600 },

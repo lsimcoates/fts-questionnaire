@@ -223,7 +223,7 @@ const styles = {
 
   refusalTitle: {
     margin: "0 0 10px 0",
-    color: "#b00000",
+    color: "#00528c",
   },
 
   hr: {

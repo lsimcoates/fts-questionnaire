@@ -132,7 +132,7 @@ const styles = {
     padding: 16,
     marginBottom: 16,
   },
-  h2: { marginBottom: 12 },
+  h2: { marginBottom: 12, color: "#904369" },
 
   tableWrapper: { overflowX: "auto" },
   table: {

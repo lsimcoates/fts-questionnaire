@@ -208,7 +208,10 @@ export default function QuestionnairePage() {
         </button>
         <h1 style={styles.h1}>FTS Client Questionnaire</h1>
         {/* spacer keeps title centered */}
-        <div style={styles.headerSpacer} />
+        <img
+          src="http://localhost:8000/static/images/logo.png"
+          alt="FTS Logo"
+          style={styles.headerLogo}/>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)}>
@@ -281,17 +284,24 @@ const styles = {
     display: "grid",
     gridTemplateColumns: "auto 1fr auto",
     alignItems: "center",
+    color: "#00528c",
     marginBottom: 18,
   },
   h1: { textAlign: "center", margin: 0 },
 
-  headerSpacer: { width: 78 }, // roughly matches button width to keep title centered
+  headerLogo: {
+    height: 64,
+    width: "auto",
+    objectFit: "contain",
+    justifySelf: "end", // pushes it to the right edge of its grid cell
+  },
 
   homeBtn: {
     padding: "10px 14px",
     borderRadius: 8,
     border: "1px solid #ccc",
-    background: "white",
+    background: "#00528c",
+    color: "white", 
     cursor: "pointer",
     fontSize: 14,
     fontWeight: 700,
@@ -303,7 +313,8 @@ const styles = {
     padding: "12px 18px",
     borderRadius: 8,
     border: "1px solid #ccc",
-    background: "white",
+    background: "#904369",
+    color: "white",
     cursor: "pointer",
     fontSize: 15,
     fontWeight: 600,
@@ -314,7 +325,7 @@ const styles = {
     borderRadius: 8,
     border: "none",
     cursor: "pointer",
-    background: "#0b5cff",
+    background: "#00528c",
     color: "white",
     fontSize: 15,
     fontWeight: 700,
