@@ -156,5 +156,25 @@
     "updated_at": "2026-01-13T10:53:34.910938",
     "submitted_at": "2026-01-13T10:53:34.910938",
     "redo_of_id": null
+  },
+  {
+    "id": "d58236cf088e490a833bbf660298d974",
+    "case_number": "4",
+    "version": 2,
+    "status": "submitted",
+    "created_at": "2026-01-13T14:41:42.801802",
+    "updated_at": "2026-01-13T14:42:09.784095",
+    "submitted_at": "2026-01-13T14:42:09.784095",
+    "redo_of_id": null
+  },
+  {
+    "id": "3a586b7aecb445c9a0863719b9a41efa",
+    "case_number": "8",
+    "version": 1,
+    "status": "draft",
+    "created_at": "2026-01-13T14:50:40.514050",
+    "updated_at": "2026-01-13T14:50:40.514050",
+    "submitted_at": null,
+    "redo_of_id": null
   }
 ]

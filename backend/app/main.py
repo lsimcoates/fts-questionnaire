@@ -8,7 +8,9 @@ app = FastAPI(title="FTS Questionnaire API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["http://localhost:3000",
+                   "https://lsimcoates.github.io",
+                   ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

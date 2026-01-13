@@ -1,0 +1,14 @@
+{
+  "id": "3a586b7aecb445c9a0863719b9a41efa",
+  "case_number": "8",
+  "version": 1,
+  "status": "draft",
+  "created_at": "2026-01-13T14:50:40.514050",
+  "updated_at": "2026-01-13T14:50:40.514050",
+  "submitted_at": null,
+  "redo_of_id": null,
+  "data": {
+    "case_number": "8",
+    "consent": ""
+  }
+}
