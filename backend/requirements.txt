@@ -5,3 +5,10 @@ python-multipart
 jinja2
 playwright
 pypdf
+typing 
+datetime
+os
+json
+uuid
+sqlalchemy
+databases
