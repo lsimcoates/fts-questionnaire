@@ -196,5 +196,15 @@
     "updated_at": "2026-01-13T15:24:44.037253",
     "submitted_at": null,
     "redo_of_id": null
+  },
+  {
+    "id": "ac1a7a7d96ab439cb0302a924d59e3c6",
+    "case_number": "6",
+    "version": 2,
+    "status": "draft",
+    "created_at": "2026-01-13T15:59:25.023290",
+    "updated_at": "2026-01-13T15:59:25.023290",
+    "submitted_at": null,
+    "redo_of_id": null
   }
 ]

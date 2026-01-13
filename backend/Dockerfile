@@ -7,7 +7,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
+# DEBUG: prove main.py exists and show python import path
+RUN echo "PWD:" && pwd && echo "FILES:" && ls -la
+RUN python -c "import sys; print('PYTHONPATH:', sys.path)"
+
 ENV PORT=8000
 EXPOSE 8000
 
-CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port $PORT"]
+# DEBUG: print real traceback if import fails
+CMD ["sh", "-c", "python -c \"import main\" && uvicorn main:app --host 0.0.0.0 --port $PORT"]
