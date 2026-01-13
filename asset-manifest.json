@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/fts-questionnaire/static/css/main.e6c13ad2.css",
+    "main.js": "/fts-questionnaire/static/js/main.5bc31d3c.js",
+    "static/js/453.20359781.chunk.js": "/fts-questionnaire/static/js/453.20359781.chunk.js",
+    "index.html": "/fts-questionnaire/index.html",
+    "main.e6c13ad2.css.map": "/fts-questionnaire/static/css/main.e6c13ad2.css.map",
+    "main.5bc31d3c.js.map": "/fts-questionnaire/static/js/main.5bc31d3c.js.map",
+    "453.20359781.chunk.js.map": "/fts-questionnaire/static/js/453.20359781.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.e6c13ad2.css",
+    "static/js/main.5bc31d3c.js"
+  ]
+}
