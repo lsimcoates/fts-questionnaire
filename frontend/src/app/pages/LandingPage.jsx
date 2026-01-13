@@ -107,7 +107,7 @@ export default function LandingPage() {
       <header style={styles.header}>
         <div style={styles.headerLeft}>
           <img
-            src="http://localhost:8000/static/images/logo.png"
+            src={`${process.env.PUBLIC_URL}/logo.png`}
             alt="FTS Logo"
             style={styles.logo}
           />
@@ -227,7 +227,7 @@ const styles = {
     gap: 12,
     marginBottom: 16,
   },
-  
+
   headerLeft: {
     display: "flex",
     alignItems: "center",

@@ -1,4 +1,13 @@
-const BASE = "http://127.0.0.1:8000/api";
+// frontend/src/services/api.js
+
+const isGithubPages = window.location.hostname.endsWith("github.io");
+
+// IMPORTANT: replace this with your actual Render backend URL (no /api at end)
+const RENDER_BASE = "https://fts-questionnaire.onrender.com/";
+
+const LOCAL_BASE = "http://127.0.0.1:8000";
+
+const BASE = `${isGithubPages ? RENDER_BASE : LOCAL_BASE}/api`;
 
 async function parseError(res) {
   try {

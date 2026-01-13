@@ -209,7 +209,7 @@ export default function QuestionnairePage() {
         <h1 style={styles.h1}>FTS Client Questionnaire</h1>
         {/* spacer keeps title centered */}
         <img
-          src="http://localhost:8000/static/images/logo.png"
+          src={`${process.env.PUBLIC_URL}/logo.png`}
           alt="FTS Logo"
           style={styles.headerLogo}/>
       </div>
