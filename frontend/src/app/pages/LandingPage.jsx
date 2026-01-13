@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createQuestionnaire, listQuestionnaires, downloadQuestionnairePdf } from "../services/api";
 
+
 export default function LandingPage() {
   const navigate = useNavigate();
 
@@ -104,10 +105,21 @@ export default function LandingPage() {
   return (
     <div style={styles.page}>
       <header style={styles.header}>
-        <div>
-          <h1 style={styles.h1}>FTS Questionnaire</h1>
-          <p style={styles.sub}>Create, search, and open questionnaire records.</p>
+        <div style={styles.headerLeft}>
+          <img
+            src="http://localhost:8000/static/images/logo.png"
+            alt="FTS Logo"
+            style={styles.logo}
+          />
+
+          <div>
+            <h1 style={styles.h1}>FTS Questionnaire</h1>
+            <p style={styles.sub}>
+              Create, search, and open questionnaire records.
+            </p>
+          </div>
         </div>
+
         <button style={styles.refreshBtn} onClick={load}>
           Refresh
         </button>
@@ -207,6 +219,7 @@ const styles = {
     padding: 20,
     fontFamily: "Arial",
   },
+
   header: {
     display: "flex",
     alignItems: "center",
@@ -214,7 +227,20 @@ const styles = {
     gap: 12,
     marginBottom: 16,
   },
-  h1: { margin: 0 },
+  
+  headerLeft: {
+    display: "flex",
+    alignItems: "center",
+    gap: 12,
+  },
+
+  logo: {
+    height: 84,
+    width: "auto",
+    objectFit: "contain",
+  },
+
+  h1: { margin: 0, color: "#00528c" },
   sub: { margin: "6px 0 0", color: "#555" },
 
   card: {
@@ -224,7 +250,7 @@ const styles = {
     marginBottom: 12,
     background: "white",
   },
-  h2: { margin: "0 0 10px" },
+  h2: { margin: "0 0 10px", color: "#00528c" },
 
   row: { display: "flex", gap: 10, flexWrap: "wrap" },
   input: {
@@ -233,6 +259,7 @@ const styles = {
     borderRadius: 10,
     border: "1px solid #ccc",
     fontSize: 15,
+    boxSizing: "border-box",
   },
   inputWide: {
     width: "100%",
@@ -240,6 +267,7 @@ const styles = {
     borderRadius: 10,
     border: "1px solid #ccc",
     fontSize: 15,
+    boxSizing: "border-box",
   },
 
   hint: { marginTop: 10, fontSize: 13, color: "#666" },
@@ -249,7 +277,7 @@ const styles = {
     borderRadius: 10,
     border: "none",
     cursor: "pointer",
-    background: "#0b5cff",
+    background: "#00528c",
     color: "white",
     fontSize: 15,
     fontWeight: 700,
@@ -258,7 +286,8 @@ const styles = {
     padding: "10px 14px",
     borderRadius: 10,
     border: "1px solid #ccc",
-    background: "white",
+    background: "#904369",
+    color: "white",
     cursor: "pointer",
     fontWeight: 600,
   },
@@ -313,7 +342,7 @@ const styles = {
     borderRadius: 10,
     border: "none",
     cursor: "pointer",
-    background: "#111",
+    background: "#00528c",
     color: "white",
     fontWeight: 700,
     whiteSpace: "nowrap",
@@ -325,7 +354,8 @@ const styles = {
     borderRadius: 10,
     border: "1px solid #ccc",
     cursor: "pointer",
-    background: "white",
+    background: "#904369",
+    color: "white",
     fontWeight: 700,
     whiteSpace: "nowrap",
     },

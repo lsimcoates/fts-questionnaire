@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.questionnaires import router as questionnaires_router
 
+
 app = FastAPI(title="FTS Questionnaire API")
 
 app.add_middleware(
@@ -18,3 +19,7 @@ def health():
     return {"ok": True}
 
 app.include_router(questionnaires_router, prefix="/api")
+
+from fastapi.staticfiles import StaticFiles
+
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
