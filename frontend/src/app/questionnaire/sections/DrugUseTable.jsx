@@ -1,0 +1,179 @@
+import React from "react";
+import { drugUseRows } from "../config/drugUseConfig";
+import { todayISO } from "../config/dateUtils";
+
+export default function DrugUseTable({ register }) {
+  return (
+    <section style={styles.section}>
+      <h2 style={styles.h2}>Drug use</h2>
+
+      <p style={styles.infoText}>
+        <strong>Drug Use and Passive exposure:</strong> If you have used a drug
+        and been exposed, only provide details of your use. If you are unsure of
+        any exposure this is fine, minimal exposure can go unnoticed and is
+        accounted for during our process.
+      </p>
+
+      <div style={styles.tableWrapper}>
+        <table style={styles.table}>
+          <thead>
+            <tr>
+              <th style={styles.th}>Drug</th>
+              <th style={styles.thCenter}>Used</th>
+              <th style={styles.thCenter}>Not Used</th>
+              <th style={styles.th}>Date of last use</th>
+              <th style={styles.thCenter}>Unsure</th>
+              <th style={styles.th}>Level of use</th>
+              <th style={styles.thCenter}>Prescribed</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {drugUseRows.map((drug, index) => (
+              <tr key={drug.name}>
+                <td style={styles.td}>{drug.name}</td>
+
+                {["used", "Not Used"].map((status) => (
+                  <td key={status} style={styles.tdCenter}>
+                    <input
+                      type="radio"
+                      value={status}
+                      {...register(`drug_use.${index}.status`)}
+                    />
+                  </td>
+                ))}
+
+                <td style={styles.td}>
+                  <input
+                    style={styles.input}
+                    type="date"
+                    max={todayISO}
+                    {...register(`drug_use.${index}.date_of_last_use`)}
+                    />
+                </td>
+
+                <td style={styles.tdCenter}>
+                  <input
+                    type="checkbox"
+                    {...register(`drug_use.${index}.unsure_date`)}
+                  />
+                </td>
+
+                <td style={styles.td}>
+                  <select
+                    style={styles.select}
+                    {...register(`drug_use.${index}.level_of_use`)}
+                  >
+                    <option value="">Choose</option>
+                    <option value="Single use">Single use</option>
+                    <option value="Less than monthly">Less than monthly</option>
+                    <option value="Monthly">Monthly</option>
+                    <option value="Weekly">Weekly</option>
+                    <option value="Daily">Daily</option>
+                    <option value="Unsure">Unsure</option>
+                  </select>
+                </td>
+
+                <td style={styles.tdCenter}>
+                  {drug.prescribed ? (
+                    <input
+                      type="checkbox"
+                      {...register(`drug_use.${index}.prescribed`)}
+                    />
+                  ) : (
+                    <span style={styles.muted}>—</span>
+                  )}
+                </td>
+
+                {/* hidden: store the drug name in the submitted data */}
+                <input
+                  type="hidden"
+                  value={drug.name}
+                  {...register(`drug_use.${index}.drug_name`)}
+                />
+              </tr>
+            ))}
+          </tbody>
+
+          {/* One “Other information” row spanning full width */}
+          <tfoot>
+            <tr>
+              <td style={styles.td} colSpan={8}>
+                <label style={styles.otherInfoLabel}>
+                  Other information (additional drugs, and changes in frequency/pattern of use)
+                </label>
+                <textarea
+                  style={styles.textarea}
+                  rows={4}
+                  {...register("drug_use_other_info")}
+                  placeholder="Enter any additional information here..."
+                />
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </section>
+  );
+}
+
+const styles = {
+  section: {
+    border: "1px solid #ddd",
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 16,
+  },
+  h2: { marginBottom: 8 },
+  infoText: { fontSize: 14, marginBottom: 12, lineHeight: 1.4 },
+
+  tableWrapper: { overflowX: "auto" },
+  table: {
+    width: "100%",
+    borderCollapse: "collapse",
+    fontSize: 14,
+    minWidth: 900,
+  },
+
+  th: {
+    textAlign: "left",
+    padding: 10,
+    borderBottom: "1px solid #ddd",
+    background: "#fafafa",
+    whiteSpace: "nowrap",
+  },
+  thCenter: {
+    textAlign: "center",
+    padding: 10,
+    borderBottom: "1px solid #ddd",
+    background: "#fafafa",
+    whiteSpace: "nowrap",
+  },
+
+  td: {
+    padding: 10,
+    borderBottom: "1px solid #eee",
+    verticalAlign: "top",
+  },
+  tdCenter: {
+    padding: 10,
+    borderBottom: "1px solid #eee",
+    textAlign: "center",
+    verticalAlign: "middle",
+  },
+
+  input: { padding: 6, borderRadius: 6, border: "1px solid #ccc" },
+  select: { padding: 6, borderRadius: 6, border: "1px solid #ccc", width: "100%" },
+
+  muted: { color: "#999" },
+
+  otherInfoLabel: { display: "block", fontWeight: 600, marginBottom: 6 },
+  textarea: {
+    width: "100%",
+    padding: 10,
+    borderRadius: 6,
+    border: "1px solid #ccc",
+    fontSize: 14,
+    resize: "vertical",
+  },
+};

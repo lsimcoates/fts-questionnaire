@@ -1,0 +1,14 @@
+{
+  "id": "6b2025434e5e48198160bf10e705a689",
+  "case_number": "33455.2",
+  "version": 1,
+  "status": "draft",
+  "created_at": "2026-01-12T14:14:06.337775",
+  "updated_at": "2026-01-12T14:14:06.337775",
+  "submitted_at": null,
+  "redo_of_id": null,
+  "data": {
+    "case_number": "33455.2",
+    "consent": ""
+  }
+}

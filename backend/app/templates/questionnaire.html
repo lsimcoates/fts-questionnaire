@@ -1,0 +1,610 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>FTS Client Questionnaire</title>
+  <style>
+    :root {
+      --border: #222;
+      --muted: #555;
+
+      /* Brand */
+      --brand-blue: #00528c;
+      --brand-pink: #904369;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      font-size: 12px;
+      padding: 24px;
+      color: #111;
+      line-height: 1.25;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    .first-page-header {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      column-gap: 14px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .logo-top {
+      width: 230px;
+      height: auto;
+      object-fit: contain;
+    }
+
+    .header-title {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--brand-blue);
+      text-align: left;
+    }
+
+    .top-meta {
+      text-align: center;
+      color: var(--muted);
+      font-size: 11px;
+      margin-bottom: 18px;
+    }
+
+    .section {
+      margin-top: 16px;
+      page-break-inside: avoid;
+    }
+
+    .section-title {
+      font-size: 13px;
+      font-weight: 700;
+      margin: 0 0 8px;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      background: var(--brand-pink);
+      color: #fff;
+      border-radius: 10px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px 14px;
+    }
+
+    .field {
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 8px;
+    }
+
+    .label {
+      font-size: 10px;
+      color: var(--muted);
+      margin-bottom: 3px;
+    }
+
+    .value {
+      font-size: 12px;
+      font-weight: 600;
+      word-break: break-word;
+    }
+
+    .value.normal {
+      font-weight: 400;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+    }
+
+    th, td {
+      border: 1px solid var(--border);
+      padding: 6px;
+      vertical-align: top;
+      font-size: 11px;
+    }
+
+    th {
+      background: #fff;
+      text-align: left;
+      color: var(--brand-blue);
+      font-weight: 700;
+    }
+
+    .muted { color: var(--muted); font-weight: 400; }
+
+    .note-box {
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 8px;
+      margin-top: 8px;
+    }
+
+    .sig-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .sig-card {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+      page-break-inside: avoid;
+    }
+
+    .sig-title {
+      font-weight: 700;
+      margin-bottom: 8px;
+      font-size: 12px;
+      color: var(--brand-blue);
+    }
+
+    .sig-meta {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .sig-img {
+      width: 100%;
+      max-width: 340px;
+      height: 120px;
+      border: 1px solid #bbb;
+      border-radius: 6px;
+      object-fit: contain;
+      background: #fff;
+    }
+
+    .page-break {
+      page-break-before: always;
+      break-before: page;
+    }
+
+    table { page-break-inside: auto; }
+    tr { page-break-inside: avoid; page-break-after: auto; }
+    thead { display: table-header-group; }
+    tfoot { display: table-footer-group; }
+
+    .bottom-logo-wrap {
+      margin-top: 18px;
+      display: flex;
+      justify-content: center;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+
+    .logo-bottom {
+      width: 200px;
+      height: auto;
+      object-fit: contain;
+    }
+  </style>
+</head>
+
+<body>
+  {% set d = data %}
+
+  {% macro show(v) -%}
+    {%- if v is boolean -%}
+      {{ "Yes" if v else "No" }}
+    {%- elif v is none -%}
+      —
+    {%- else -%}
+      {%- set s = (v|string).strip() -%}
+      {{ s if s else "—" }}
+    {%- endif -%}
+  {%- endmacro %}
+
+  {% macro uk_date(iso) -%}
+    {%- if iso is none -%}
+      —
+    {%- else -%}
+      {%- set s = (iso|string).strip() -%}
+      {%- if not s -%}
+        —
+      {%- elif s|length >= 10 and s[4] == '-' and s[7] == '-' -%}
+        {{ s[8:10] }}/{{ s[5:7] }}/{{ s[0:4] }}
+      {%- else -%}
+        {{ s }}
+      {%- endif -%}
+    {%- endif -%}
+  {%- endmacro %}
+
+  {% macro uk_datetime(iso_dt) -%}
+    {%- if iso_dt is none -%}
+      —
+    {%- else -%}
+      {%- set s = (iso_dt|string).strip() -%}
+      {%- if not s -%}
+        —
+      {%- else -%}
+        {%- set dpart = s[0:10] -%}
+        {%- set tpart = s[11:19] if s|length >= 19 else "" -%}
+        {{ uk_date(dpart) }}{% if tpart %} {{ tpart }}{% endif %}
+      {%- endif -%}
+    {%- endif -%}
+  {%- endmacro %}
+
+  {% macro show_date(date_str, unsure_flag) -%}
+    {%- if unsure_flag -%}
+      Unsure
+    {%- else -%}
+      {{ uk_date(date_str) }}
+    {%- endif -%}
+  {%- endmacro %}
+
+  {% macro join_list(v) -%}
+    {%- if v is sequence and (v is not string) -%}
+      {%- if v|length == 0 -%}—{%- else -%}{{ v|join(", ") }}{%- endif -%}
+    {%- else -%}
+      {{ show(v) }}
+    {%- endif -%}
+  {%- endmacro %}
+
+  <div class="first-page-header">
+    {% if top_logo_src %}
+      <img class="logo-top" src="{{ top_logo_src }}" alt="Company logo" />
+    {% endif %}
+    <h1 class="header-title">Client Questionnaire</h1>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Personal Details</div>
+    <div class="grid">
+      <div class="field">
+        <div class="label">Do you consent to Forensic Testing Service (FTS) asking these questions and the completion of the questionnaire?</div>
+        <div class="value">{{ show(d.consent) }}</div>
+      </div>
+
+      <div class="field">
+        <div class="label">Case Number</div>
+        <div class="value">{{ show(d.case_number) }}</div>
+      </div>
+
+      <div class="field">
+        <div class="label">Client Name</div>
+        <div class="value">{{ show(d.client_name) }}</div>
+      </div>
+
+      <div class="field">
+        <div class="label">Collector Name</div>
+        <div class="value">{{ show(d.collector_name) }}</div>
+      </div>
+
+      <div class="field">
+        <div class="label">Date of Birth</div>
+        <div class="value">{{ uk_date(d.dob) }}</div>
+      </div>
+
+      <div class="field">
+        <div class="label">Sex at Birth</div>
+        <div class="value">{{ show(d.sex_at_birth) }}</div>
+      </div>
+
+      <div class="field">
+        <div class="label">Natural Hair Colour</div>
+        <div class="value">{{ show(d.natural_hair_colour) }}</div>
+      </div>
+
+      <div class="field">
+        <div class="label">Blood-borne infections</div>
+        <div class="value">{{ show(d.blood_borne_infections) }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Drug Use</div>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 22%;">Drug</th>
+          <th style="width: 16%;">Status</th>
+          <th style="width: 18%;">Level of use</th>
+          <th style="width: 18%;">Date of last use</th>
+          <th style="width: 13%;">Unsure of date</th>
+          <th style="width: 13%;">Prescribed</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in (d.drug_use or []) %}
+          <tr>
+            <td>{{ show(r.drug_name) }}</td>
+            <td>{{ show(r.status) }}</td>
+            <td>{{ show(r.level_of_use) }}</td>
+            <td>{{ show_date(r.date_of_last_use, r.unsure_date) }}</td>
+            <td>{{ "Yes" if r.unsure_date else "No" }}</td>
+            <td>
+              {% if r.prescribed is defined %}
+                {{ "Yes" if r.prescribed else "No" }}
+              {% else %}
+                —
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="note-box">
+      <div class="label">Other information (Drug Use)</div>
+      <div class="value normal">{{ show(d.drug_use_other_info) }}</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Drug Exposure</div>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 22%;">Drug</th>
+          <th style="width: 16%;">Status</th>
+          <th style="width: 18%;">Level of exposure</th>
+          <th style="width: 18%;">Date of last exposure</th>
+          <th style="width: 13%;">Unsure of date</th>
+          <th style="width: 13%;">Type of exposure</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in (d.drug_exposure or []) %}
+          <tr>
+            <td>{{ show(r.drug_name) }}</td>
+            <td>{{ show(r.status) }}</td>
+            <td>{{ show(r.level_of_exposure) }}</td>
+            <td>{{ show_date(r.date_of_last_exposure, r.unsure_date) }}</td>
+            <td>{{ "Yes" if r.unsure_date else "No" }}</td>
+            <td>{{ join_list(r.type_of_exposure) }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="note-box">
+      <div class="label">Other information (Drug Exposure)</div>
+      <div class="value normal">{{ show(d.drug_exposure_other_info) }}</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Medication</div>
+    <div class="grid">
+      <div class="field">
+        <div class="label">Have you used any other medications (not listed above) during the 12 months prior to sampling?</div>
+        <div class="value">{{ show(d.has_other_medications) }}</div>
+      </div>
+      <div class="field">
+        <div class="label">Other medications details</div>
+        <div class="value normal">{{ show(d.other_medications_details) }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Alcohol</div>
+    <div class="grid">
+      <div class="field">
+        <div class="label">Have you consumed any alcohol in last 12 months?</div>
+        <div class="value">{{ show(d.alcohol_consumed_last_12_months) }}</div>
+      </div>
+      <div class="field">
+        <div class="label">Last consumed date</div>
+        <div class="value">{{ show_date(d.alcohol_last_consumed_date, d.alcohol_last_date_unsure) }}</div>
+      </div>
+      <div class="field">
+        <div class="label">How much alcohol do you consume on average each week?</div>
+        <div class="value normal">{{ join_list(d.alcohol_weekly_options) }}</div>
+      </div>
+      <div class="field">
+        <div class="label">Other information (Alcohol)</div>
+        <div class="value normal">{{ show(d.alcohol_other_info) }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Hair &amp; Influencing Factors</div>
+
+    <div class="grid">
+      <div class="field">
+        <div class="label">When did you last cut your hair? (Date)</div>
+        <div class="value">{{ show_date(d.hair_last_cut_date, d.hair_last_cut_unsure) }}</div>
+      </div>
+
+      <div class="field">
+        <div class="label">Have you shaved/removed any body hair in the last 12 months?</div>
+        <div class="value">{{ show(d.hair_removed_body_hair_last_12_months) }}</div>
+      </div>
+
+      {% if d.hair_removed_body_hair_last_12_months == "Yes" %}
+        <div class="field" style="grid-column: 1 / -1;">
+          <div class="label">Where did you remove hair from?</div>
+
+          <div class="value normal">
+            {% set any_site =
+              (d.hair_removed_sites_arms or d.hair_removed_sites_legs or d.hair_removed_sites_chest or d.hair_removed_sites_back)
+            %}
+
+            {% if not any_site %}
+              —
+            {% else %}
+              <div>
+                {% if d.hair_removed_sites_arms %}
+                  <div>
+                    <strong>Arms:</strong>
+                    {{ show_date(d.hair_removed_sites_arms_last_shaved_date, d.hair_removed_sites_arms_last_shaved_unsure) }}
+                  </div>
+                {% endif %}
+
+                {% if d.hair_removed_sites_legs %}
+                  <div>
+                    <strong>Legs:</strong>
+                    {{ show_date(d.hair_removed_sites_legs_last_shaved_date, d.hair_removed_sites_legs_last_shaved_unsure) }}
+                  </div>
+                {% endif %}
+
+                {% if d.hair_removed_sites_chest %}
+                  <div>
+                    <strong>Chest:</strong>
+                    {{ show_date(d.hair_removed_sites_chest_last_shaved_date, d.hair_removed_sites_chest_last_shaved_unsure) }}
+                  </div>
+                {% endif %}
+
+                {% if d.hair_removed_sites_back %}
+                  <div>
+                    <strong>Back:</strong>
+                    {{ show_date(d.hair_removed_sites_back_last_shaved_date, d.hair_removed_sites_back_last_shaved_unsure) }}
+                  </div>
+                {% endif %}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      {% endif %}
+
+      <div class="field">
+        <div class="label">Are you currently pregnant or have you been pregnant in the 12 months prior sampling?</div>
+        <div class="value">{{ show(d.pregnant_last_12_months) }}</div>
+      </div>
+
+      <div class="field">
+        <div class="label">If so, when is your due date/when did you give birth?</div>
+        <div class="value">{{ show_date(d.pregnancy_due_or_birth_date, d.pregnancy_due_date_unsure) }}</div>
+      </div>
+
+      <div class="field">
+        <div class="label">How many weeks pregnant were you when you gave birth? (if applicable)</div>
+        <div class="value">{{ show(d.pregnancy_weeks) }}</div>
+      </div>
+
+      <div class="field">
+        <div class="label">Have you dyed/bleached your hair in the 12 months prior to sampling?</div>
+        <div class="value">{{ show(d.hair_dyed_bleached) }}</div>
+      </div>
+
+      <!-- ✅ NEW FIELD (only if Yes) -->
+      {% if d.hair_dyed_bleached == "Yes" %}
+      <div class="field">
+        <div class="label">When did you last dye/bleach your hair?</div>
+        <div class="value">{{ uk_date(d.hair_last_dyed_bleached_date) }}</div>
+      </div>
+      {% endif %}
+
+      <div class="field">
+        <div class="label">Have you used thermal applications (i.e. hair straighteners) on your scalp hair?</div>
+        <div class="value">{{ show(d.hair_thermal_applications) }}</div>
+      </div>
+
+      <div class="field">
+        <div class="label">How often do you wash your hair?</div>
+        <div class="value">{{ show(d.hair_wash_frequency) }}</div>
+      </div>
+
+      <div class="field">
+        <div class="label">Have your nails had direct contact with bleach?</div>
+        <div class="value">{{ show(d.nails_contact_bleach) }}</div>
+      </div>
+
+      <div class="field">
+        <div class="label">Do you frequently swim in a pool or use hot tubs?</div>
+        <div class="value">{{ show(d.frequent_swimming) }}</div>
+      </div>
+
+      <div class="field">
+        <div class="label">Do you frequently use sunbeds?</div>
+        <div class="value">{{ show(d.frequent_sunbeds) }}</div>
+      </div>
+
+      <div class="field">
+        <div class="label">Have you frequently applied hairspray, perfume/aftershave, deodorant and/or dry shampoo to the sample sites?</div>
+        <div class="value">{{ show(d.frequent_sprays_on_sites) }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section page-break">
+    <div class="section-title">Signatures</div>
+
+    <div class="sig-grid">
+      <div class="sig-card">
+        <div class="sig-title">Client</div>
+        <div class="sig-meta">
+          <div>
+            <div class="label">Print name</div>
+            <div class="value">{{ show(d.client_print_name) }}</div>
+          </div>
+          <div>
+            <div class="label">Date</div>
+            <div class="value">{{ uk_date(d.client_signature_date) }}</div>
+          </div>
+        </div>
+
+        {% if d.client_signature_png %}
+          <img class="sig-img" src="{{ d.client_signature_png }}" alt="Client signature" />
+        {% else %}
+          <div class="muted">No client signature captured.</div>
+        {% endif %}
+      </div>
+
+      <div class="sig-card">
+        <div class="sig-title">Collector</div>
+        <div class="sig-meta">
+          <div>
+            <div class="label">Print name</div>
+            <div class="value">{{ show(d.collector_print_name) }}</div>
+          </div>
+          <div>
+            <div class="label">Date</div>
+            <div class="value">{{ uk_date(d.collector_signature_date) }}</div>
+          </div>
+        </div>
+
+        {% if d.collector_signature_png %}
+          <img class="sig-img" src="{{ d.collector_signature_png }}" alt="Collector signature" />
+        {% else %}
+          <div class="muted">No collector signature captured.</div>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if d.refusal_signature_png or d.refusal_print_name or d.refusal_signature_date %}
+      <div style="height: 14px;"></div>
+      <div class="sig-card">
+        <div class="sig-title">
+          Questionnaire Refusal - I confirm that I understand the client questionnaire is a critical part of the testing process and the information I provide will assist with the accurate interpretation of the test results. However, I refuse to complete the questionnaire:
+        </div>
+        <div class="sig-meta">
+          <div>
+            <div class="label">Print name</div>
+            <div class="value">{{ show(d.refusal_print_name) }}</div>
+          </div>
+          <div>
+            <div class="label">Date</div>
+            <div class="value">{{ uk_date(d.refusal_signature_date) }}</div>
+          </div>
+        </div>
+
+        {% if d.refusal_signature_png %}
+          <img class="sig-img" src="{{ d.refusal_signature_png }}" alt="Refusal signature" />
+        {% else %}
+          <div class="muted">No refusal signature captured.</div>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+
+  {% if bottom_logo_src %}
+    <div class="bottom-logo-wrap">
+      <img class="logo-bottom" src="{{ bottom_logo_src }}" alt="Company logo" />
+    </div>
+  {% endif %}
+</body>
+</html>
