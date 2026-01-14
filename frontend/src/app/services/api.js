@@ -3,7 +3,7 @@
 const isGithubPages = window.location.hostname.endsWith("github.io");
 
 // IMPORTANT: replace this with your actual Render backend URL (no /api at end)
-const RENDER_BASE = "https://fts-questionnaire.onrender.com/";
+const RENDER_BASE = "https://fts-questionnaire.onrender.com";
 
 const LOCAL_BASE = "http://127.0.0.1:8000";
 
