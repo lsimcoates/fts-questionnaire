@@ -1,7 +1,10 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { createQuestionnaire, listQuestionnaires, downloadQuestionnairePdf } from "../services/api";
-
+import {
+  createQuestionnaire,
+  listQuestionnaires,
+  downloadQuestionnairePdf,
+} from "../services/api";
 
 export default function LandingPage() {
   const navigate = useNavigate();
@@ -10,6 +13,9 @@ export default function LandingPage() {
   const [query, setQuery] = useState("");
   const [rows, setRows] = useState([]);
   const [status, setStatus] = useState("");
+
+  // ✅ hover tracking
+  const [hovered, setHovered] = useState(null);
 
   const load = async () => {
     try {
@@ -78,17 +84,17 @@ export default function LandingPage() {
 
   const onGeneratePdf = async (r) => {
     try {
-        setStatus("Generating PDF...");
-        const blob = await downloadQuestionnairePdf(r.id);
+      setStatus("Generating PDF...");
+      const blob = await downloadQuestionnairePdf(r.id);
 
-        const filename = `Case_${r.case_number || "unknown"}_v${r.version || ""}.pdf`;
-        downloadBlob(blob, filename);
+      const filename = `Case_${r.case_number || "unknown"}_v${r.version || ""}.pdf`;
+      downloadBlob(blob, filename);
 
-        setStatus("");
+      setStatus("");
     } catch (e) {
-        setStatus(`PDF failed: ${e.message}`);
+      setStatus(`PDF failed: ${e.message}`);
     }
-    };
+  };
 
   const downloadBlob = (blob, filename) => {
     const url = window.URL.createObjectURL(blob);
@@ -99,8 +105,7 @@ export default function LandingPage() {
     a.click();
     a.remove();
     window.URL.revokeObjectURL(url);
-    };
-
+  };
 
   return (
     <div style={styles.page}>
@@ -120,7 +125,15 @@ export default function LandingPage() {
           </div>
         </div>
 
-        <button style={styles.refreshBtn} onClick={load}>
+        <button
+          style={{
+            ...styles.refreshBtn,
+            ...(hovered === "refresh" ? styles.refreshBtnHover : {}),
+          }}
+          onMouseEnter={() => setHovered("refresh")}
+          onMouseLeave={() => setHovered(null)}
+          onClick={load}
+        >
           Refresh
         </button>
       </header>
@@ -135,7 +148,16 @@ export default function LandingPage() {
             value={caseNumber}
             onChange={(e) => setCaseNumber(e.target.value)}
           />
-          <button style={styles.primaryBtn} onClick={createNew}>
+
+          <button
+            style={{
+              ...styles.primaryBtn,
+              ...(hovered === "newdraft" ? styles.primaryBtnHover : {}),
+            }}
+            onMouseEnter={() => setHovered("newdraft")}
+            onMouseLeave={() => setHovered(null)}
+            onClick={createNew}
+          >
             New draft
           </button>
         </div>
@@ -193,13 +215,29 @@ export default function LandingPage() {
                 </div>
 
                 <div style={styles.btnGroup}>
-                    <button style={styles.openBtn} onClick={() => openRecord(r.id)}>
-                        Open
-                    </button>
+                  <button
+                    style={{
+                      ...styles.openBtn,
+                      ...(hovered === `open-${r.id}` ? styles.openBtnHover : {}),
+                    }}
+                    onMouseEnter={() => setHovered(`open-${r.id}`)}
+                    onMouseLeave={() => setHovered(null)}
+                    onClick={() => openRecord(r.id)}
+                  >
+                    Open
+                  </button>
 
-                    <button style={styles.pdfBtn} onClick={() => onGeneratePdf(r)}>
-                        Generate PDF
-                    </button>
+                  <button
+                    style={{
+                      ...styles.pdfBtn,
+                      ...(hovered === `pdf-${r.id}` ? styles.pdfBtnHover : {}),
+                    }}
+                    onMouseEnter={() => setHovered(`pdf-${r.id}`)}
+                    onMouseLeave={() => setHovered(null)}
+                    onClick={() => onGeneratePdf(r)}
+                  >
+                    Generate PDF
+                  </button>
                 </div>
               </div>
             ))}
@@ -214,10 +252,14 @@ export default function LandingPage() {
 
 const styles = {
   page: {
+    position: "relative",
     maxWidth: 1100,
     margin: "0 auto",
     padding: 20,
-    fontFamily: "Arial",
+    fontFamily: "Segoe UI",
+    borderRadius: 12,
+    background: "white",
+    boxShadow: "0 0 0 1px #e6e9ef, 0 8px 24px rgba(0,0,0,0.04)",
   },
 
   header: {
@@ -272,6 +314,11 @@ const styles = {
 
   hint: { marginTop: 10, fontSize: 13, color: "#666" },
 
+  // ✅ shared transition feels consistent & subtle
+  btnTransition: {
+    transition: "background 120ms ease, transform 120ms ease, box-shadow 120ms ease",
+  },
+
   primaryBtn: {
     padding: "12px 18px",
     borderRadius: 10,
@@ -281,7 +328,14 @@ const styles = {
     color: "white",
     fontSize: 15,
     fontWeight: 700,
+    transition: "background 120ms ease, transform 120ms ease, box-shadow 120ms ease",
   },
+  primaryBtnHover: {
+    background: "#004270",
+    transform: "translateY(-1px)",
+    boxShadow: "0 4px 10px rgba(0,0,0,0.08)",
+  },
+
   refreshBtn: {
     padding: "10px 14px",
     borderRadius: 10,
@@ -290,6 +344,12 @@ const styles = {
     color: "white",
     cursor: "pointer",
     fontWeight: 600,
+    transition: "background 120ms ease, transform 120ms ease, box-shadow 120ms ease",
+  },
+  refreshBtnHover: {
+    background: "#7b3759",
+    transform: "translateY(-1px)",
+    boxShadow: "0 4px 10px rgba(0,0,0,0.08)",
   },
 
   metaRow: { marginTop: 10 },
@@ -346,9 +406,16 @@ const styles = {
     color: "white",
     fontWeight: 700,
     whiteSpace: "nowrap",
+    transition: "background 120ms ease, transform 120ms ease, box-shadow 120ms ease",
+  },
+  openBtnHover: {
+    background: "#004270",
+    transform: "translateY(-1px)",
+    boxShadow: "0 4px 10px rgba(0,0,0,0.08)",
   },
 
   btnGroup: { display: "flex", gap: 10, alignItems: "center" },
+
   pdfBtn: {
     padding: "10px 14px",
     borderRadius: 10,
@@ -358,8 +425,14 @@ const styles = {
     color: "white",
     fontWeight: 700,
     whiteSpace: "nowrap",
-    },
-    
+    transition: "background 120ms ease, transform 120ms ease, box-shadow 120ms ease",
+  },
+  pdfBtnHover: {
+    background: "#7b3759",
+    transform: "translateY(-1px)",
+    boxShadow: "0 4px 10px rgba(0,0,0,0.08)",
+  },
+
   empty: { margin: 0, color: "#666" },
   status: { marginTop: 10, color: "#333" },
 };

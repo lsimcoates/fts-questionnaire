@@ -39,7 +39,6 @@ export default function QuestionnairePage() {
       blood_borne_infections: "",
       occupation: "",
 
-
       // Drug tables
       drug_use: [],
       drug_exposure: [],
@@ -101,7 +100,6 @@ export default function QuestionnairePage() {
       sprays_sites_legs: false,
       sprays_sites_back: false,
 
-
       // Signatures
       client_print_name: "",
       client_signature_date: "",
@@ -125,6 +123,9 @@ export default function QuestionnairePage() {
   );
 
   const [statusMsg, setStatusMsg] = useState("");
+
+  // ✅ hover tracking
+  const [hovered, setHovered] = useState(null);
 
   const consent = watch("consent"); // "Yes" | "No" | ""
   const hasConsent = consent === "Yes";
@@ -216,15 +217,27 @@ export default function QuestionnairePage() {
     <div style={styles.page}>
       {/* ✅ Header row with Home button + centered title */}
       <div style={styles.headerRow}>
-        <button type="button" style={styles.homeBtn} onClick={goHome}>
+        <button
+          type="button"
+          style={{
+            ...styles.homeBtn,
+            ...(hovered === "home" ? styles.homeBtnHover : {}),
+          }}
+          onMouseEnter={() => setHovered("home")}
+          onMouseLeave={() => setHovered(null)}
+          onClick={goHome}
+        >
           Home
         </button>
+
         <h1 style={styles.h1}>FTS Client Questionnaire</h1>
+
         {/* spacer keeps title centered */}
         <img
           src={`${process.env.PUBLIC_URL}/logo.png`}
           alt="FTS Logo"
-          style={styles.headerLogo}/>
+          style={styles.headerLogo}
+        />
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)}>
@@ -262,7 +275,12 @@ export default function QuestionnairePage() {
         <div style={styles.actions}>
           <button
             type="button"
-            style={styles.secondaryBtn}
+            style={{
+              ...styles.secondaryBtn,
+              ...(hovered === "save" ? styles.secondaryBtnHover : {}),
+            }}
+            onMouseEnter={() => setHovered("save")}
+            onMouseLeave={() => setHovered(null)}
             onClick={handleSubmit(saveDraft)}
           >
             Save draft
@@ -270,7 +288,12 @@ export default function QuestionnairePage() {
 
           <button
             type="button"
-            style={styles.primaryBtn}
+            style={{
+              ...styles.primaryBtn,
+              ...(hovered === "submit" ? styles.primaryBtnHover : {}),
+            }}
+            onMouseEnter={() => setHovered("submit")}
+            onMouseLeave={() => setHovered(null)}
             onClick={handleSubmit(submitFinal)}
           >
             Submit
@@ -289,7 +312,10 @@ const styles = {
     maxWidth: 1100,
     margin: "0 auto",
     padding: 20,
-    fontFamily: "Arial",
+    fontFamily: "Segoe UI",
+    borderRadius: 12,
+    background: "white",
+    boxShadow: "0 0 0 1px #e6e9ef, 0 8px 24px rgba(0,0,0,0.04)",
   },
 
   // ✅ header layout
@@ -306,22 +332,30 @@ const styles = {
     height: 64,
     width: "auto",
     objectFit: "contain",
-    justifySelf: "end", // pushes it to the right edge of its grid cell
+    justifySelf: "end",
   },
 
+  // Home button (blue)
   homeBtn: {
     padding: "10px 14px",
     borderRadius: 8,
     border: "1px solid #ccc",
     background: "#00528c",
-    color: "white", 
+    color: "white",
     cursor: "pointer",
     fontSize: 14,
     fontWeight: 700,
+    transition: "background 120ms ease, transform 120ms ease, box-shadow 120ms ease",
+  },
+  homeBtnHover: {
+    background: "#004270",
+    transform: "translateY(-1px)",
+    boxShadow: "0 4px 10px rgba(0,0,0,0.08)",
   },
 
   actions: { display: "flex", gap: 10, marginTop: 12, flexWrap: "wrap" },
 
+  // Save draft (plum)
   secondaryBtn: {
     padding: "12px 18px",
     borderRadius: 8,
@@ -331,8 +365,15 @@ const styles = {
     cursor: "pointer",
     fontSize: 15,
     fontWeight: 600,
+    transition: "background 120ms ease, transform 120ms ease, box-shadow 120ms ease",
+  },
+  secondaryBtnHover: {
+    background: "#7b3759",
+    transform: "translateY(-1px)",
+    boxShadow: "0 4px 10px rgba(0,0,0,0.08)",
   },
 
+  // Submit (blue)
   primaryBtn: {
     padding: "12px 18px",
     borderRadius: 8,
@@ -342,6 +383,12 @@ const styles = {
     color: "white",
     fontSize: 15,
     fontWeight: 700,
+    transition: "background 120ms ease, transform 120ms ease, box-shadow 120ms ease",
+  },
+  primaryBtnHover: {
+    background: "#004270",
+    transform: "translateY(-1px)",
+    boxShadow: "0 4px 10px rgba(0,0,0,0.08)",
   },
 
   status: { marginTop: 10, fontSize: 14 },
