@@ -3,7 +3,7 @@ uvicorn[standard]
 pydantic
 python-multipart
 jinja2
-playwright
+playwright==1.48.0
 pypdf
 typing 
 datetime
