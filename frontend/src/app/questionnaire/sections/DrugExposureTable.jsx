@@ -14,8 +14,10 @@ const EXPOSURE_OPTIONS = [
 export default function DrugExposureTable({ register }) {
   return (
     <section style={styles.section}>
-      <h2 style={styles.h2}>Drug passive exposure</h2>
-
+      <h2 style={styles.h2}>Passive Exposure to drugs</h2>
+      <p style={styles.infoText}>
+        <strong>Drug Exposure:</strong> Please provide details of your drug exposure to the best of your knowledge in the table below. If there has been any fluctuations or changes in pattern of drug exposure please clarify these in the 'Other information' box at the end of the table.
+      </p>
       <div style={styles.tableWrapper}>
         <table style={styles.table}>
           <thead>

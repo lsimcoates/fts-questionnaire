@@ -1,6 +1,7 @@
 export const drugUseRows = [
   { name: "Cannabis", prescribed: true },
   { name: "Cocaine", prescribed: false },
+  { name: "Crack Cocaine", prescribed: false },
   { name: "MDMA", prescribed: false },
   { name: "Amphetamine", prescribed: true },
   { name: "Methamphetamine", prescribed: false },
@@ -9,7 +10,9 @@ export const drugUseRows = [
   { name: "Codeine", prescribed: true },
   { name: "Dihydrocodeine", prescribed: true },
   { name: "Morphine", prescribed: true },
-  { name: "Diazepam", prescribed: true },
+  { name: "Oxycodone (including oxymorphone)", prescribed: true }, 
+  { name: "Diazepam (including nordiazepam)", prescribed: true },
+  { name: "Other Benzodiazepines (please specify below)", prescribed: true },
   { name: "Amitriptyline", prescribed: true },
   { name: "Pregabalin", prescribed: true },
   { name: "Gabapentin", prescribed: true },

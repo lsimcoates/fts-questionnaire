@@ -53,8 +53,7 @@ export default function SignatureSection({
           {/* CLIENT */}
           <p style={styles.declaration}>
             <strong>
-              I have reviewed this document and can confirm that the information
-              provided above is true to the best of my knowledge.
+              I have reviewed this document and can confirm that the information provided by me is a true representation of any use of drug, alcohol, passive exposure to drugs within the client questionnaire documented herein: 
             </strong>
           </p>
 

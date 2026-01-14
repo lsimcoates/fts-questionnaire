@@ -8,10 +8,7 @@ export default function DrugUseTable({ register }) {
       <h2 style={styles.h2}>Drug use</h2>
 
       <p style={styles.infoText}>
-        <strong>Drug Use and Passive exposure:</strong> If you have used a drug
-        and been exposed, only provide details of your use. If you are unsure of
-        any exposure this is fine, minimal exposure can go unnoticed and is
-        accounted for during our process.
+        <strong>Drug Use:</strong> Please provide details of your drug use to the best of your knowledge in the table below. If there has been any fluctuations or changes in pattern of drug use please clarify these in the 'Other information' box at the end of the table.
       </p>
 
       <div style={styles.tableWrapper}>

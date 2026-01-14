@@ -1,11 +1,13 @@
 import React, { useEffect } from "react";
 import { todayISO } from "../config/dateUtils";
 
+const FREQ_OPTIONS = ["Daily", "Weekly", "Monthly", "Less than monthly"];
+
 export default function HairAndInfluencingSection({ register, watch, setValue }) {
   // scalp hair cut
   const cutUnsure = watch("hair_last_cut_unsure");
 
-  // ✅ body hair removed in last 12 months (Yes/No)
+  // body hair removed in last 12 months (Yes/No)
   const removedBodyHair = watch("hair_removed_body_hair_last_12_months"); // "Yes"/"No"
 
   // pregnancy
@@ -15,7 +17,7 @@ export default function HairAndInfluencingSection({ register, watch, setValue })
   // dyed/bleached
   const dyedBleached = watch("hair_dyed_bleached"); // "Yes"/"No"
 
-  // ✅ sites removed from
+  // sites removed from
   const armsSelected = watch("hair_removed_sites_arms");
   const legsSelected = watch("hair_removed_sites_legs");
   const chestSelected = watch("hair_removed_sites_chest");
@@ -26,6 +28,19 @@ export default function HairAndInfluencingSection({ register, watch, setValue })
   const legsUnsure = watch("hair_removed_sites_legs_last_shaved_unsure");
   const chestUnsure = watch("hair_removed_sites_chest_last_shaved_unsure");
   const backUnsure = watch("hair_removed_sites_back_last_shaved_unsure");
+
+  // ✅ NEW: influencing parent questions
+  const thermal = watch("hair_thermal_applications"); // "Yes"/"No"
+  const swimming = watch("frequent_swimming"); // "Yes"/"No"
+  const sunbeds = watch("frequent_sunbeds"); // "Yes"/"No"
+  const sprays = watch("frequent_sprays_on_sites"); // "Yes"/"No"
+
+  // ✅ NEW: sprays sites
+  const spraysScalp = watch("sprays_sites_scalp");
+  const spraysArms = watch("sprays_sites_arms");
+  const spraysChest = watch("sprays_sites_chest");
+  const spraysLegs = watch("sprays_sites_legs");
+  const spraysBack = watch("sprays_sites_back");
 
   // clear scalp cut date if unsure
   useEffect(() => {
@@ -53,7 +68,7 @@ export default function HairAndInfluencingSection({ register, watch, setValue })
     }
   }, [dyedBleached, setValue]);
 
-  // ✅ if body hair removal is not Yes, clear all sites + per-site details
+  // if body hair removal is not Yes, clear all sites + per-site details
   useEffect(() => {
     if (removedBodyHair !== "Yes") {
       setValue("hair_removed_sites_arms", false);
@@ -112,6 +127,40 @@ export default function HairAndInfluencingSection({ register, watch, setValue })
     }
   }, [backSelected, backUnsure, setValue]);
 
+  // ✅ NEW: clear thermal frequency if "No"
+  useEffect(() => {
+    if (thermal !== "Yes") {
+      setValue("hair_thermal_frequency", "");
+    }
+  }, [thermal, setValue]);
+
+  // ✅ NEW: clear swimming frequency if "No"
+  useEffect(() => {
+    if (swimming !== "Yes") {
+      setValue("frequent_swimming_frequency", "");
+    }
+  }, [swimming, setValue]);
+
+  // ✅ NEW: clear sunbeds frequency if "No"
+  useEffect(() => {
+    if (sunbeds !== "Yes") {
+      setValue("frequent_sunbeds_frequency", "");
+    }
+  }, [sunbeds, setValue]);
+
+  // ✅ NEW: sprays follow-ups (frequency + sites) clearing if "No"
+  useEffect(() => {
+    if (sprays !== "Yes") {
+      setValue("frequent_sprays_frequency", "");
+
+      setValue("sprays_sites_scalp", false);
+      setValue("sprays_sites_arms", false);
+      setValue("sprays_sites_chest", false);
+      setValue("sprays_sites_legs", false);
+      setValue("sprays_sites_back", false);
+    }
+  }, [sprays, setValue]);
+
   const pregnancyDisabled = pregnant !== "Yes";
 
   return (
@@ -138,7 +187,7 @@ export default function HairAndInfluencingSection({ register, watch, setValue })
         </div>
       </div>
 
-      {/* ✅ NEW: Body hair removed yes/no */}
+      {/* Body hair removed yes/no */}
       <div style={styles.field}>
         <label style={styles.label}>
           Have you shaved/removed any body hair in the last 12 months?
@@ -163,7 +212,7 @@ export default function HairAndInfluencingSection({ register, watch, setValue })
         </div>
       </div>
 
-      {/* ✅ Only show sites if Yes */}
+      {/* Only show sites if Yes */}
       {removedBodyHair === "Yes" && (
         <>
           <div style={styles.field}>
@@ -337,7 +386,8 @@ export default function HairAndInfluencingSection({ register, watch, setValue })
         </label>
         <select style={styles.select} disabled={pregnancyDisabled} {...register("pregnancy_weeks")}>
           <option value="">Choose an item</option>
-          {Array.from({ length: 43 }, (_, i) => i).map((w) => (
+          <option value="Unsure">Unsure</option>
+          {Array.from({ length: 45 }, (_, i) => i).reverse().map((w) => (
             <option key={w} value={String(w)}>
               {w}
             </option>
@@ -374,6 +424,21 @@ export default function HairAndInfluencingSection({ register, watch, setValue })
         register={register}
       />
 
+      {/* ✅ NEW: thermal frequency */}
+      {thermal === "Yes" && (
+        <div style={styles.field}>
+          <label style={styles.label}>How often do you use thermal applications?</label>
+          <select style={styles.select} {...register("hair_thermal_frequency")}>
+            <option value="">Choose an item</option>
+            {FREQ_OPTIONS.map((opt) => (
+              <option key={opt} value={opt}>
+                {opt}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
       {/* Wash frequency */}
       <div style={styles.field}>
         <label style={styles.label}>How often do you wash your hair?</label>
@@ -401,24 +466,93 @@ export default function HairAndInfluencingSection({ register, watch, setValue })
 
       {/* Swim/hot tubs */}
       <YesNo
-        label="Do you frequently swim in a pool or use hot tubs?"
+        label="Do you swim in a pool or use hot tubs?"
         name="frequent_swimming"
         register={register}
       />
 
+      {/* ✅ NEW: swimming frequency */}
+      {swimming === "Yes" && (
+        <div style={styles.field}>
+          <label style={styles.label}>How often do you swim or use hot tubs?</label>
+          <select style={styles.select} {...register("frequent_swimming_frequency")}>
+            <option value="">Choose an item</option>
+            {FREQ_OPTIONS.map((opt) => (
+              <option key={opt} value={opt}>
+                {opt}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
       {/* Sunbeds */}
-      <YesNo
-        label="Do you frequently use sunbeds?"
-        name="frequent_sunbeds"
-        register={register}
-      />
+      <YesNo label="Do you use sunbeds?" name="frequent_sunbeds" register={register} />
+
+      {/* ✅ NEW: sunbeds frequency */}
+      {sunbeds === "Yes" && (
+        <div style={styles.field}>
+          <label style={styles.label}>How often do you use sunbeds?</label>
+          <select style={styles.select} {...register("frequent_sunbeds_frequency")}>
+            <option value="">Choose an item</option>
+            {FREQ_OPTIONS.map((opt) => (
+              <option key={opt} value={opt}>
+                {opt}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       {/* Sprays on sample sites */}
       <YesNo
-        label="Have you frequently applied hairspray, perfume/aftershave, deodorant and/or dry shampoo to the sample sites?"
+        label="Have you applied hairspray, perfume/aftershave, deodorant and/or dry shampoo to the sample sites?"
         name="frequent_sprays_on_sites"
         register={register}
       />
+
+      {/* ✅ NEW: sprays follow-ups */}
+      {sprays === "Yes" && (
+        <>
+          <div style={styles.field}>
+            <label style={styles.label}>How often have you applied these products to the sample sites?</label>
+            <select style={styles.select} {...register("frequent_sprays_frequency")}>
+              <option value="">Choose an item</option>
+              {FREQ_OPTIONS.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div style={styles.field}>
+            <label style={styles.label}>Which sites have these been applied to?</label>
+            <div style={styles.checkboxGrid}>
+              <label style={styles.checkboxLabel}>
+                <input type="checkbox" {...register("sprays_sites_scalp")} />
+                Scalp
+              </label>
+              <label style={styles.checkboxLabel}>
+                <input type="checkbox" {...register("sprays_sites_arms")} />
+                Arms
+              </label>
+              <label style={styles.checkboxLabel}>
+                <input type="checkbox" {...register("sprays_sites_chest")} />
+                Chest
+              </label>
+              <label style={styles.checkboxLabel}>
+                <input type="checkbox" {...register("sprays_sites_legs")} />
+                Legs
+              </label>
+              <label style={styles.checkboxLabel}>
+                <input type="checkbox" {...register("sprays_sites_back")} />
+                Back
+              </label>
+            </div>
+          </div>
+        </>
+      )}
     </section>
   );
 }

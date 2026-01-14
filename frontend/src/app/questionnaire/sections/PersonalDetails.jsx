@@ -127,6 +127,18 @@ export default function PersonalDetails({ register, errors }) {
           ))}
         </select>
       </div>
+      {/* Occupation */}
+      <div style={styles.row}>
+        <div style={styles.field}>
+          <label style={styles.label}>Occupation</label>
+          <input
+            style={styles.input}
+            type="text"
+            {...register("occupation")}
+            placeholder="Enter name"
+          />
+        </div>
+      </div>
     </section>
   );
 }
@@ -135,21 +147,34 @@ const styles = {
   section: {
     border: "1px solid #ddd",
     borderRadius: 8,
-    padding: 16,
-    marginBottom: 16,
-  },
-  h2: { margin: 0, marginBottom: 12, color: "#904369" },
-  row: { display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 14 },
-  field: { display: "flex", flexDirection: "column", flex: 1, minWidth: 260, marginBottom: 14 },
-  label: { fontWeight: 600, marginBottom: 8, lineHeight: 1.2 },
-  input: {
     padding: 12,
-    borderRadius: 8,
+    marginBottom: 12,
+  },
+  h2: { margin: 0, marginBottom: 8, color: "#904369" },
+  row: { display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 10 },
+  field: { display: "flex", flexDirection: "column", flex: 1, minWidth: 260, marginBottom: 10 },
+  label: { fontWeight: 600, marginBottom: 5, lineHeight: 1.1 },
+  input: {
+    padding: 9,
+    borderRadius: 6,
     border: "1px solid #ccc",
-    fontSize: 14,
+    fontSize: 12,
     boxSizing: "border-box",
   },
-  inline: { display: "flex", gap: 18, marginTop: 8 },
-  radioLabel: { display: "flex", gap: 8, alignItems: "center" },
-  error: { color: "crimson", marginTop: 6, marginBottom: 0, fontSize: 13 },
+  inline: { display: "flex", gap: 14, marginTop: 6 },
+  radioLabel: { display: "flex", gap: 6, alignItems: "center" },
+  error: { color: "crimson", marginTop: 4, marginBottom: 0, fontSize: 12 },
+
+  grid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+    gap: 12,
+    marginBottom: 10,
+  },
+
+  fieldGrid: {
+    display: "flex",
+    flexDirection: "column",
+    minWidth: 0,
+  },
 };

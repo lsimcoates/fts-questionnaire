@@ -1,6 +1,7 @@
 export const drugExposureRows = [
   "Cannabis",
   "Cocaine",
+  "Crack Cocaine",
   "MDMA",
   "Amphetamine",
   "Methamphetamine",
@@ -9,7 +10,9 @@ export const drugExposureRows = [
   "Codeine",
   "Dihydrocodeine",
   "Morphine",
-  "Diazepam",
+  "Oxycodone (including oxymorphone)",
+  "Diazepam (including nordiazepam)",
+  "Other Benzodiazepines (please specify below)",
   "Amitriptyline",
   "Pregabalin",
   "Gabapentin",

@@ -37,6 +37,8 @@ export default function QuestionnairePage() {
       sex_at_birth: "",
       natural_hair_colour: "",
       blood_borne_infections: "",
+      occupation: "",
+
 
       // Drug tables
       drug_use: [],
@@ -88,6 +90,17 @@ export default function QuestionnairePage() {
       frequent_swimming: "",
       frequent_sunbeds: "",
       frequent_sprays_on_sites: "",
+      hair_thermal_frequency: "",
+      frequent_swimming_frequency: "",
+      frequent_sunbeds_frequency: "",
+      frequent_sprays_frequency: "",
+
+      sprays_sites_scalp: false,
+      sprays_sites_arms: false,
+      sprays_sites_chest: false,
+      sprays_sites_legs: false,
+      sprays_sites_back: false,
+
 
       // Signatures
       client_print_name: "",
