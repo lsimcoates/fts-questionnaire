@@ -2,7 +2,7 @@ import React from "react";
 import { hairColourOptions, infectionOptions } from "../config/options";
 import { todayISO } from "../config/dateUtils";
 
-export default function PersonalDetails({ register, errors }) {
+export default function PersonalDetails({ register, errors, showErrors }) {
   return (
     <section style={styles.section}>
       <h2 style={styles.h2}>Personal details</h2>
@@ -27,9 +27,14 @@ export default function PersonalDetails({ register, errors }) {
           <input
             style={styles.input}
             type="text"
-            {...register("collector_name")}
+            {...register("collector_name", {
+              required: "Collector name is required",
+            })}
             placeholder="Enter collector name"
           />
+          {showErrors && errors?.collector_name && (
+            <p style={styles.error}>{errors.collector_name.message}</p>
+          )}
         </div>
       </div>
 
@@ -42,7 +47,7 @@ export default function PersonalDetails({ register, errors }) {
           {...register("case_number", { required: "Case number is required" })}
           placeholder="Enter case number"
         />
-        {errors?.case_number && (
+        {showErrors && errors?.case_number && (
           <p style={styles.error}>{errors.case_number.message}</p>
         )}
       </div>
@@ -81,20 +86,29 @@ export default function PersonalDetails({ register, errors }) {
       <div style={styles.row}>
         <div style={styles.field}>
           <label style={styles.label}>Date of Birth</label>
-          <input style={styles.input} type="date" max={todayISO} {...register("dob")} />
+          <input
+            style={styles.input}
+            type="date"
+            max={todayISO}
+            {...register("dob", { required: "Date of birth is required" })}
+          />
+          {errors?.dob && <p style={styles.error}>{errors.dob.message}</p>}
         </div>
 
         <div style={styles.field}>
           <label style={styles.label}>What is your sex at birth?</label>
           <select
             style={styles.input}
-            {...register("sex_at_birth")}
+            {...register("sex_at_birth", { required: "Sex at birth is required" })}
             defaultValue=""
           >
             <option value="">Choose an item</option>
             <option value="Male">Male</option>
             <option value="Female">Female</option>
           </select>
+          {errors?.sex_at_birth && (
+            <p style={styles.error}>{errors.sex_at_birth.message}</p>
+          )}
         </div>
       </div>
 
@@ -118,7 +132,11 @@ export default function PersonalDetails({ register, errors }) {
         <label style={styles.label}>
           Do you have any blood-borne infections that you are aware of? (Such as HIV, HEP)
         </label>
-        <select style={styles.input} {...register("blood_borne_infections")}>
+        <select
+          style={styles.input}
+          {...register("blood_borne_infections", { required: "This field is required" })}
+          defaultValue=""
+        >
           <option value="">Choose an item</option>
           {infectionOptions.map((opt) => (
             <option key={opt} value={opt}>
@@ -126,7 +144,11 @@ export default function PersonalDetails({ register, errors }) {
             </option>
           ))}
         </select>
+        {errors?.blood_borne_infections && (
+          <p style={styles.error}>{errors.blood_borne_infections.message}</p>
+        )}
       </div>
+
       {/* Occupation */}
       <div style={styles.row}>
         <div style={styles.field}>
@@ -135,7 +157,7 @@ export default function PersonalDetails({ register, errors }) {
             style={styles.input}
             type="text"
             {...register("occupation")}
-            placeholder="Enter name"
+            placeholder="Enter occupation"
           />
         </div>
       </div>
@@ -152,7 +174,13 @@ const styles = {
   },
   h2: { margin: 0, marginBottom: 8, color: "#904369" },
   row: { display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 10 },
-  field: { display: "flex", flexDirection: "column", flex: 1, minWidth: 260, marginBottom: 10 },
+  field: {
+    display: "flex",
+    flexDirection: "column",
+    flex: 1,
+    minWidth: 260,
+    marginBottom: 10,
+  },
   label: { fontWeight: 600, marginBottom: 5, lineHeight: 1.1 },
   input: {
     padding: 9,

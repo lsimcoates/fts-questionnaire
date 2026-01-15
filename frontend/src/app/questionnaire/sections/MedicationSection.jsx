@@ -1,6 +1,12 @@
 import React, { useEffect } from "react";
 
-export default function MedicationSection({ register, watch, setValue }) {
+export default function MedicationSection({
+  register,
+  watch,
+  setValue,
+  errors,
+  showErrors,
+}) {
   const hasOtherMeds = watch("has_other_medications"); // "Yes" | "No" | ""
 
   // If they select "No", clear the details box so you don't store stale text
@@ -25,7 +31,9 @@ export default function MedicationSection({ register, watch, setValue }) {
             <input
               type="radio"
               value="Yes"
-              {...register("has_other_medications")}
+              {...register("has_other_medications", {
+                required: "Please select an option",
+              })}
             />
             Yes
           </label>
@@ -34,11 +42,17 @@ export default function MedicationSection({ register, watch, setValue }) {
             <input
               type="radio"
               value="No"
-              {...register("has_other_medications")}
+              {...register("has_other_medications", {
+                required: "Please select an option",
+              })}
             />
             No
           </label>
         </div>
+
+        {showErrors && errors?.has_other_medications && (
+          <p style={styles.error}>{errors.has_other_medications.message}</p>
+        )}
       </div>
 
       {hasOtherMeds === "Yes" && (
@@ -67,7 +81,7 @@ const styles = {
     marginBottom: 16,
   },
   h2: { marginBottom: 12, color: "#904369" },
-  field: { display: "flex", flexDirection: "column", gap: 8 },
+  field: { display: "flex", flexDirection: "column", gap: 8, marginBottom: 14 },
   label: { fontWeight: 600 },
   inline: { display: "flex", gap: 18, alignItems: "center" },
   radioLabel: { display: "flex", gap: 8, alignItems: "center" },
@@ -79,4 +93,5 @@ const styles = {
     fontSize: 14,
     resize: "vertical",
   },
+  error: { color: "crimson", marginTop: 4, marginBottom: 0, fontSize: 12 },
 };

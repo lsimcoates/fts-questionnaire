@@ -25,7 +25,7 @@ export default function QuestionnairePage() {
     setValue,
     control,
     reset,
-    formState: { errors },
+    formState: { errors, submitCount },
   } = useForm({
     defaultValues: {
       // Personal Details
@@ -114,6 +114,8 @@ export default function QuestionnairePage() {
       refusal_signature_png: "",
     },
   });
+
+  const showErrors = submitCount > 0;
 
   const navigate = useNavigate();
   const { id: routeId } = useParams();
@@ -211,6 +213,22 @@ export default function QuestionnairePage() {
     submitFinal();
   };
 
+  const onInvalid = (errs) => {
+    // pop-up message
+    alert("Please complete the required fields before continuing.");
+
+    // scroll to the first error field (best effort)
+    const firstFieldName = Object.keys(errs || {})[0];
+    if (firstFieldName) {
+      const el = document.querySelector(`[name="${firstFieldName}"]`);
+      if (el && typeof el.scrollIntoView === "function") {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        el.focus?.();
+      }
+    }
+  };
+
+
   const goHome = () => navigate("/");
 
   return (
@@ -240,23 +258,25 @@ export default function QuestionnairePage() {
         />
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={handleSubmit(onSubmit, onInvalid)}>
         {/* Always visible */}
-        <PersonalDetails register={register} errors={errors} />
+        <PersonalDetails register={register} errors={errors} showErrors={showErrors} />
 
         {hasConsent && (
           <>
-            <DrugUseTable register={register} />
-            <DrugExposureTable register={register} />
-            <MedicationSection register={register} watch={watch} setValue={setValue} />
-            <AlcoholSection register={register} watch={watch} setValue={setValue} />
-            <HairAndInfluencingSection register={register} watch={watch} setValue={setValue} />
+            <DrugUseTable register={register} errors={errors} showErrors={showErrors} />
+            <DrugExposureTable register={register} errors={errors} showErrors={showErrors}   />
+            <MedicationSection register={register} watch={watch} setValue={setValue} errors={errors} showErrors={showErrors} />
+            <AlcoholSection register={register} watch={watch} setValue={setValue} errors={errors} showErrors={showErrors} />
+            <HairAndInfluencingSection register={register} watch={watch} setValue={setValue} errors={errors} showErrors={showErrors} />
 
             <SignatureSection
               register={register}
               control={control}
               watch={watch}
               setValue={setValue}
+              errors={errors}
+              showErrors={showErrors}
               mode="full"
             />
           </>
@@ -281,7 +301,7 @@ export default function QuestionnairePage() {
             }}
             onMouseEnter={() => setHovered("save")}
             onMouseLeave={() => setHovered(null)}
-            onClick={handleSubmit(saveDraft)}
+            onClick={(saveDraft)}
           >
             Save draft
           </button>
@@ -306,6 +326,7 @@ export default function QuestionnairePage() {
     </div>
   );
 }
+
 
 const styles = {
   page: {

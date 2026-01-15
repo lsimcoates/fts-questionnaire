@@ -9,8 +9,10 @@ export default function SignatureSection({
   watch,
   setValue,
   mode = "full", // "full" | "refusal-only"
+  errors,
+  showErrors,
+  trigger, // ✅ pass trigger from useForm so we can revalidate after signing
 }) {
-
   const [open, setOpen] = useState(false);
   const [activeSigField, setActiveSigField] = useState(""); // e.g. "client_signature_png"
   const [tempPng, setTempPng] = useState("");
@@ -40,9 +42,17 @@ export default function SignatureSection({
     setTempPng("");
   };
 
-  const saveSignature = () => {
+  const saveSignature = async () => {
     if (!activeSigField) return;
-    setValue(activeSigField, tempPng || "");
+
+    // ✅ Set the signature into the form and revalidate that field
+    setValue(activeSigField, tempPng || "", { shouldDirty: true, shouldTouch: true, shouldValidate: true });
+
+    // trigger validation so error disappears immediately after saving
+    if (typeof trigger === "function") {
+      await trigger(activeSigField);
+    }
+
     closePad();
   };
 
@@ -53,7 +63,7 @@ export default function SignatureSection({
           {/* CLIENT */}
           <p style={styles.declaration}>
             <strong>
-              I have reviewed this document and can confirm that the information provided by me is a true representation of any use of drug, alcohol, passive exposure to drugs within the client questionnaire documented herein: 
+              I have reviewed this document and can confirm that the information provided by me is a true representation of any use of drug, alcohol, passive exposure to drugs within the client questionnaire documented herein:
             </strong>
           </p>
 
@@ -62,9 +72,12 @@ export default function SignatureSection({
             titleLeft="Client Signature:"
             printNameField="client_print_name"
             dateField="client_signature_date"
+            sigField="client_signature_png"
             signed={signedMap.client_signature_png}
             sigValue={clientSig}
             onSign={() => openPad("client_signature_png")}
+            errors={errors}
+            showErrors={showErrors}
           />
 
           <hr style={styles.hr} />
@@ -82,9 +95,12 @@ export default function SignatureSection({
             titleLeft="Collector Signature:"
             printNameField="collector_print_name"
             dateField="collector_signature_date"
+            sigField="collector_signature_png"
             signed={signedMap.collector_signature_png}
             sigValue={collectorSig}
             onSign={() => openPad("collector_signature_png")}
+            errors={errors}
+            showErrors={showErrors}
           />
         </>
       )}
@@ -105,9 +121,12 @@ export default function SignatureSection({
             titleLeft="Client Signature:"
             printNameField="refusal_print_name"
             dateField="refusal_signature_date"
+            sigField="refusal_signature_png"
             signed={signedMap.refusal_signature_png}
             sigValue={refusalSig}
             onSign={() => openPad("refusal_signature_png")}
+            errors={errors}
+            showErrors={showErrors}
           />
         </>
       )}
@@ -125,7 +144,7 @@ export default function SignatureSection({
 
             <SignaturePadField
               label="Draw signature below"
-              value={tempPng}              // LOAD existing signature
+              value={tempPng} // LOAD existing signature
               onChange={(png) => setTempPng(png)}
             />
 
@@ -149,10 +168,22 @@ function SignatureRow({
   titleLeft,
   printNameField,
   dateField,
+  sigField,
   signed,
   sigValue,
   onSign,
+  errors,
+  showErrors,
 }) {
+  // ✅ required rules
+  const nameRules = { required: "Please enter a printed name" };
+  const dateRules = { required: "Please select a date" };
+  const sigRules = { required: "Signature is required" };
+
+  const nameErr = errors?.[printNameField];
+  const dateErr = errors?.[dateField];
+  const sigErr = errors?.[sigField];
+
   return (
     <div style={styles.sigBlock}>
       {/* Print name line */}
@@ -161,15 +192,20 @@ function SignatureRow({
         <input
           style={styles.printNameInput}
           type="text"
-          {...register(printNameField)}
+          {...register(printNameField, nameRules)}
           placeholder="Type full name"
         />
       </div>
+
+      {showErrors && nameErr && <div style={styles.errorText}>{nameErr.message}</div>}
 
       {/* Signature line + date */}
       <div style={styles.signatureRow}>
         <div style={styles.signatureLeft}>
           <span style={styles.signatureTitle}>{titleLeft}</span>
+
+          {/* ✅ Hidden required field for signature png */}
+          <input type="hidden" {...register(sigField, sigRules)} />
 
           <button
             type="button"
@@ -199,10 +235,13 @@ function SignatureRow({
             style={styles.dateInput}
             type="date"
             max={todayISO}
-            {...register(dateField)}
+            {...register(dateField, dateRules)}
           />
         </div>
       </div>
+
+      {showErrors && sigErr && <div style={styles.errorText}>{sigErr.message}</div>}
+      {showErrors && dateErr && <div style={styles.errorText}>{dateErr.message}</div>}
     </div>
   );
 }
@@ -315,6 +354,8 @@ const styles = {
     fontSize: 14,
     minWidth: 170,
   },
+
+  errorText: { color: "crimson", fontSize: 12, marginTop: 4 },
 
   /* Modal */
   modalOverlay: {

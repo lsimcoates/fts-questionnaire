@@ -2,7 +2,7 @@ import React from "react";
 import { drugUseRows } from "../config/drugUseConfig";
 import { todayISO } from "../config/dateUtils";
 
-export default function DrugUseTable({ register }) {
+export default function DrugUseTable({ register, errors, showErrors }) {
   return (
     <section style={styles.section}>
       <h2 style={styles.h2}>Drug use</h2>
@@ -26,76 +26,95 @@ export default function DrugUseTable({ register }) {
           </thead>
 
           <tbody>
-            {drugUseRows.map((drug, index) => (
-              <tr key={drug.name}>
-                <td style={styles.td}>{drug.name}</td>
+            {drugUseRows.map((drug, index) => {
+              const statusErr = errors?.drug_use?.[index]?.status;
 
-                {["used", "Not Used"].map((status) => (
-                  <td key={status} style={styles.tdCenter}>
+              return (
+                <React.Fragment key={drug.name}>
+                  <tr>
+                    <td style={styles.td}>{drug.name}</td>
+
+                    {["used", "Not Used"].map((status) => (
+                      <td key={status} style={styles.tdCenter}>
+                        <input
+                          type="radio"
+                          value={status}
+                          {...register(`drug_use.${index}.status`, {
+                            required: "Please select Used or Not Used",
+                          })}
+                        />
+                      </td>
+                    ))}
+
+                    <td style={styles.td}>
+                      <input
+                        style={styles.input}
+                        type="date"
+                        max={todayISO}
+                        {...register(`drug_use.${index}.date_of_last_use`)}
+                      />
+                    </td>
+
+                    <td style={styles.tdCenter}>
+                      <input
+                        type="checkbox"
+                        {...register(`drug_use.${index}.unsure_date`)}
+                      />
+                    </td>
+
+                    <td style={styles.td}>
+                      <select
+                        style={styles.select}
+                        {...register(`drug_use.${index}.level_of_use`)}
+                      >
+                        <option value="">Choose</option>
+                        <option value="Single use">Single use</option>
+                        <option value="Less than monthly">Less than monthly</option>
+                        <option value="Monthly">Monthly</option>
+                        <option value="Weekly">Weekly</option>
+                        <option value="Daily">Daily</option>
+                        <option value="Unsure">Unsure</option>
+                      </select>
+                    </td>
+
+                    <td style={styles.tdCenter}>
+                      {drug.prescribed ? (
+                        <input
+                          type="checkbox"
+                          {...register(`drug_use.${index}.prescribed`)}
+                        />
+                      ) : (
+                        <span style={styles.muted}>—</span>
+                      )}
+                    </td>
+
+                    {/* hidden: store the drug name in the submitted data */}
                     <input
-                      type="radio"
-                      value={status}
-                      {...register(`drug_use.${index}.status`)}
+                      type="hidden"
+                      value={drug.name}
+                      {...register(`drug_use.${index}.drug_name`)}
                     />
-                  </td>
-                ))}
+                  </tr>
 
-                <td style={styles.td}>
-                  <input
-                    style={styles.input}
-                    type="date"
-                    max={todayISO}
-                    {...register(`drug_use.${index}.date_of_last_use`)}
-                    />
-                </td>
-
-                <td style={styles.tdCenter}>
-                  <input
-                    type="checkbox"
-                    {...register(`drug_use.${index}.unsure_date`)}
-                  />
-                </td>
-
-                <td style={styles.td}>
-                  <select
-                    style={styles.select}
-                    {...register(`drug_use.${index}.level_of_use`)}
-                  >
-                    <option value="">Choose</option>
-                    <option value="Single use">Single use</option>
-                    <option value="Less than monthly">Less than monthly</option>
-                    <option value="Monthly">Monthly</option>
-                    <option value="Weekly">Weekly</option>
-                    <option value="Daily">Daily</option>
-                    <option value="Unsure">Unsure</option>
-                  </select>
-                </td>
-
-                <td style={styles.tdCenter}>
-                  {drug.prescribed ? (
-                    <input
-                      type="checkbox"
-                      {...register(`drug_use.${index}.prescribed`)}
-                    />
-                  ) : (
-                    <span style={styles.muted}>—</span>
+                  {/* Row-level error line (only appears after submit attempt) */}
+                  {showErrors && statusErr && (
+                    <tr>
+                      <td style={styles.errorRow} colSpan={7}>
+                        <span style={styles.errorText}>
+                          {drug.name}: {statusErr.message}
+                        </span>
+                      </td>
+                    </tr>
                   )}
-                </td>
-
-                {/* hidden: store the drug name in the submitted data */}
-                <input
-                  type="hidden"
-                  value={drug.name}
-                  {...register(`drug_use.${index}.drug_name`)}
-                />
-              </tr>
-            ))}
+                </React.Fragment>
+              );
+            })}
           </tbody>
 
           {/* One “Other information” row spanning full width */}
           <tfoot>
             <tr>
-              <td style={styles.td} colSpan={8}>
+              <td style={styles.td} colSpan={7}>
                 <label style={styles.otherInfoLabel}>
                   Other information (additional drugs, and changes in frequency/pattern of use)
                 </label>
@@ -122,7 +141,8 @@ const styles = {
     marginBottom: 16,
   },
   h2: { marginBottom: 8, color: "#904369" },
-  infoText: { fontSize: 14, marginBottom: 12, lineHeight: 1.4 },
+
+  infoText: { marginTop: 0, marginBottom: 12, lineHeight: 1.35 },
 
   tableWrapper: { overflowX: "auto" },
   table: {
@@ -173,4 +193,12 @@ const styles = {
     fontSize: 14,
     resize: "vertical",
   },
+
+  // error styling for table rows
+  errorRow: {
+    padding: 10,
+    borderBottom: "1px solid #eee",
+    background: "#fff5f5",
+  },
+  errorText: { color: "crimson", fontSize: 12, fontWeight: 600 },
 };

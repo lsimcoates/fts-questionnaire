@@ -10,7 +10,13 @@ const WEEKLY_OPTIONS = [
   "Unsure",
 ];
 
-export default function AlcoholSection({ register, watch, setValue }) {
+export default function AlcoholSection({
+  register,
+  watch,
+  setValue,
+  errors,
+  showErrors,
+}) {
   const consumedAlcohol = watch("alcohol_consumed_last_12_months"); // "Yes" | "No" | ""
   const unsureLastDate = watch("alcohol_last_date_unsure"); // boolean
 
@@ -42,24 +48,36 @@ export default function AlcoholSection({ register, watch, setValue }) {
         <label style={styles.label}>
           Have you consumed any alcohol in the last 12 months?
         </label>
+
         <div style={styles.inline}>
           <label style={styles.radioLabel}>
             <input
               type="radio"
               value="Yes"
-              {...register("alcohol_consumed_last_12_months")}
+              {...register("alcohol_consumed_last_12_months", {
+                required: "Please select an option",
+              })}
             />
             Yes
           </label>
+
           <label style={styles.radioLabel}>
             <input
               type="radio"
               value="No"
-              {...register("alcohol_consumed_last_12_months")}
+              {...register("alcohol_consumed_last_12_months", {
+                required: "Please select an option",
+              })}
             />
             No
           </label>
         </div>
+
+        {showErrors && errors?.alcohol_consumed_last_12_months && (
+          <p style={styles.error}>
+            {errors.alcohol_consumed_last_12_months.message}
+          </p>
+        )}
       </div>
 
       {/* Last consumed date + unsure */}
@@ -90,7 +108,8 @@ export default function AlcoholSection({ register, watch, setValue }) {
       {/* Weekly consumption (ALL CHECKBOXES) */}
       <div style={styles.field}>
         <label style={styles.label}>
-          Please tick which most closely matches your average weekly alcohol consumption:
+          Please tick which most closely matches your average weekly alcohol
+          consumption:
         </label>
 
         <div style={styles.checkboxList}>
@@ -100,12 +119,18 @@ export default function AlcoholSection({ register, watch, setValue }) {
                 type="checkbox"
                 value={label}
                 disabled={disabled}
-                {...register("alcohol_weekly_options")}
+                {...register("alcohol_weekly_options", {
+                  required: "Please select at least one option",
+                })}
               />
               {label}
             </label>
           ))}
         </div>
+
+        {showErrors && errors?.alcohol_weekly_options && (
+          <p style={styles.error}>{errors.alcohol_weekly_options.message}</p>
+        )}
       </div>
 
       {/* Other info */}
@@ -157,4 +182,6 @@ const styles = {
     fontSize: 14,
     resize: "vertical",
   },
+
+  error: { color: "crimson", marginTop: 4, marginBottom: 0, fontSize: 12 },
 };

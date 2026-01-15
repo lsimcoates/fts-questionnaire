@@ -1,0 +1,391 @@
+{
+  "id": "973455199d1d48ab85d2af6e0e36df08",
+  "case_number": "6",
+  "version": 3,
+  "status": "draft",
+  "created_at": "2026-01-15T15:16:06.611453",
+  "updated_at": "2026-01-15T15:37:01.201972",
+  "submitted_at": null,
+  "redo_of_id": null,
+  "data": {
+    "case_number": "6",
+    "consent": "Yes",
+    "client_name": "j",
+    "collector_name": "",
+    "dob": "",
+    "sex_at_birth": "",
+    "natural_hair_colour": "",
+    "blood_borne_infections": "",
+    "occupation": "",
+    "drug_use": [
+      {
+        "status": null,
+        "date_of_last_use": "",
+        "unsure_date": false,
+        "level_of_use": "",
+        "prescribed": false,
+        "drug_name": "Cannabis"
+      },
+      {
+        "status": null,
+        "date_of_last_use": "",
+        "unsure_date": false,
+        "level_of_use": "",
+        "drug_name": "Cocaine"
+      },
+      {
+        "status": null,
+        "date_of_last_use": "",
+        "unsure_date": false,
+        "level_of_use": "",
+        "drug_name": "Crack Cocaine"
+      },
+      {
+        "status": null,
+        "date_of_last_use": "",
+        "unsure_date": false,
+        "level_of_use": "",
+        "drug_name": "MDMA"
+      },
+      {
+        "status": null,
+        "date_of_last_use": "",
+        "unsure_date": false,
+        "level_of_use": "",
+        "prescribed": false,
+        "drug_name": "Amphetamine (including certain medications e.g. Elvanse, Lisdexamphetamine/Dexamphetamine)"
+      },
+      {
+        "status": null,
+        "date_of_last_use": "",
+        "unsure_date": false,
+        "level_of_use": "",
+        "drug_name": "Methamphetamine"
+      },
+      {
+        "status": null,
+        "date_of_last_use": "",
+        "unsure_date": false,
+        "level_of_use": "",
+        "prescribed": false,
+        "drug_name": "Ketamine"
+      },
+      {
+        "status": null,
+        "date_of_last_use": "",
+        "unsure_date": false,
+        "level_of_use": "",
+        "prescribed": false,
+        "drug_name": "Heroin (Diamorphine - pharmaceutical grade heroin)"
+      },
+      {
+        "status": null,
+        "date_of_last_use": "",
+        "unsure_date": false,
+        "level_of_use": "",
+        "prescribed": false,
+        "drug_name": "Codeine"
+      },
+      {
+        "status": null,
+        "date_of_last_use": "",
+        "unsure_date": false,
+        "level_of_use": "",
+        "prescribed": false,
+        "drug_name": "Dihydrocodeine"
+      },
+      {
+        "status": null,
+        "date_of_last_use": "",
+        "unsure_date": false,
+        "level_of_use": "",
+        "prescribed": false,
+        "drug_name": "Morphine"
+      },
+      {
+        "status": null,
+        "date_of_last_use": "",
+        "unsure_date": false,
+        "level_of_use": "",
+        "prescribed": false,
+        "drug_name": "Oxycodone (including oxymorphone)"
+      },
+      {
+        "status": null,
+        "date_of_last_use": "",
+        "unsure_date": false,
+        "level_of_use": "",
+        "prescribed": false,
+        "drug_name": "Diazepam (including nordiazepam)"
+      },
+      {
+        "status": null,
+        "date_of_last_use": "",
+        "unsure_date": false,
+        "level_of_use": "",
+        "prescribed": false,
+        "drug_name": "Other Benzodiazepines (please specify below)"
+      },
+      {
+        "status": null,
+        "date_of_last_use": "",
+        "unsure_date": false,
+        "level_of_use": "",
+        "prescribed": false,
+        "drug_name": "Amitriptyline"
+      },
+      {
+        "status": null,
+        "date_of_last_use": "",
+        "unsure_date": false,
+        "level_of_use": "",
+        "prescribed": false,
+        "drug_name": "Pregabalin"
+      },
+      {
+        "status": null,
+        "date_of_last_use": "",
+        "unsure_date": false,
+        "level_of_use": "",
+        "prescribed": false,
+        "drug_name": "Gabapentin"
+      },
+      {
+        "status": null,
+        "date_of_last_use": "",
+        "unsure_date": false,
+        "level_of_use": "",
+        "prescribed": false,
+        "drug_name": "Buprenorphine"
+      },
+      {
+        "status": null,
+        "date_of_last_use": "",
+        "unsure_date": false,
+        "level_of_use": "",
+        "prescribed": false,
+        "drug_name": "Methadone"
+      },
+      {
+        "status": null,
+        "date_of_last_use": "",
+        "unsure_date": false,
+        "level_of_use": "",
+        "prescribed": false,
+        "drug_name": "Tramadol"
+      }
+    ],
+    "drug_use_other_info": "",
+    "drug_exposure": [
+      {
+        "status": null,
+        "date_of_last_exposure": "",
+        "unsure_date": false,
+        "level_of_exposure": "",
+        "type_of_exposure": false,
+        "drug_name": "Cannabis"
+      },
+      {
+        "status": null,
+        "date_of_last_exposure": "",
+        "unsure_date": false,
+        "level_of_exposure": "",
+        "type_of_exposure": false,
+        "drug_name": "Cocaine"
+      },
+      {
+        "status": null,
+        "date_of_last_exposure": "",
+        "unsure_date": false,
+        "level_of_exposure": "",
+        "type_of_exposure": false,
+        "drug_name": "Crack Cocaine"
+      },
+      {
+        "status": null,
+        "date_of_last_exposure": "",
+        "unsure_date": false,
+        "level_of_exposure": "",
+        "type_of_exposure": false,
+        "drug_name": "MDMA"
+      },
+      {
+        "status": null,
+        "date_of_last_exposure": "",
+        "unsure_date": false,
+        "level_of_exposure": "",
+        "type_of_exposure": false,
+        "drug_name": "Amphetamine"
+      },
+      {
+        "status": null,
+        "date_of_last_exposure": "",
+        "unsure_date": false,
+        "level_of_exposure": "",
+        "type_of_exposure": false,
+        "drug_name": "Methamphetamine"
+      },
+      {
+        "status": null,
+        "date_of_last_exposure": "",
+        "unsure_date": false,
+        "level_of_exposure": "",
+        "type_of_exposure": false,
+        "drug_name": "Ketamine"
+      },
+      {
+        "status": null,
+        "date_of_last_exposure": "",
+        "unsure_date": false,
+        "level_of_exposure": "",
+        "type_of_exposure": false,
+        "drug_name": "Heroin"
+      },
+      {
+        "status": null,
+        "date_of_last_exposure": "",
+        "unsure_date": false,
+        "level_of_exposure": "",
+        "type_of_exposure": false,
+        "drug_name": "Codeine"
+      },
+      {
+        "status": null,
+        "date_of_last_exposure": "",
+        "unsure_date": false,
+        "level_of_exposure": "",
+        "type_of_exposure": false,
+        "drug_name": "Dihydrocodeine"
+      },
+      {
+        "status": null,
+        "date_of_last_exposure": "",
+        "unsure_date": false,
+        "level_of_exposure": "",
+        "type_of_exposure": false,
+        "drug_name": "Morphine"
+      },
+      {
+        "status": null,
+        "date_of_last_exposure": "",
+        "unsure_date": false,
+        "level_of_exposure": "",
+        "type_of_exposure": false,
+        "drug_name": "Oxycodone (including oxymorphone)"
+      },
+      {
+        "status": null,
+        "date_of_last_exposure": "",
+        "unsure_date": false,
+        "level_of_exposure": "",
+        "type_of_exposure": false,
+        "drug_name": "Diazepam (including nordiazepam)"
+      },
+      {
+        "status": null,
+        "date_of_last_exposure": "",
+        "unsure_date": false,
+        "level_of_exposure": "",
+        "type_of_exposure": false,
+        "drug_name": "Other Benzodiazepines (please specify below)"
+      },
+      {
+        "status": null,
+        "date_of_last_exposure": "",
+        "unsure_date": false,
+        "level_of_exposure": "",
+        "type_of_exposure": false,
+        "drug_name": "Amitriptyline"
+      },
+      {
+        "status": null,
+        "date_of_last_exposure": "",
+        "unsure_date": false,
+        "level_of_exposure": "",
+        "type_of_exposure": false,
+        "drug_name": "Pregabalin"
+      },
+      {
+        "status": null,
+        "date_of_last_exposure": "",
+        "unsure_date": false,
+        "level_of_exposure": "",
+        "type_of_exposure": false,
+        "drug_name": "Gabapentin"
+      },
+      {
+        "status": null,
+        "date_of_last_exposure": "",
+        "unsure_date": false,
+        "level_of_exposure": "",
+        "type_of_exposure": false,
+        "drug_name": "Buprenorphine"
+      },
+      {
+        "status": null,
+        "date_of_last_exposure": "",
+        "unsure_date": false,
+        "level_of_exposure": "",
+        "type_of_exposure": false,
+        "drug_name": "Methadone"
+      },
+      {
+        "status": null,
+        "date_of_last_exposure": "",
+        "unsure_date": false,
+        "level_of_exposure": "",
+        "type_of_exposure": false,
+        "drug_name": "Tramadol"
+      }
+    ],
+    "drug_exposure_other_info": "",
+    "has_other_medications": null,
+    "alcohol_consumed_last_12_months": null,
+    "alcohol_last_consumed_date": "",
+    "alcohol_last_date_unsure": false,
+    "alcohol_weekly_options": false,
+    "alcohol_other_info": "",
+    "hair_last_cut_date": "",
+    "hair_last_cut_unsure": false,
+    "hair_removed_body_hair_last_12_months": null,
+    "pregnant_last_12_months": "No",
+    "pregnancy_due_or_birth_date": "",
+    "pregnancy_due_date_unsure": false,
+    "pregnancy_weeks": "",
+    "hair_wash_frequency": "",
+    "nails_contact_bleach": "",
+    "hair_dyed_bleached": null,
+    "hair_thermal_applications": null,
+    "frequent_swimming": null,
+    "frequent_sunbeds": null,
+    "frequent_sprays_on_sites": null,
+    "client_print_name": "",
+    "client_signature_date": "",
+    "collector_print_name": "",
+    "collector_signature_date": "",
+    "hair_last_dyed_bleached_date": "",
+    "hair_removed_sites_arms": false,
+    "hair_removed_sites_legs": false,
+    "hair_removed_sites_chest": false,
+    "hair_removed_sites_back": false,
+    "hair_removed_sites_arms_last_shaved_date": "",
+    "hair_removed_sites_arms_last_shaved_unsure": false,
+    "hair_removed_sites_legs_last_shaved_date": "",
+    "hair_removed_sites_legs_last_shaved_unsure": false,
+    "hair_removed_sites_chest_last_shaved_date": "",
+    "hair_removed_sites_chest_last_shaved_unsure": false,
+    "hair_removed_sites_back_last_shaved_date": "",
+    "hair_removed_sites_back_last_shaved_unsure": false,
+    "hair_thermal_frequency": "",
+    "frequent_swimming_frequency": "",
+    "frequent_sunbeds_frequency": "",
+    "frequent_sprays_frequency": "",
+    "sprays_sites_scalp": false,
+    "sprays_sites_arms": false,
+    "sprays_sites_chest": false,
+    "sprays_sites_legs": false,
+    "sprays_sites_back": false,
+    "client_signature_png": "data:image/png;base64,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",
+    "collector_signature_png": ""
+  }
+}

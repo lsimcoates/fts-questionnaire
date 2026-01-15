@@ -11,13 +11,15 @@ const EXPOSURE_OPTIONS = [
   "Unsure",
 ];
 
-export default function DrugExposureTable({ register }) {
+export default function DrugExposureTable({ register, errors, showErrors }) {
   return (
     <section style={styles.section}>
       <h2 style={styles.h2}>Passive Exposure to drugs</h2>
+
       <p style={styles.infoText}>
         <strong>Drug Exposure:</strong> Please provide details of your drug exposure to the best of your knowledge in the table below. If there has been any fluctuations or changes in pattern of drug exposure please clarify these in the 'Other information' box at the end of the table.
       </p>
+
       <div style={styles.tableWrapper}>
         <table style={styles.table}>
           <thead>
@@ -35,74 +37,93 @@ export default function DrugExposureTable({ register }) {
           </thead>
 
           <tbody>
-            {drugExposureRows.map((drugName, index) => (
-              <tr key={drugName}>
-                <td style={styles.td}>{drugName}</td>
+            {drugExposureRows.map((drugName, index) => {
+              const statusErr = errors?.drug_exposure?.[index]?.status;
 
-                {["exposed", "none"].map((status) => (
-                  <td key={status} style={styles.tdCenter}>
-                    <input
-                      type="radio"
-                      value={status}
-                      {...register(`drug_exposure.${index}.status`)}
-                    />
-                  </td>
-                ))}
+              return (
+                <React.Fragment key={drugName}>
+                  <tr>
+                    <td style={styles.td}>{drugName}</td>
 
-                <td style={styles.td}>
-                  <input
-                    style={styles.input}
-                    type="date"
-                    max={todayISO}
-                    {...register(`drug_exposure.${index}.date_of_last_exposure`)}
-                    />
-                </td>
-
-                <td style={styles.tdCenter}>
-                  <input
-                    type="checkbox"
-                    {...register(`drug_exposure.${index}.unsure_date`)}
-                  />
-                </td>
-
-                <td style={styles.td}>
-                  <select
-                    style={styles.select}
-                    {...register(`drug_exposure.${index}.level_of_exposure`)}
-                  >
-                    <option value="">Choose</option>
-                    <option value="Single Occassion">Single Occassion</option>
-                    <option value="Less than monthly">Less than monthly</option>
-                    <option value="Monthly">Monthly</option>
-                    <option value="Weekly">Weekly</option>
-                    <option value="Daily">Daily</option>
-                    <option value="Unsure">Unsure</option>
-                  </select>
-                </td>
-
-                <td style={{ ...styles.td, ...styles.exposureCol }}>
-                  <div style={styles.checkboxList}>
-                    {EXPOSURE_OPTIONS.map((opt) => (
-                      <label key={opt} style={styles.checkboxLabel}>
+                    {["exposed", "none"].map((status) => (
+                      <td key={status} style={styles.tdCenter}>
                         <input
-                          type="checkbox"
-                          value={opt}
-                          {...register(`drug_exposure.${index}.type_of_exposure`)}
+                          type="radio"
+                          value={status}
+                          {...register(`drug_exposure.${index}.status`, {
+                            required: "Please select Exposed or None",
+                          })}
                         />
-                        <span>{opt}</span>
-                      </label>
+                      </td>
                     ))}
-                  </div>
-                </td>
 
-                {/* hidden: store drug name in submitted data */}
-                <input
-                  type="hidden"
-                  value={drugName}
-                  {...register(`drug_exposure.${index}.drug_name`)}
-                />
-              </tr>
-            ))}
+                    <td style={styles.td}>
+                      <input
+                        style={styles.input}
+                        type="date"
+                        max={todayISO}
+                        {...register(`drug_exposure.${index}.date_of_last_exposure`)}
+                      />
+                    </td>
+
+                    <td style={styles.tdCenter}>
+                      <input
+                        type="checkbox"
+                        {...register(`drug_exposure.${index}.unsure_date`)}
+                      />
+                    </td>
+
+                    <td style={styles.td}>
+                      <select
+                        style={styles.select}
+                        {...register(`drug_exposure.${index}.level_of_exposure`)}
+                      >
+                        <option value="">Choose</option>
+                        <option value="Single Occassion">Single Occassion</option>
+                        <option value="Less than monthly">Less than monthly</option>
+                        <option value="Monthly">Monthly</option>
+                        <option value="Weekly">Weekly</option>
+                        <option value="Daily">Daily</option>
+                        <option value="Unsure">Unsure</option>
+                      </select>
+                    </td>
+
+                    <td style={{ ...styles.td, ...styles.exposureCol }}>
+                      <div style={styles.checkboxList}>
+                        {EXPOSURE_OPTIONS.map((opt) => (
+                          <label key={opt} style={styles.checkboxLabel}>
+                            <input
+                              type="checkbox"
+                              value={opt}
+                              {...register(`drug_exposure.${index}.type_of_exposure`)}
+                            />
+                            <span>{opt}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </td>
+
+                    {/* hidden: store drug name in submitted data */}
+                    <input
+                      type="hidden"
+                      value={drugName}
+                      {...register(`drug_exposure.${index}.drug_name`)}
+                    />
+                  </tr>
+
+                  {/* Row-level error line (only appears after submit attempt) */}
+                  {showErrors && statusErr && (
+                    <tr>
+                      <td style={styles.errorRow} colSpan={7}>
+                        <span style={styles.errorText}>
+                          {drugName}: {statusErr.message}
+                        </span>
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
+              );
+            })}
           </tbody>
 
           {/* One “Other information” row spanning full width */}
@@ -135,6 +156,8 @@ const styles = {
     marginBottom: 16,
   },
   h2: { marginBottom: 12, color: "#904369" },
+
+  infoText: { marginTop: 0, marginBottom: 12, lineHeight: 1.35 },
 
   tableWrapper: { overflowX: "auto" },
   table: {
@@ -177,7 +200,7 @@ const styles = {
   select: { padding: 6, borderRadius: 6, border: "1px solid #ccc", width: "100%" },
 
   exposureColHeader: {
-    minWidth: 320, // forces more space for the checkbox list
+    minWidth: 320,
     whiteSpace: "normal",
   },
   exposureCol: {
@@ -205,4 +228,12 @@ const styles = {
     fontSize: 14,
     resize: "vertical",
   },
+
+  // error styling for table rows
+  errorRow: {
+    padding: 10,
+    borderBottom: "1px solid #eee",
+    background: "#fff5f5",
+  },
+  errorText: { color: "crimson", fontSize: 12, fontWeight: 600 },
 };

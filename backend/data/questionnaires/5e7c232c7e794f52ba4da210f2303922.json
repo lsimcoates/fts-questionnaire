@@ -1,0 +1,397 @@
+{
+  "id": "5e7c232c7e794f52ba4da210f2303922",
+  "case_number": "7",
+  "version": 3,
+  "status": "draft",
+  "created_at": "2026-01-15T14:31:16.233552",
+  "updated_at": "2026-01-15T14:59:34.319325",
+  "submitted_at": null,
+  "redo_of_id": null,
+  "data": {
+    "consent": "Yes",
+    "client_name": "Lewis",
+    "collector_name": "Dave",
+    "case_number": "7",
+    "dob": "2026-01-15",
+    "sex_at_birth": "Female",
+    "natural_hair_colour": "Black",
+    "blood_borne_infections": "No",
+    "occupation": "Forensic Scientist",
+    "drug_use": [
+      {
+        "status": "Not Used",
+        "date_of_last_use": "",
+        "unsure_date": false,
+        "level_of_use": "",
+        "prescribed": false,
+        "drug_name": "Cannabis"
+      },
+      {
+        "status": "Not Used",
+        "date_of_last_use": "",
+        "unsure_date": false,
+        "level_of_use": "",
+        "drug_name": "Cocaine"
+      },
+      {
+        "status": "Not Used",
+        "date_of_last_use": "",
+        "unsure_date": false,
+        "level_of_use": "",
+        "drug_name": "Crack Cocaine"
+      },
+      {
+        "status": "Not Used",
+        "date_of_last_use": "",
+        "unsure_date": false,
+        "level_of_use": "",
+        "drug_name": "MDMA"
+      },
+      {
+        "status": "Not Used",
+        "date_of_last_use": "",
+        "unsure_date": false,
+        "level_of_use": "",
+        "prescribed": false,
+        "drug_name": "Amphetamine (including certain medications e.g. Elvanse, Lisdexamphetamine/Dexamphetamine)"
+      },
+      {
+        "status": "Not Used",
+        "date_of_last_use": "",
+        "unsure_date": false,
+        "level_of_use": "",
+        "drug_name": "Methamphetamine"
+      },
+      {
+        "status": "Not Used",
+        "date_of_last_use": "",
+        "unsure_date": false,
+        "level_of_use": "",
+        "prescribed": false,
+        "drug_name": "Ketamine"
+      },
+      {
+        "status": "Not Used",
+        "date_of_last_use": "",
+        "unsure_date": false,
+        "level_of_use": "",
+        "prescribed": false,
+        "drug_name": "Heroin (Diamorphine - pharmaceutical grade heroin)"
+      },
+      {
+        "status": "Not Used",
+        "date_of_last_use": "",
+        "unsure_date": false,
+        "level_of_use": "",
+        "prescribed": false,
+        "drug_name": "Codeine"
+      },
+      {
+        "status": "Not Used",
+        "date_of_last_use": "",
+        "unsure_date": false,
+        "level_of_use": "",
+        "prescribed": false,
+        "drug_name": "Dihydrocodeine"
+      },
+      {
+        "status": "Not Used",
+        "date_of_last_use": "",
+        "unsure_date": false,
+        "level_of_use": "",
+        "prescribed": false,
+        "drug_name": "Morphine"
+      },
+      {
+        "status": "Not Used",
+        "date_of_last_use": "",
+        "unsure_date": false,
+        "level_of_use": "",
+        "prescribed": false,
+        "drug_name": "Oxycodone (including oxymorphone)"
+      },
+      {
+        "status": "Not Used",
+        "date_of_last_use": "",
+        "unsure_date": false,
+        "level_of_use": "",
+        "prescribed": false,
+        "drug_name": "Diazepam (including nordiazepam)"
+      },
+      {
+        "status": "Not Used",
+        "date_of_last_use": "",
+        "unsure_date": false,
+        "level_of_use": "",
+        "prescribed": false,
+        "drug_name": "Other Benzodiazepines (please specify below)"
+      },
+      {
+        "status": "Not Used",
+        "date_of_last_use": "",
+        "unsure_date": false,
+        "level_of_use": "",
+        "prescribed": false,
+        "drug_name": "Amitriptyline"
+      },
+      {
+        "status": "Not Used",
+        "date_of_last_use": "",
+        "unsure_date": false,
+        "level_of_use": "",
+        "prescribed": false,
+        "drug_name": "Pregabalin"
+      },
+      {
+        "status": "Not Used",
+        "date_of_last_use": "",
+        "unsure_date": false,
+        "level_of_use": "",
+        "prescribed": false,
+        "drug_name": "Gabapentin"
+      },
+      {
+        "status": "Not Used",
+        "date_of_last_use": "",
+        "unsure_date": false,
+        "level_of_use": "",
+        "prescribed": false,
+        "drug_name": "Buprenorphine"
+      },
+      {
+        "status": "Not Used",
+        "date_of_last_use": "",
+        "unsure_date": false,
+        "level_of_use": "",
+        "prescribed": false,
+        "drug_name": "Methadone"
+      },
+      {
+        "status": "Not Used",
+        "date_of_last_use": "",
+        "unsure_date": false,
+        "level_of_use": "",
+        "prescribed": false,
+        "drug_name": "Tramadol"
+      }
+    ],
+    "drug_exposure": [
+      {
+        "status": "none",
+        "date_of_last_exposure": "",
+        "unsure_date": false,
+        "level_of_exposure": "",
+        "type_of_exposure": false,
+        "drug_name": "Cannabis"
+      },
+      {
+        "status": "none",
+        "date_of_last_exposure": "",
+        "unsure_date": false,
+        "level_of_exposure": "",
+        "type_of_exposure": false,
+        "drug_name": "Cocaine"
+      },
+      {
+        "status": "none",
+        "date_of_last_exposure": "",
+        "unsure_date": false,
+        "level_of_exposure": "",
+        "type_of_exposure": false,
+        "drug_name": "Crack Cocaine"
+      },
+      {
+        "status": "none",
+        "date_of_last_exposure": "",
+        "unsure_date": false,
+        "level_of_exposure": "",
+        "type_of_exposure": false,
+        "drug_name": "MDMA"
+      },
+      {
+        "status": "none",
+        "date_of_last_exposure": "",
+        "unsure_date": false,
+        "level_of_exposure": "",
+        "type_of_exposure": false,
+        "drug_name": "Amphetamine"
+      },
+      {
+        "status": "none",
+        "date_of_last_exposure": "",
+        "unsure_date": false,
+        "level_of_exposure": "",
+        "type_of_exposure": false,
+        "drug_name": "Methamphetamine"
+      },
+      {
+        "status": "none",
+        "date_of_last_exposure": "",
+        "unsure_date": false,
+        "level_of_exposure": "",
+        "type_of_exposure": false,
+        "drug_name": "Ketamine"
+      },
+      {
+        "status": "none",
+        "date_of_last_exposure": "",
+        "unsure_date": false,
+        "level_of_exposure": "",
+        "type_of_exposure": false,
+        "drug_name": "Heroin"
+      },
+      {
+        "status": "none",
+        "date_of_last_exposure": "",
+        "unsure_date": false,
+        "level_of_exposure": "",
+        "type_of_exposure": false,
+        "drug_name": "Codeine"
+      },
+      {
+        "status": "none",
+        "date_of_last_exposure": "",
+        "unsure_date": false,
+        "level_of_exposure": "",
+        "type_of_exposure": false,
+        "drug_name": "Dihydrocodeine"
+      },
+      {
+        "status": "none",
+        "date_of_last_exposure": "",
+        "unsure_date": false,
+        "level_of_exposure": "",
+        "type_of_exposure": false,
+        "drug_name": "Morphine"
+      },
+      {
+        "status": "none",
+        "date_of_last_exposure": "",
+        "unsure_date": false,
+        "level_of_exposure": "",
+        "type_of_exposure": false,
+        "drug_name": "Oxycodone (including oxymorphone)"
+      },
+      {
+        "status": "none",
+        "date_of_last_exposure": "",
+        "unsure_date": false,
+        "level_of_exposure": "",
+        "type_of_exposure": false,
+        "drug_name": "Diazepam (including nordiazepam)"
+      },
+      {
+        "status": "none",
+        "date_of_last_exposure": "",
+        "unsure_date": false,
+        "level_of_exposure": "",
+        "type_of_exposure": false,
+        "drug_name": "Other Benzodiazepines (please specify below)"
+      },
+      {
+        "status": "none",
+        "date_of_last_exposure": "",
+        "unsure_date": false,
+        "level_of_exposure": "",
+        "type_of_exposure": false,
+        "drug_name": "Amitriptyline"
+      },
+      {
+        "status": "none",
+        "date_of_last_exposure": "",
+        "unsure_date": false,
+        "level_of_exposure": "",
+        "type_of_exposure": false,
+        "drug_name": "Pregabalin"
+      },
+      {
+        "status": "none",
+        "date_of_last_exposure": "",
+        "unsure_date": false,
+        "level_of_exposure": "",
+        "type_of_exposure": false,
+        "drug_name": "Gabapentin"
+      },
+      {
+        "status": "none",
+        "date_of_last_exposure": "",
+        "unsure_date": false,
+        "level_of_exposure": "",
+        "type_of_exposure": false,
+        "drug_name": "Buprenorphine"
+      },
+      {
+        "status": "none",
+        "date_of_last_exposure": "",
+        "unsure_date": false,
+        "level_of_exposure": "",
+        "type_of_exposure": false,
+        "drug_name": "Methadone"
+      },
+      {
+        "status": "none",
+        "date_of_last_exposure": "",
+        "unsure_date": false,
+        "level_of_exposure": "",
+        "type_of_exposure": false,
+        "drug_name": "Tramadol"
+      }
+    ],
+    "drug_use_other_info": "",
+    "drug_exposure_other_info": "",
+    "has_other_medications": "No",
+    "other_medications_details": "",
+    "alcohol_consumed_last_12_months": "Yes",
+    "alcohol_last_consumed_date": "",
+    "alcohol_last_date_unsure": false,
+    "alcohol_weekly_options": [
+      "0\u201315 units (<6 pints/half a 70cl bottle of spirit)"
+    ],
+    "alcohol_other_info": "",
+    "hair_last_cut_date": "",
+    "hair_last_cut_unsure": false,
+    "hair_removed_body_hair_last_12_months": "Yes",
+    "hair_removed_sites_arms": false,
+    "hair_removed_sites_arms_last_shaved_date": "",
+    "hair_removed_sites_arms_last_shaved_unsure": false,
+    "hair_removed_sites_legs": false,
+    "hair_removed_sites_legs_last_shaved_date": "",
+    "hair_removed_sites_legs_last_shaved_unsure": false,
+    "hair_removed_sites_chest": false,
+    "hair_removed_sites_chest_last_shaved_date": "",
+    "hair_removed_sites_chest_last_shaved_unsure": false,
+    "hair_removed_sites_back": false,
+    "hair_removed_sites_back_last_shaved_date": "",
+    "hair_removed_sites_back_last_shaved_unsure": false,
+    "pregnant_last_12_months": "Yes",
+    "pregnancy_due_or_birth_date": "",
+    "pregnancy_due_date_unsure": false,
+    "pregnancy_weeks": "44",
+    "hair_dyed_bleached": "No",
+    "hair_last_dyed_bleached_date": "",
+    "hair_thermal_applications": "Yes",
+    "hair_wash_frequency": "",
+    "nails_contact_bleach": "",
+    "frequent_swimming": "No",
+    "frequent_sunbeds": "Yes",
+    "frequent_sprays_on_sites": "No",
+    "hair_thermal_frequency": "",
+    "frequent_swimming_frequency": "",
+    "frequent_sunbeds_frequency": "",
+    "frequent_sprays_frequency": "",
+    "sprays_sites_scalp": false,
+    "sprays_sites_arms": false,
+    "sprays_sites_chest": false,
+    "sprays_sites_legs": false,
+    "sprays_sites_back": false,
+    "client_print_name": "",
+    "client_signature_date": "",
+    "client_signature_png": "",
+    "collector_print_name": "",
+    "collector_signature_date": "",
+    "collector_signature_png": "",
+    "refusal_print_name": "",
+    "refusal_signature_date": "",
+    "refusal_signature_png": ""
+  }
+}

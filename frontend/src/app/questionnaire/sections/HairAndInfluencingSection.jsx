@@ -3,7 +3,13 @@ import { todayISO } from "../config/dateUtils";
 
 const FREQ_OPTIONS = ["Daily", "Weekly", "Monthly", "Less than monthly"];
 
-export default function HairAndInfluencingSection({ register, watch, setValue }) {
+export default function HairAndInfluencingSection({
+  register,
+  watch,
+  setValue,
+  errors,
+  showErrors,
+}) {
   // scalp hair cut
   const cutUnsure = watch("hair_last_cut_unsure");
 
@@ -29,18 +35,18 @@ export default function HairAndInfluencingSection({ register, watch, setValue })
   const chestUnsure = watch("hair_removed_sites_chest_last_shaved_unsure");
   const backUnsure = watch("hair_removed_sites_back_last_shaved_unsure");
 
-  // ✅ NEW: influencing parent questions
+  // influencing parent questions
   const thermal = watch("hair_thermal_applications"); // "Yes"/"No"
   const swimming = watch("frequent_swimming"); // "Yes"/"No"
   const sunbeds = watch("frequent_sunbeds"); // "Yes"/"No"
   const sprays = watch("frequent_sprays_on_sites"); // "Yes"/"No"
 
-  // ✅ NEW: sprays sites
-  const spraysScalp = watch("sprays_sites_scalp");
-  const spraysArms = watch("sprays_sites_arms");
-  const spraysChest = watch("sprays_sites_chest");
-  const spraysLegs = watch("sprays_sites_legs");
-  const spraysBack = watch("sprays_sites_back");
+  // sprays sites (watched so UI reacts; not otherwise used)
+  watch("sprays_sites_scalp");
+  watch("sprays_sites_arms");
+  watch("sprays_sites_chest");
+  watch("sprays_sites_legs");
+  watch("sprays_sites_back");
 
   // clear scalp cut date if unsure
   useEffect(() => {
@@ -54,7 +60,7 @@ export default function HairAndInfluencingSection({ register, watch, setValue })
 
   // if not pregnant, clear pregnancy follow-ups
   useEffect(() => {
-    if (pregnant === "No") {
+    if (pregnant !== "Yes") {
       setValue("pregnancy_due_or_birth_date", "");
       setValue("pregnancy_due_date_unsure", false);
       setValue("pregnancy_weeks", "");
@@ -127,32 +133,25 @@ export default function HairAndInfluencingSection({ register, watch, setValue })
     }
   }, [backSelected, backUnsure, setValue]);
 
-  // ✅ NEW: clear thermal frequency if "No"
+  // clear thermal frequency if "No"
   useEffect(() => {
-    if (thermal !== "Yes") {
-      setValue("hair_thermal_frequency", "");
-    }
+    if (thermal !== "Yes") setValue("hair_thermal_frequency", "");
   }, [thermal, setValue]);
 
-  // ✅ NEW: clear swimming frequency if "No"
+  // clear swimming frequency if "No"
   useEffect(() => {
-    if (swimming !== "Yes") {
-      setValue("frequent_swimming_frequency", "");
-    }
+    if (swimming !== "Yes") setValue("frequent_swimming_frequency", "");
   }, [swimming, setValue]);
 
-  // ✅ NEW: clear sunbeds frequency if "No"
+  // clear sunbeds frequency if "No"
   useEffect(() => {
-    if (sunbeds !== "Yes") {
-      setValue("frequent_sunbeds_frequency", "");
-    }
+    if (sunbeds !== "Yes") setValue("frequent_sunbeds_frequency", "");
   }, [sunbeds, setValue]);
 
-  // ✅ NEW: sprays follow-ups (frequency + sites) clearing if "No"
+  // sprays follow-ups clearing if "No"
   useEffect(() => {
     if (sprays !== "Yes") {
       setValue("frequent_sprays_frequency", "");
-
       setValue("sprays_sites_scalp", false);
       setValue("sprays_sites_arms", false);
       setValue("sprays_sites_chest", false);
@@ -163,9 +162,18 @@ export default function HairAndInfluencingSection({ register, watch, setValue })
 
   const pregnancyDisabled = pregnant !== "Yes";
 
+  // ✅ conditional rules
+  const weeksRules = pregnant === "Yes" ? { required: "Please select an option" } : undefined;
+
+  // Optional: make due/birth date required only if pregnant === "Yes" and not unsure
+  // const dueDateRules =
+  //   pregnant === "Yes" && !dueUnsure ? { required: "Please provide a date or tick unsure" } : undefined;
+
   return (
     <section style={styles.section}>
-      <h2 style={styles.h2}>Hair Cutting (within the 12 months prior to sampling)</h2>
+      <h2 style={styles.h2}>
+        Hair Cutting (within the 12 months prior to sampling)
+      </h2>
 
       {/* Last scalp hair cut */}
       <div style={styles.row}>
@@ -192,24 +200,36 @@ export default function HairAndInfluencingSection({ register, watch, setValue })
         <label style={styles.label}>
           Have you shaved/removed any body hair in the last 12 months?
         </label>
+
         <div style={styles.inline}>
           <label style={styles.radioLabel}>
             <input
               type="radio"
               value="Yes"
-              {...register("hair_removed_body_hair_last_12_months")}
+              {...register("hair_removed_body_hair_last_12_months", {
+                required: "Please select an option",
+              })}
             />{" "}
             Yes
           </label>
+
           <label style={styles.radioLabel}>
             <input
               type="radio"
               value="No"
-              {...register("hair_removed_body_hair_last_12_months")}
+              {...register("hair_removed_body_hair_last_12_months", {
+                required: "Please select an option",
+              })}
             />{" "}
             No
           </label>
         </div>
+
+        {showErrors && errors?.hair_removed_body_hair_last_12_months && (
+          <div style={styles.errorText}>
+            {errors.hair_removed_body_hair_last_12_months.message}
+          </div>
+        )}
       </div>
 
       {/* Only show sites if Yes */}
@@ -345,14 +365,33 @@ export default function HairAndInfluencingSection({ register, watch, setValue })
         <label style={styles.label}>
           Are you currently pregnant or have you been pregnant in the 12 months prior sampling?
         </label>
+
         <div style={styles.inline}>
           <label style={styles.radioLabel}>
-            <input type="radio" value="Yes" {...register("pregnant_last_12_months")} /> Yes
+            <input
+              type="radio"
+              value="Yes"
+              {...register("pregnant_last_12_months", {
+                required: "Please select an option",
+              })}
+            />{" "}
+            Yes
           </label>
           <label style={styles.radioLabel}>
-            <input type="radio" value="No" {...register("pregnant_last_12_months")} /> No
+            <input
+              type="radio"
+              value="No"
+              {...register("pregnant_last_12_months", {
+                required: "Please select an option",
+              })}
+            />{" "}
+            No
           </label>
         </div>
+
+        {showErrors && errors?.pregnant_last_12_months && (
+          <div style={styles.errorText}>{errors.pregnant_last_12_months.message}</div>
+        )}
       </div>
 
       {/* Due date / birth date */}
@@ -365,7 +404,13 @@ export default function HairAndInfluencingSection({ register, watch, setValue })
             max={todayISO}
             disabled={pregnancyDisabled || dueUnsure}
             {...register("pregnancy_due_or_birth_date")}
+            // If you want conditional requirement, use:
+            // {...register("pregnancy_due_or_birth_date", dueDateRules)}
           />
+          {/* If you enable dueDateRules, also show its error */}
+          {/* {showErrors && errors?.pregnancy_due_or_birth_date && (
+            <div style={styles.errorText}>{errors.pregnancy_due_or_birth_date.message}</div>
+          )} */}
         </div>
         <div style={styles.unsureWrap}>
           <label style={styles.checkboxLabel}>
@@ -379,12 +424,17 @@ export default function HairAndInfluencingSection({ register, watch, setValue })
         </div>
       </div>
 
-      {/* Weeks pregnant */}
+      {/* Weeks pregnant (required only if pregnant === "Yes") */}
       <div style={styles.field}>
         <label style={styles.label}>
           How many weeks pregnant were you when you gave birth? (if applicable)
         </label>
-        <select style={styles.select} disabled={pregnancyDisabled} {...register("pregnancy_weeks")}>
+
+        <select
+          style={styles.select}
+          disabled={pregnancyDisabled}
+          {...register("pregnancy_weeks", weeksRules)}
+        >
           <option value="">Choose an item</option>
           <option value="Unsure">Unsure</option>
           {Array.from({ length: 45 }, (_, i) => i).reverse().map((w) => (
@@ -393,13 +443,21 @@ export default function HairAndInfluencingSection({ register, watch, setValue })
             </option>
           ))}
         </select>
+
+        {showErrors && errors?.pregnancy_weeks && (
+          <div style={styles.errorText}>{errors.pregnancy_weeks.message}</div>
+        )}
       </div>
 
-      {/* Dyed/bleached */}
+      {/* Dyed/bleached (REQUIRED) */}
       <YesNo
         label="Have you dyed/bleached your hair in the 12 months prior to sampling?"
         name="hair_dyed_bleached"
         register={register}
+        required={true}
+        requiredMessage="Please select an option"
+        errors={errors}
+        showErrors={showErrors}
       />
 
       {/* Follow-up if dyed/bleached */}
@@ -417,14 +475,18 @@ export default function HairAndInfluencingSection({ register, watch, setValue })
         </div>
       )}
 
-      {/* Thermal applications */}
+      {/* Thermal applications (REQUIRED) */}
       <YesNo
         label="Have you used thermal applications (i.e. hair straighteners) on your scalp hair?"
         name="hair_thermal_applications"
         register={register}
+        required={true}
+        requiredMessage="Please select an option"
+        errors={errors}
+        showErrors={showErrors}
       />
 
-      {/* ✅ NEW: thermal frequency */}
+      {/* thermal frequency */}
       {thermal === "Yes" && (
         <div style={styles.field}>
           <label style={styles.label}>How often do you use thermal applications?</label>
@@ -464,14 +526,18 @@ export default function HairAndInfluencingSection({ register, watch, setValue })
         </select>
       </div>
 
-      {/* Swim/hot tubs */}
+      {/* Swim/hot tubs (REQUIRED) */}
       <YesNo
         label="Do you swim in a pool or use hot tubs?"
         name="frequent_swimming"
         register={register}
+        required={true}
+        requiredMessage="Please select an option"
+        errors={errors}
+        showErrors={showErrors}
       />
 
-      {/* ✅ NEW: swimming frequency */}
+      {/* swimming frequency */}
       {swimming === "Yes" && (
         <div style={styles.field}>
           <label style={styles.label}>How often do you swim or use hot tubs?</label>
@@ -486,10 +552,18 @@ export default function HairAndInfluencingSection({ register, watch, setValue })
         </div>
       )}
 
-      {/* Sunbeds */}
-      <YesNo label="Do you use sunbeds?" name="frequent_sunbeds" register={register} />
+      {/* Sunbeds (REQUIRED) */}
+      <YesNo
+        label="Do you use sunbeds?"
+        name="frequent_sunbeds"
+        register={register}
+        required={true}
+        requiredMessage="Please select an option"
+        errors={errors}
+        showErrors={showErrors}
+      />
 
-      {/* ✅ NEW: sunbeds frequency */}
+      {/* sunbeds frequency */}
       {sunbeds === "Yes" && (
         <div style={styles.field}>
           <label style={styles.label}>How often do you use sunbeds?</label>
@@ -504,18 +578,24 @@ export default function HairAndInfluencingSection({ register, watch, setValue })
         </div>
       )}
 
-      {/* Sprays on sample sites */}
+      {/* Sprays on sample sites (REQUIRED) */}
       <YesNo
         label="Have you applied hairspray, perfume/aftershave, deodorant and/or dry shampoo to the sample sites?"
         name="frequent_sprays_on_sites"
         register={register}
+        required={true}
+        requiredMessage="Please select an option"
+        errors={errors}
+        showErrors={showErrors}
       />
 
-      {/* ✅ NEW: sprays follow-ups */}
+      {/* sprays follow-ups */}
       {sprays === "Yes" && (
         <>
           <div style={styles.field}>
-            <label style={styles.label}>How often have you applied these products to the sample sites?</label>
+            <label style={styles.label}>
+              How often have you applied these products to the sample sites?
+            </label>
             <select style={styles.select} {...register("frequent_sprays_frequency")}>
               <option value="">Choose an item</option>
               {FREQ_OPTIONS.map((opt) => (
@@ -557,18 +637,34 @@ export default function HairAndInfluencingSection({ register, watch, setValue })
   );
 }
 
-function YesNo({ label, name, register }) {
+function YesNo({
+  label,
+  name,
+  register,
+  required = false,
+  requiredMessage = "Please select an option",
+  errors,
+  showErrors,
+}) {
+  const rules = required ? { required: requiredMessage } : undefined;
+  const err = errors?.[name];
+
   return (
     <div style={styles.field}>
       <label style={styles.label}>{label}</label>
+
       <div style={styles.inline}>
         <label style={styles.radioLabel}>
-          <input type="radio" value="Yes" {...register(name)} /> Yes
+          <input type="radio" value="Yes" {...register(name, rules)} /> Yes
         </label>
         <label style={styles.radioLabel}>
-          <input type="radio" value="No" {...register(name)} /> No
+          <input type="radio" value="No" {...register(name, rules)} /> No
         </label>
       </div>
+
+      {showErrors && err && (
+        <div style={styles.errorText}>{err.message || requiredMessage}</div>
+      )}
     </div>
   );
 }
@@ -597,4 +693,6 @@ const styles = {
   radioLabel: { display: "flex", gap: 8, alignItems: "center" },
 
   checkboxGrid: { display: "flex", gap: 18, flexWrap: "wrap" },
+
+  errorText: { color: "crimson", fontSize: 12, marginTop: 4 },
 };
