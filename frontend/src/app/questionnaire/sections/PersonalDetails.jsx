@@ -2,7 +2,7 @@ import React from "react";
 import { hairColourOptions, infectionOptions } from "../config/options";
 import { todayISO } from "../config/dateUtils";
 
-export default function PersonalDetails({ register, errors, showErrors }) {
+export default function PersonalDetails({ register, watch, setValue, errors, showErrors }) {
   return (
     <section style={styles.section}>
       <h2 style={styles.h2}>Personal details</h2>
@@ -15,7 +15,7 @@ export default function PersonalDetails({ register, errors, showErrors }) {
             style={styles.input}
             type="text"
             {...register("client_name", { required: "Name is required" })}
-            placeholder="Enter name"
+            placeholder="Enter name (match ID)"
           />
           {errors?.client_name && (
             <p style={styles.error}>{errors.client_name.message}</p>
@@ -149,18 +149,95 @@ export default function PersonalDetails({ register, errors, showErrors }) {
         )}
       </div>
 
-      {/* Occupation */}
+      {/* Ethnicity */}
       <div style={styles.row}>
         <div style={styles.field}>
-          <label style={styles.label}>Occupation</label>
+          <label style={styles.label}>Ethnicity</label>
+
+          <select style={styles.input} {...register("ethnicity")} defaultValue="">
+            <option value="">Select ethnicity</option>
+
+            <optgroup label="Asian or Asian British">
+              <option value="Asian or Asian British - Indian">Indian</option>
+              <option value="Asian or Asian British - Pakistani">Pakistani</option>
+              <option value="Asian or Asian British - Bangladeshi">Bangladeshi</option>
+              <option value="Asian or Asian British - Chinese">Chinese</option>
+              <option value="Asian or Asian British - Any other Asian background">
+                Any other Asian background
+              </option>
+            </optgroup>
+
+            <optgroup label="Black, Black British, Caribbean or African">
+              <option value="Black, Black British, Caribbean or African - Caribbean">
+                Caribbean
+              </option>
+              <option value="Black, Black British, Caribbean or African - African">
+                African
+              </option>
+              <option value="Black, Black British, Caribbean or African - Any other Black, Black British, or Caribbean background">
+                Any other Black, Black British, or Caribbean background
+              </option>
+            </optgroup>
+
+            <optgroup label="Mixed or multiple ethnic groups">
+              <option value="Mixed or multiple ethnic groups - White and Black Caribbean">
+                White and Black Caribbean
+              </option>
+              <option value="Mixed or multiple ethnic groups - White and Black African">
+                White and Black African
+              </option>
+              <option value="Mixed or multiple ethnic groups - White and Asian">
+                White and Asian
+              </option>
+              <option value="Mixed or multiple ethnic groups - Any other Mixed or multiple ethnic background">
+                Any other Mixed or multiple ethnic background
+              </option>
+            </optgroup>
+
+            <optgroup label="White">
+              <option value="White - English, Welsh, Scottish, Northern Irish or British">
+                English, Welsh, Scottish, Northern Irish or British
+              </option>
+              <option value="White - Irish">Irish</option>
+              <option value="White - Gypsy or Irish Traveller">Gypsy or Irish Traveller</option>
+              <option value="White - Roma">Roma</option>
+              <option value="White - Any other White background">Any other White background</option>
+            </optgroup>
+
+            <optgroup label="Other ethnic group">
+              <option value="Other ethnic group - Arab">Arab</option>
+              <option value="Other ethnic group - Any other ethnic group">
+                Any other ethnic group
+              </option>
+            </optgroup>
+    </select>
+
+    {(() => {
+      const eth = watch?.("ethnicity") || "";
+      const needsOther =
+        eth.includes("Any other Asian background") ||
+        eth.includes("Any other Black, Black British, or Caribbean background") ||
+        eth.includes("Any other Mixed or multiple ethnic background") ||
+        eth.includes("Any other White background") ||
+        eth.includes("Any other ethnic group");
+
+      if (!needsOther) return null;
+
+      return (
+        <div style={{ marginTop: 8 }}>
+          <label style={styles.label}>Please specify</label>
           <input
             style={styles.input}
             type="text"
-            {...register("occupation")}
-            placeholder="Enter occupation"
+            {...register("ethnicity_other_detail")}
+            placeholder="Type details"
           />
         </div>
-      </div>
+      );
+    })()}
+  </div>
+</div>
+
     </section>
   );
 }

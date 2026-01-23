@@ -37,7 +37,7 @@ export default function QuestionnairePage() {
       sex_at_birth: "",
       natural_hair_colour: "",
       blood_borne_infections: "",
-      occupation: "",
+      ethnicity: "",
 
       // Drug tables
       drug_use: [],
@@ -260,7 +260,7 @@ export default function QuestionnairePage() {
 
       <form onSubmit={handleSubmit(onSubmit, onInvalid)}>
         {/* Always visible */}
-        <PersonalDetails register={register} errors={errors} showErrors={showErrors} />
+        <PersonalDetails register={register} watch={watch} setValue={setValue} errors={errors} showErrors={showErrors} />
 
         {hasConsent && (
           <>
