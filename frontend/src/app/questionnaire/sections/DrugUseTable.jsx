@@ -21,7 +21,7 @@ export default function DrugUseTable({ register, errors, showErrors }) {
               <th style={styles.th}>Date of last use</th>
               <th style={styles.thCenter}>Unsure</th>
               <th style={styles.th}>Level of use</th>
-              <th style={styles.thCenter}>Prescribed</th>
+              <th style={styles.thCenter}>Prescribed to you</th>
             </tr>
           </thead>
 

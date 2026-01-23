@@ -365,8 +365,13 @@
 
       <div class="pd-item">
         <div class="pd-line">
-          <span class="pd-label">Occupation:</span>
-          <span class="pd-value">{{ show(d.occupation) }}</span>
+          <span class="pd-label">Ethnicity:</span>
+          <span class="pd-value">
+            {{ show(d.ethnicity) }}
+            {% if d.ethnicity_other_detail %}
+              - {{ show(d.ethnicity_other_detail) }}
+            {% endif %}
+          </span>
         </div>
       </div>
 
@@ -392,7 +397,8 @@
       </div>
     </div>
   </section>
-
+  
+  {% if (d.testing_type or "") != "Alcohol Only" %}
   <div class="section drug-use-section">
     <div class="section-title">Drug Use</div>
 
@@ -404,7 +410,7 @@
           <th style="width: 18%;">Level of use</th>
           <th style="width: 18%;">Date of last use</th>
           <th style="width: 13%;">Unsure of date</th>
-          <th style="width: 13%;">Prescribed</th>
+          <th style="width: 13%;">Prescribed to you</th>
         </tr>
       </thead>
       <tbody>
@@ -432,7 +438,9 @@
       <div class="value normal">{{ show(d.drug_use_other_info) }}</div>
     </div>
   </div>
+  {% endif %}
 
+  {% if (d.testing_type or "") != "Alcohol Only" %}
   <div class="section">
     <div class="section-title">Drug Exposure</div>
 
@@ -466,6 +474,7 @@
       <div class="value normal">{{ show(d.drug_exposure_other_info) }}</div>
     </div>
   </div>
+  {% endif %}
 
   <div class="section">
     <div class="section-title">Medication</div>

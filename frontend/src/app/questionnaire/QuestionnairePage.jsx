@@ -27,6 +27,7 @@ export default function QuestionnairePage() {
     reset,
     formState: { errors, submitCount },
   } = useForm({
+    shouldUnregister: true, // ✅ important: hidden sections won't block validation/submit
     defaultValues: {
       // Personal Details
       consent: "",
@@ -38,6 +39,8 @@ export default function QuestionnairePage() {
       natural_hair_colour: "",
       blood_borne_infections: "",
       ethnicity: "",
+      ethnicity_other_detail: "",
+      testing_type: "",
 
       // Drug tables
       drug_use: [],
@@ -132,6 +135,20 @@ export default function QuestionnairePage() {
   const consent = watch("consent"); // "Yes" | "No" | ""
   const hasConsent = consent === "Yes";
   const refused = consent === "No";
+
+  // ✅ NEW: testing type drives which sections appear
+  const testingType = watch("testing_type"); // "Drug & Alcohol" | "Drug Only" | "Alcohol Only" | ""
+  const isAlcoholOnly = testingType === "Alcohol Only";
+
+  // ✅ if Alcohol Only, clear drug section fields (prevents stale data being saved)
+  useEffect(() => {
+    if (isAlcoholOnly) {
+      setValue("drug_use", []);
+      setValue("drug_exposure", []);
+      setValue("drug_use_other_info", "");
+      setValue("drug_exposure_other_info", "");
+    }
+  }, [isAlcoholOnly, setValue]);
 
   // Load saved draft if we have an ID
   useEffect(() => {
@@ -228,7 +245,6 @@ export default function QuestionnairePage() {
     }
   };
 
-
   const goHome = () => navigate("/");
 
   return (
@@ -260,15 +276,55 @@ export default function QuestionnairePage() {
 
       <form onSubmit={handleSubmit(onSubmit, onInvalid)}>
         {/* Always visible */}
-        <PersonalDetails register={register} watch={watch} setValue={setValue} errors={errors} showErrors={showErrors} />
+        <PersonalDetails
+          register={register}
+          watch={watch}
+          setValue={setValue}
+          errors={errors}
+          showErrors={showErrors}
+        />
 
         {hasConsent && (
           <>
-            <DrugUseTable register={register} errors={errors} showErrors={showErrors} />
-            <DrugExposureTable register={register} errors={errors} showErrors={showErrors}   />
-            <MedicationSection register={register} watch={watch} setValue={setValue} errors={errors} showErrors={showErrors} />
-            <AlcoholSection register={register} watch={watch} setValue={setValue} errors={errors} showErrors={showErrors} />
-            <HairAndInfluencingSection register={register} watch={watch} setValue={setValue} errors={errors} showErrors={showErrors} />
+            {/* ✅ Only show drug sections when NOT alcohol-only */}
+            {!isAlcoholOnly && (
+              <>
+                <DrugUseTable
+                  register={register}
+                  errors={errors}
+                  showErrors={showErrors}
+                />
+                <DrugExposureTable
+                  register={register}
+                  errors={errors}
+                  showErrors={showErrors}
+                />
+              </>
+            )}
+
+            <MedicationSection
+              register={register}
+              watch={watch}
+              setValue={setValue}
+              errors={errors}
+              showErrors={showErrors}
+            />
+
+            <AlcoholSection
+              register={register}
+              watch={watch}
+              setValue={setValue}
+              errors={errors}
+              showErrors={showErrors}
+            />
+
+            <HairAndInfluencingSection
+              register={register}
+              watch={watch}
+              setValue={setValue}
+              errors={errors}
+              showErrors={showErrors}
+            />
 
             <SignatureSection
               register={register}
@@ -301,7 +357,7 @@ export default function QuestionnairePage() {
             }}
             onMouseEnter={() => setHovered("save")}
             onMouseLeave={() => setHovered(null)}
-            onClick={(saveDraft)}
+            onClick={saveDraft}
           >
             Save draft
           </button>
@@ -326,7 +382,6 @@ export default function QuestionnairePage() {
     </div>
   );
 }
-
 
 const styles = {
   page: {
@@ -366,7 +421,8 @@ const styles = {
     cursor: "pointer",
     fontSize: 14,
     fontWeight: 700,
-    transition: "background 120ms ease, transform 120ms ease, box-shadow 120ms ease",
+    transition:
+      "background 120ms ease, transform 120ms ease, box-shadow 120ms ease",
   },
   homeBtnHover: {
     background: "#004270",
@@ -386,7 +442,8 @@ const styles = {
     cursor: "pointer",
     fontSize: 15,
     fontWeight: 600,
-    transition: "background 120ms ease, transform 120ms ease, box-shadow 120ms ease",
+    transition:
+      "background 120ms ease, transform 120ms ease, box-shadow 120ms ease",
   },
   secondaryBtnHover: {
     background: "#7b3759",
@@ -404,7 +461,8 @@ const styles = {
     color: "white",
     fontSize: 15,
     fontWeight: 700,
-    transition: "background 120ms ease, transform 120ms ease, box-shadow 120ms ease",
+    transition:
+      "background 120ms ease, transform 120ms ease, box-shadow 120ms ease",
   },
   primaryBtnHover: {
     background: "#004270",

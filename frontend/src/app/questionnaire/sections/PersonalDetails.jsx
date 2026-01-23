@@ -1,8 +1,23 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { hairColourOptions, infectionOptions } from "../config/options";
 import { todayISO } from "../config/dateUtils";
 
 export default function PersonalDetails({ register, watch, setValue, errors, showErrors }) {
+  const eth = watch?.("ethnicity") || "";
+
+  const needsOther =
+    eth.includes("Any other Asian background") ||
+    eth.includes("Any other Black, Black British, or Caribbean background") ||
+    eth.includes("Any other Mixed or multiple ethnic background") ||
+    eth.includes("Any other White background") ||
+    eth.includes("Any other ethnic group");
+
+  // ✅ keep data clean: if they switch away from "Any other..." options, clear the detail box
+  useEffect(() => {
+    if (!setValue) return;
+    if (!needsOther) setValue("ethnicity_other_detail", "");
+  }, [needsOther, setValue]);
+
   return (
     <section style={styles.section}>
       <h2 style={styles.h2}>Personal details</h2>
@@ -49,6 +64,25 @@ export default function PersonalDetails({ register, watch, setValue, errors, sho
         />
         {showErrors && errors?.case_number && (
           <p style={styles.error}>{errors.case_number.message}</p>
+        )}
+      </div>
+
+      {/* ✅ Type of testing */}
+      <div style={styles.field}>
+        <label style={styles.label}>Type of testing</label>
+        <select
+          style={styles.input}
+          {...register("testing_type", { required: "Type of testing is required" })}
+          defaultValue=""
+        >
+          <option value="">Choose an item</option>
+          <option value="Drug & Alcohol">Drug & Alcohol</option>
+          <option value="Drug Only">Drug Only</option>
+          <option value="Alcohol Only">Alcohol Only</option>
+        </select>
+
+        {showErrors && errors?.testing_type && (
+          <p style={styles.error}>{errors.testing_type.message}</p>
         )}
       </div>
 
@@ -210,34 +244,21 @@ export default function PersonalDetails({ register, watch, setValue, errors, sho
                 Any other ethnic group
               </option>
             </optgroup>
-    </select>
+          </select>
 
-    {(() => {
-      const eth = watch?.("ethnicity") || "";
-      const needsOther =
-        eth.includes("Any other Asian background") ||
-        eth.includes("Any other Black, Black British, or Caribbean background") ||
-        eth.includes("Any other Mixed or multiple ethnic background") ||
-        eth.includes("Any other White background") ||
-        eth.includes("Any other ethnic group");
-
-      if (!needsOther) return null;
-
-      return (
-        <div style={{ marginTop: 8 }}>
-          <label style={styles.label}>Please specify</label>
-          <input
-            style={styles.input}
-            type="text"
-            {...register("ethnicity_other_detail")}
-            placeholder="Type details"
-          />
+          {needsOther && (
+            <div style={{ marginTop: 8 }}>
+              <label style={styles.label}>Please specify</label>
+              <input
+                style={styles.input}
+                type="text"
+                {...register("ethnicity_other_detail")}
+                placeholder="Type details"
+              />
+            </div>
+          )}
         </div>
-      );
-    })()}
-  </div>
-</div>
-
+      </div>
     </section>
   );
 }
