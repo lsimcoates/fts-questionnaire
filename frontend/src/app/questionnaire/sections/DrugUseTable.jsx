@@ -1,14 +1,324 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { useWatch } from "react-hook-form";
 import { drugUseRows } from "../config/drugUseConfig";
 import { todayISO } from "../config/dateUtils";
 
-export default function DrugUseTable({ register, errors, showErrors }) {
+const LEVEL_OPTIONS = [
+  "Abstinence",
+  "Single use",
+  "Less than monthly",
+  "Monthly",
+  "Weekly",
+  "Daily",
+  "Unsure",
+];
+
+function blankPeriod() {
+  return {
+    start_date_of_use: "",
+    date_of_last_use: "",
+    unsure_date: false,
+    level_of_use: "",
+    prescribed: false,
+    has_change: false,
+  };
+}
+
+// helper: is a period row totally empty (so we can trim)
+function isEmptyPeriod(p) {
+  if (!p) return true;
+  return (
+    !p.has_change &&
+    !p.start_date_of_use &&
+    !p.date_of_last_use &&
+    !p.level_of_use &&
+    !p.unsure_date &&
+    !p.prescribed
+  );
+}
+
+// helper: is a period row "active" (user interacted / filled something / ticked has_change)
+function isPeriodActive(p) {
+  if (!p) return false;
+  return (
+    !!p.has_change ||
+    !!p.start_date_of_use ||
+    !!p.date_of_last_use ||
+    !!p.level_of_use ||
+    !!p.unsure_date ||
+    !!p.prescribed
+  );
+}
+
+function DrugUseRow({ drug, index, register, errors, showErrors, control, setValue }) {
+  const baseHasChange =
+    useWatch({ control, name: `drug_use.${index}.has_change` }) || false;
+
+  const periods =
+    useWatch({ control, name: `drug_use.${index}.periods` }) || [];
+
+  // Base checkbox controls whether periods exist at all
+  useEffect(() => {
+    if (baseHasChange) {
+      if (!Array.isArray(periods) || periods.length === 0) {
+        setValue(`drug_use.${index}.periods`, [blankPeriod()]);
+      }
+    } else {
+      if (Array.isArray(periods) && periods.length > 0) {
+        setValue(`drug_use.${index}.periods`, []);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [baseHasChange]);
+
+  // Chain behaviour: ensure exactly ONE new blank row exists after the last ticked period
+  useEffect(() => {
+    if (!Array.isArray(periods) || periods.length === 0) return;
+
+    let lastTicked = -1;
+    for (let i = 0; i < periods.length; i++) {
+      if (periods[i]?.has_change) lastTicked = i;
+    }
+
+    if (lastTicked === -1) {
+      if (periods.length !== 1) {
+        setValue(`drug_use.${index}.periods`, [periods[0] || blankPeriod()]);
+      }
+      return;
+    }
+
+    const desiredLen = lastTicked + 2;
+
+    if (periods.length < desiredLen) {
+      const next = [...periods];
+      while (next.length < desiredLen) next.push(blankPeriod());
+      setValue(`drug_use.${index}.periods`, next);
+      return;
+    }
+
+    if (periods.length > desiredLen) {
+      const tail = periods.slice(desiredLen);
+      const allTailEmpty = tail.every(isEmptyPeriod);
+
+      if (allTailEmpty) {
+        setValue(`drug_use.${index}.periods`, periods.slice(0, desiredLen));
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [periods]);
+
+  const statusErr = errors?.drug_use?.[index]?.status;
+
+  return (
+    <>
+      {/* Parent row */}
+      <tr>
+        <td style={styles.td}>{drug.name}</td>
+
+        {["used", "Not Used"].map((status) => (
+          <td key={status} style={styles.tdCenter}>
+            <input
+              type="radio"
+              value={status}
+              {...register(`drug_use.${index}.status`, {
+                required: "Please select Used or Not Used",
+              })}
+            />
+          </td>
+        ))}
+
+        {/* Start date */}
+        <td style={styles.td}>
+          <input
+            style={styles.input}
+            type="date"
+            max={todayISO}
+            {...register(`drug_use.${index}.start_date_of_use`)}
+          />
+        </td>
+
+        {/* End date */}
+        <td style={styles.td}>
+          <input
+            style={styles.input}
+            type="date"
+            max={todayISO}
+            {...register(`drug_use.${index}.date_of_last_use`)}
+          />
+        </td>
+
+        <td style={styles.tdCenter}>
+          <input type="checkbox" {...register(`drug_use.${index}.unsure_date`)} />
+        </td>
+
+        <td style={styles.td}>
+          <select style={styles.select} {...register(`drug_use.${index}.level_of_use`)}>
+            <option value="">Choose</option>
+            {LEVEL_OPTIONS.map((opt) => (
+              <option key={opt} value={opt}>
+                {opt}
+              </option>
+            ))}
+          </select>
+        </td>
+
+        <td style={styles.tdCenter}>
+          {drug.prescribed ? (
+            <input type="checkbox" {...register(`drug_use.${index}.prescribed`)} />
+          ) : (
+            <span style={styles.muted}>—</span>
+          )}
+        </td>
+
+        {/* Changes/fluctuations */}
+        <td style={styles.tdCenter}>
+          <input type="checkbox" {...register(`drug_use.${index}.has_change`)} />
+        </td>
+
+        <input
+          type="hidden"
+          value={drug.name}
+          {...register(`drug_use.${index}.drug_name`)}
+        />
+      </tr>
+
+      {/* Period rows */}
+      {Array.isArray(periods) &&
+        periods.length > 0 &&
+        periods.map((p, pIndex) => {
+          const pErr = errors?.drug_use?.[index]?.periods?.[pIndex] || {};
+          const periodActive = isPeriodActive(p);
+
+          return (
+            <React.Fragment key={`${drug.name}-period-${pIndex}`}>
+              <tr>
+                <td style={{ ...styles.td, ...styles.subRowDrug }}>
+                  <span style={styles.subRowArrow}>↳</span> Period {pIndex + 2}
+                </td>
+
+                {/* no used/not used */}
+                <td style={styles.tdCenter}><span style={styles.muted}>—</span></td>
+                <td style={styles.tdCenter}><span style={styles.muted}>—</span></td>
+
+                <td style={styles.td}>
+                  <input
+                    style={styles.input}
+                    type="date"
+                    max={todayISO}
+                    {...register(`drug_use.${index}.periods.${pIndex}.start_date_of_use`, {
+                      validate: (v) => {
+                        if (!baseHasChange) return true;
+                        if (!periodActive) return true;
+                        if (p?.unsure_date) return true;
+                        return (v || "").trim() ? true : "Start date is required";
+                      },
+                    })}
+                  />
+                </td>
+
+                <td style={styles.td}>
+                  <input
+                    style={styles.input}
+                    type="date"
+                    max={todayISO}
+                    {...register(`drug_use.${index}.periods.${pIndex}.date_of_last_use`, {
+                      validate: (v) => {
+                        if (!baseHasChange) return true;
+                        if (!periodActive) return true;
+                        if (p?.unsure_date) return true;
+                        return (v || "").trim() ? true : "End date is required";
+                      },
+                    })}
+                  />
+                </td>
+
+                <td style={styles.tdCenter}>
+                  <input
+                    type="checkbox"
+                    {...register(`drug_use.${index}.periods.${pIndex}.unsure_date`)}
+                  />
+                </td>
+
+                <td style={styles.td}>
+                  <select
+                    style={styles.select}
+                    {...register(`drug_use.${index}.periods.${pIndex}.level_of_use`, {
+                      validate: (v) => {
+                        if (!baseHasChange) return true;
+                        if (!periodActive) return true;
+                        return (v || "").trim() ? true : "Level of use is required";
+                      },
+                    })}
+                  >
+                    <option value="">Choose</option>
+                    {LEVEL_OPTIONS.map((opt) => (
+                      <option key={opt} value={opt}>
+                        {opt}
+                      </option>
+                    ))}
+                  </select>
+                </td>
+
+                <td style={styles.tdCenter}>
+                  {drug.prescribed ? (
+                    <input
+                      type="checkbox"
+                      {...register(`drug_use.${index}.periods.${pIndex}.prescribed`)}
+                    />
+                  ) : (
+                    <span style={styles.muted}>—</span>
+                  )}
+                </td>
+
+                <td style={styles.tdCenter}>
+                  <input
+                    type="checkbox"
+                    {...register(`drug_use.${index}.periods.${pIndex}.has_change`)}
+                  />
+                </td>
+              </tr>
+
+              {/* period validation error row */}
+              {showErrors &&
+                (pErr?.start_date_of_use || pErr?.date_of_last_use || pErr?.level_of_use) && (
+                  <tr>
+                    <td style={styles.errorRow} colSpan={9}>
+                      <span style={styles.errorText}>
+                        {drug.name} period {pIndex + 2}:{" "}
+                        {pErr.start_date_of_use?.message ||
+                          pErr.date_of_last_use?.message ||
+                          pErr.level_of_use?.message}
+                      </span>
+                    </td>
+                  </tr>
+                )}
+            </React.Fragment>
+          );
+        })}
+
+      {/* Parent row-level error line */}
+      {showErrors && statusErr && (
+        <tr>
+          <td style={styles.errorRow} colSpan={9}>
+            <span style={styles.errorText}>
+              {drug.name}: {statusErr.message}
+            </span>
+          </td>
+        </tr>
+      )}
+    </>
+  );
+}
+
+export default function DrugUseTable({ register, control, setValue, errors, showErrors }) {
   return (
     <section style={styles.section}>
       <h2 style={styles.h2}>Drug use</h2>
 
       <p style={styles.infoText}>
-        <strong>Drug Use:</strong> Please provide details of your drug use to the best of your knowledge in the table below. If there has been any fluctuations or changes in pattern of drug use please clarify these in the 'Other information' box at the end of the table.
+        <strong>Drug Use:</strong> Please provide details of your drug use to the best of your
+        knowledge in the table below. If there has been any fluctuations or changes in pattern
+        of drug use please clarify these in the 'Other information' box at the end of the table.
       </p>
 
       <div style={styles.tableWrapper}>
@@ -18,103 +328,33 @@ export default function DrugUseTable({ register, errors, showErrors }) {
               <th style={styles.th}>Drug</th>
               <th style={styles.thCenter}>Used</th>
               <th style={styles.thCenter}>Not Used</th>
-              <th style={styles.th}>Date of last use</th>
+              <th style={styles.th}>Start date</th>
+              <th style={styles.th}>End date</th>
               <th style={styles.thCenter}>Unsure</th>
               <th style={styles.th}>Level of use</th>
               <th style={styles.thCenter}>Prescribed to you</th>
+              <th style={styles.thCenter}>Any changes/fluctuations in use</th>
             </tr>
           </thead>
 
           <tbody>
-            {drugUseRows.map((drug, index) => {
-              const statusErr = errors?.drug_use?.[index]?.status;
-
-              return (
-                <React.Fragment key={drug.name}>
-                  <tr>
-                    <td style={styles.td}>{drug.name}</td>
-
-                    {["used", "Not Used"].map((status) => (
-                      <td key={status} style={styles.tdCenter}>
-                        <input
-                          type="radio"
-                          value={status}
-                          {...register(`drug_use.${index}.status`, {
-                            required: "Please select Used or Not Used",
-                          })}
-                        />
-                      </td>
-                    ))}
-
-                    <td style={styles.td}>
-                      <input
-                        style={styles.input}
-                        type="date"
-                        max={todayISO}
-                        {...register(`drug_use.${index}.date_of_last_use`)}
-                      />
-                    </td>
-
-                    <td style={styles.tdCenter}>
-                      <input
-                        type="checkbox"
-                        {...register(`drug_use.${index}.unsure_date`)}
-                      />
-                    </td>
-
-                    <td style={styles.td}>
-                      <select
-                        style={styles.select}
-                        {...register(`drug_use.${index}.level_of_use`)}
-                      >
-                        <option value="">Choose</option>
-                        <option value="Single use">Single use</option>
-                        <option value="Less than monthly">Less than monthly</option>
-                        <option value="Monthly">Monthly</option>
-                        <option value="Weekly">Weekly</option>
-                        <option value="Daily">Daily</option>
-                        <option value="Unsure">Unsure</option>
-                      </select>
-                    </td>
-
-                    <td style={styles.tdCenter}>
-                      {drug.prescribed ? (
-                        <input
-                          type="checkbox"
-                          {...register(`drug_use.${index}.prescribed`)}
-                        />
-                      ) : (
-                        <span style={styles.muted}>—</span>
-                      )}
-                    </td>
-
-                    {/* hidden: store the drug name in the submitted data */}
-                    <input
-                      type="hidden"
-                      value={drug.name}
-                      {...register(`drug_use.${index}.drug_name`)}
-                    />
-                  </tr>
-
-                  {/* Row-level error line (only appears after submit attempt) */}
-                  {showErrors && statusErr && (
-                    <tr>
-                      <td style={styles.errorRow} colSpan={7}>
-                        <span style={styles.errorText}>
-                          {drug.name}: {statusErr.message}
-                        </span>
-                      </td>
-                    </tr>
-                  )}
-                </React.Fragment>
-              );
-            })}
+            {drugUseRows.map((drug, index) => (
+              <DrugUseRow
+                key={drug.name}
+                drug={drug}
+                index={index}
+                register={register}
+                errors={errors}
+                showErrors={showErrors}
+                control={control}
+                setValue={setValue}
+              />
+            ))}
           </tbody>
 
-          {/* One “Other information” row spanning full width */}
           <tfoot>
             <tr>
-              <td style={styles.td} colSpan={7}>
+              <td style={styles.td} colSpan={9}>
                 <label style={styles.otherInfoLabel}>
                   Other information (additional drugs, and changes in frequency/pattern of use)
                 </label>
@@ -141,15 +381,15 @@ const styles = {
     marginBottom: 16,
   },
   h2: { marginBottom: 8, color: "#904369" },
-
   infoText: { marginTop: 0, marginBottom: 12, lineHeight: 1.35 },
 
   tableWrapper: { overflowX: "auto" },
   table: {
     width: "100%",
     borderCollapse: "collapse",
-    fontSize: 14,
-    minWidth: 900,
+    fontSize: 12,
+    minWidth: 0,
+    tableLayout: "fixed",
   },
 
   th: {
@@ -161,10 +401,10 @@ const styles = {
   },
   thCenter: {
     textAlign: "center",
-    padding: 10,
+    padding: 6,
     borderBottom: "1px solid #ddd",
     background: "#fafafa",
-    whiteSpace: "nowrap",
+    whiteSpace: "normal",
   },
 
   td: {
@@ -173,7 +413,7 @@ const styles = {
     verticalAlign: "top",
   },
   tdCenter: {
-    padding: 10,
+    padding: 6,
     borderBottom: "1px solid #eee",
     textAlign: "center",
     verticalAlign: "middle",
@@ -183,6 +423,9 @@ const styles = {
   select: { padding: 6, borderRadius: 6, border: "1px solid #ccc", width: "100%" },
 
   muted: { color: "#999" },
+
+  subRowDrug: { paddingLeft: 22, color: "#444", fontStyle: "italic" },
+  subRowArrow: { display: "inline-block", marginRight: 6, color: "#666", fontStyle: "normal" },
 
   otherInfoLabel: { display: "block", fontWeight: 600, marginBottom: 6 },
   textarea: {
@@ -194,11 +437,6 @@ const styles = {
     resize: "vertical",
   },
 
-  // error styling for table rows
-  errorRow: {
-    padding: 10,
-    borderBottom: "1px solid #eee",
-    background: "#fff5f5",
-  },
+  errorRow: { padding: 10, borderBottom: "1px solid #eee", background: "#fff5f5" },
   errorText: { color: "crimson", fontSize: 12, fontWeight: 600 },
 };

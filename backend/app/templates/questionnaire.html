@@ -405,12 +405,14 @@
     <table>
       <thead>
         <tr>
-          <th style="width: 22%;">Drug</th>
-          <th style="width: 16%;">Status</th>
-          <th style="width: 18%;">Level of use</th>
-          <th style="width: 18%;">Date of last use</th>
-          <th style="width: 13%;">Unsure of date</th>
-          <th style="width: 13%;">Prescribed to you</th>
+          <th style="width: 18%;">Drug</th>
+          <th style="width: 10%;">Status</th>
+          <th style="width: 14%;">Level of use</th>
+          <th style="width: 14%;">Start date</th>
+          <th style="width: 14%;">End date</th>
+          <th style="width: 10%;">Unsure</th>
+          <th style="width: 10%;">Prescribed</th>
+          <th style="width: 10%;">Changes</th>
         </tr>
       </thead>
       <tbody>
@@ -419,7 +421,8 @@
             <td>{{ show(r.drug_name) }}</td>
             <td>{{ show(r.status) }}</td>
             <td>{{ show(r.level_of_use) }}</td>
-            <td>{{ show_date(r.date_of_last_use, r.unsure_date) }}</td>
+            <td>{{ uk_date(r.start_date_of_use) }}</td>
+            <td>{{ uk_date(r.date_of_last_use) }}</td>
             <td>{{ "Yes" if r.unsure_date else "No" }}</td>
             <td>
               {% if r.prescribed is defined %}
@@ -428,7 +431,27 @@
                 —
               {% endif %}
             </td>
+            <td>{{ "Yes" if r.has_change else "No" }}</td>
           </tr>
+
+          {% for p in (r.periods or []) %}
+            <tr>
+              <td style="padding-left:18px; font-style: italic;">↳ Period</td>
+              <td>—</td>
+              <td>{{ show(p.level_of_use) }}</td>
+              <td>{{ uk_date(p.start_date_of_use) }}</td>
+              <td>{{ uk_date(p.date_of_last_use) }}</td>
+              <td>{{ "Yes" if p.unsure_date else "No" }}</td>
+              <td>
+                {% if p.prescribed is defined %}
+                  {{ "Yes" if p.prescribed else "No" }}
+                {% else %}
+                  —
+                {% endif %}
+              </td>
+              <td>{{ "Yes" if p.has_change else "No" }}</td>
+            </tr>
+          {% endfor %}
         {% endfor %}
       </tbody>
     </table>

@@ -47,6 +47,7 @@ export default function QuestionnairePage() {
       drug_exposure: [],
       drug_use_other_info: "",
       drug_exposure_other_info: "",
+      shouldUnregister: true,
 
       // Medication
       has_other_medications: "",
@@ -291,6 +292,9 @@ export default function QuestionnairePage() {
               <>
                 <DrugUseTable
                   register={register}
+                  control={control}
+                  watch={watch}
+                  setValue={setValue}
                   errors={errors}
                   showErrors={showErrors}
                 />
