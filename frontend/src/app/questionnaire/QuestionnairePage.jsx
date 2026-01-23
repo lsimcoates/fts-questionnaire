@@ -300,6 +300,8 @@ export default function QuestionnairePage() {
                 />
                 <DrugExposureTable
                   register={register}
+                  control={control}
+                  setValue={setValue}
                   errors={errors}
                   showErrors={showErrors}
                 />

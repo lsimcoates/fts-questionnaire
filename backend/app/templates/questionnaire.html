@@ -412,7 +412,6 @@
           <th style="width: 14%;">End date</th>
           <th style="width: 10%;">Unsure</th>
           <th style="width: 10%;">Prescribed</th>
-          <th style="width: 10%;">Changes</th>
         </tr>
       </thead>
       <tbody>
@@ -431,7 +430,6 @@
                 —
               {% endif %}
             </td>
-            <td>{{ "Yes" if r.has_change else "No" }}</td>
           </tr>
 
           {% for p in (r.periods or []) %}
@@ -449,7 +447,6 @@
                   —
                 {% endif %}
               </td>
-              <td>{{ "Yes" if p.has_change else "No" }}</td>
             </tr>
           {% endfor %}
         {% endfor %}
@@ -464,40 +461,74 @@
   {% endif %}
 
   {% if (d.testing_type or "") != "Alcohol Only" %}
-  <div class="section">
-    <div class="section-title">Drug Exposure</div>
+    <div class="section">
+      <div class="section-title">Drug Exposure</div>
 
-    <table>
-      <thead>
-        <tr>
-          <th style="width: 22%;">Drug</th>
-          <th style="width: 16%;">Status</th>
-          <th style="width: 18%;">Level of exposure</th>
-          <th style="width: 18%;">Date of last exposure</th>
-          <th style="width: 13%;">Unsure of date</th>
-          <th style="width: 13%;">Type of exposure</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for r in (d.drug_exposure or []) %}
+      <table>
+        <thead>
           <tr>
-            <td>{{ show(r.drug_name) }}</td>
-            <td>{{ show(r.status) }}</td>
-            <td>{{ show(r.level_of_exposure) }}</td>
-            <td>{{ show_date(r.date_of_last_exposure, r.unsure_date) }}</td>
-            <td>{{ "Yes" if r.unsure_date else "No" }}</td>
-            <td>{{ join_list(r.type_of_exposure) }}</td>
+            <th style="width: 18%;">Drug</th>
+            <th style="width: 12%;">Exposure</th>
+            <th style="width: 14%;">Level of exposure</th>
+            <th style="width: 14%;">Start date</th>
+            <th style="width: 14%;">End date</th>
+            <th style="width: 8%;">Unsure</th>
+            <th style="width: 16%;">Type of exposure</th>
           </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+        </thead>
+
+        <tbody>
+          {% for r in (d.drug_exposure or []) %}
+            {# -------- Parent row -------- #}
+            <tr>
+              <td>
+                {{ show(r.drug_name) }}
+                {% if r.periods and (r.periods|length > 0) %}
+                  <div class="muted" style="margin-top:2px;">Additional periods recorded</div>
+                {% endif %}
+              </td>
+
+              <td>
+                {% if r.status == "exposed" %}
+                  Exposed
+                {% else %}
+                  Not exposed
+                {% endif %}
+              </td>
+
+              <td>{{ show(r.level_of_exposure) }}</td>
+              <td>{{ uk_date(r.start_date_of_exposure) }}</td>
+              <td>{{ show_date(r.date_of_last_exposure, r.unsure_date) }}</td>
+              <td>{{ "Yes" if r.unsure_date else "No" }}</td>
+              <td>{{ join_list(r.type_of_exposure) }}</td>
+            </tr>
+
+            {# -------- Child period rows -------- #}
+            {% for p in (r.periods or []) %}
+              <tr>
+                <td style="padding-left:18px; font-style: italic;">
+                  <span class="muted">↳ Period {{ loop.index + 1 }}</span>
+                </td>
+
+                <td class="muted">—</td>
+                <td>{{ show(p.level_of_exposure) }}</td>
+                <td>{{ uk_date(p.start_date_of_exposure) }}</td>
+                <td>{{ show_date(p.date_of_last_exposure, p.unsure_date) }}</td>
+                <td>{{ "Yes" if p.unsure_date else "No" }}</td>
+                <td>{{ join_list(p.type_of_exposure) }}</td>
+              </tr>
+            {% endfor %}
+          {% endfor %}
+        </tbody>
+      </table>
 
     <div class="note-box">
       <div class="label">Other information (Drug Exposure)</div>
       <div class="value normal">{{ show(d.drug_exposure_other_info) }}</div>
     </div>
   </div>
-  {% endif %}
+{% endif %}
+
 
   <div class="section">
     <div class="section-title">Medication</div>

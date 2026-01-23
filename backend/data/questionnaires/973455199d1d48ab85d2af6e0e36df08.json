@@ -4,7 +4,7 @@
   "version": 3,
   "status": "draft",
   "created_at": "2026-01-15T15:16:06.611453",
-  "updated_at": "2026-01-23T15:47:14.413220",
+  "updated_at": "2026-01-23T16:33:39.228022",
   "submitted_at": null,
   "redo_of_id": null,
   "data": {
@@ -40,10 +40,10 @@
         "drug_name": "Cocaine",
         "periods": [
           {
-            "start_date_of_use": "2025-12-31",
+            "start_date_of_use": "2025-12-10",
             "date_of_last_use": "2026-01-01",
             "unsure_date": false,
-            "level_of_use": "Single use",
+            "level_of_use": "Less than monthly",
             "prescribed": false,
             "has_change": false
           }
@@ -56,8 +56,7 @@
         "unsure_date": false,
         "level_of_use": "Daily",
         "has_change": false,
-        "drug_name": "Crack Cocaine",
-        "periods": []
+        "drug_name": "Crack Cocaine"
       },
       {
         "status": null,
@@ -228,169 +227,223 @@
         "drug_name": "Tramadol"
       }
     ],
+    "drug_exposure_other_info": "",
     "drug_exposure": [
       {
-        "status": null,
-        "date_of_last_exposure": "",
+        "status": "exposed",
+        "start_date_of_exposure": "2026-01-23",
+        "date_of_last_exposure": "2026-01-23",
         "unsure_date": false,
-        "level_of_exposure": "",
-        "type_of_exposure": false,
-        "drug_name": "Cannabis"
+        "level_of_exposure": "Single Occassion",
+        "type_of_exposure": [
+          "Formal contact with a user"
+        ],
+        "has_change": true,
+        "drug_name": "Cannabis",
+        "periods": [
+          {
+            "start_date_of_exposure": "2026-01-14",
+            "date_of_last_exposure": "2026-01-10",
+            "unsure_date": false,
+            "level_of_exposure": "Less than monthly",
+            "type_of_exposure": [
+              "To a place where drugs have been used"
+            ],
+            "has_change": false
+          }
+        ]
       },
       {
         "status": null,
+        "start_date_of_exposure": "",
         "date_of_last_exposure": "",
         "unsure_date": false,
         "level_of_exposure": "",
         "type_of_exposure": false,
+        "has_change": false,
         "drug_name": "Cocaine"
       },
       {
         "status": null,
+        "start_date_of_exposure": "",
         "date_of_last_exposure": "",
         "unsure_date": false,
         "level_of_exposure": "",
         "type_of_exposure": false,
+        "has_change": false,
         "drug_name": "Crack Cocaine"
       },
       {
         "status": null,
+        "start_date_of_exposure": "",
         "date_of_last_exposure": "",
         "unsure_date": false,
         "level_of_exposure": "",
         "type_of_exposure": false,
+        "has_change": false,
         "drug_name": "MDMA"
       },
       {
         "status": null,
+        "start_date_of_exposure": "",
         "date_of_last_exposure": "",
         "unsure_date": false,
         "level_of_exposure": "",
         "type_of_exposure": false,
+        "has_change": false,
         "drug_name": "Amphetamine"
       },
       {
         "status": null,
+        "start_date_of_exposure": "",
         "date_of_last_exposure": "",
         "unsure_date": false,
         "level_of_exposure": "",
         "type_of_exposure": false,
+        "has_change": false,
         "drug_name": "Methamphetamine"
       },
       {
         "status": null,
+        "start_date_of_exposure": "",
         "date_of_last_exposure": "",
         "unsure_date": false,
         "level_of_exposure": "",
         "type_of_exposure": false,
+        "has_change": false,
         "drug_name": "Ketamine"
       },
       {
         "status": null,
+        "start_date_of_exposure": "",
         "date_of_last_exposure": "",
         "unsure_date": false,
         "level_of_exposure": "",
         "type_of_exposure": false,
+        "has_change": false,
         "drug_name": "Heroin"
       },
       {
         "status": null,
+        "start_date_of_exposure": "",
         "date_of_last_exposure": "",
         "unsure_date": false,
         "level_of_exposure": "",
         "type_of_exposure": false,
+        "has_change": false,
         "drug_name": "Codeine"
       },
       {
         "status": null,
+        "start_date_of_exposure": "",
         "date_of_last_exposure": "",
         "unsure_date": false,
         "level_of_exposure": "",
         "type_of_exposure": false,
+        "has_change": false,
         "drug_name": "Dihydrocodeine"
       },
       {
         "status": null,
+        "start_date_of_exposure": "",
         "date_of_last_exposure": "",
         "unsure_date": false,
         "level_of_exposure": "",
         "type_of_exposure": false,
+        "has_change": false,
         "drug_name": "Morphine"
       },
       {
         "status": null,
+        "start_date_of_exposure": "",
         "date_of_last_exposure": "",
         "unsure_date": false,
         "level_of_exposure": "",
         "type_of_exposure": false,
+        "has_change": false,
         "drug_name": "Oxycodone (including oxymorphone)"
       },
       {
         "status": null,
+        "start_date_of_exposure": "",
         "date_of_last_exposure": "",
         "unsure_date": false,
         "level_of_exposure": "",
         "type_of_exposure": false,
+        "has_change": false,
         "drug_name": "Diazepam (including nordiazepam)"
       },
       {
         "status": null,
+        "start_date_of_exposure": "",
         "date_of_last_exposure": "",
         "unsure_date": false,
         "level_of_exposure": "",
         "type_of_exposure": false,
+        "has_change": false,
         "drug_name": "Other Benzodiazepines (please specify below)"
       },
       {
         "status": null,
+        "start_date_of_exposure": "",
         "date_of_last_exposure": "",
         "unsure_date": false,
         "level_of_exposure": "",
         "type_of_exposure": false,
+        "has_change": false,
         "drug_name": "Amitriptyline"
       },
       {
         "status": null,
+        "start_date_of_exposure": "",
         "date_of_last_exposure": "",
         "unsure_date": false,
         "level_of_exposure": "",
         "type_of_exposure": false,
+        "has_change": false,
         "drug_name": "Pregabalin"
       },
       {
         "status": null,
+        "start_date_of_exposure": "",
         "date_of_last_exposure": "",
         "unsure_date": false,
         "level_of_exposure": "",
         "type_of_exposure": false,
+        "has_change": false,
         "drug_name": "Gabapentin"
       },
       {
         "status": null,
+        "start_date_of_exposure": "",
         "date_of_last_exposure": "",
         "unsure_date": false,
         "level_of_exposure": "",
         "type_of_exposure": false,
+        "has_change": false,
         "drug_name": "Buprenorphine"
       },
       {
         "status": null,
+        "start_date_of_exposure": "",
         "date_of_last_exposure": "",
         "unsure_date": false,
         "level_of_exposure": "",
         "type_of_exposure": false,
+        "has_change": false,
         "drug_name": "Methadone"
       },
       {
         "status": null,
+        "start_date_of_exposure": "",
         "date_of_last_exposure": "",
         "unsure_date": false,
         "level_of_exposure": "",
         "type_of_exposure": false,
+        "has_change": false,
         "drug_name": "Tramadol"
       }
     ],
-    "drug_exposure_other_info": "",
     "has_other_medications": null,
     "alcohol_consumed_last_12_months": null,
     "alcohol_last_consumed_date": "",
