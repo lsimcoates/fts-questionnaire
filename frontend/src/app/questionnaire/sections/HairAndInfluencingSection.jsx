@@ -7,10 +7,14 @@ export default function HairAndInfluencingSection({
   register,
   watch,
   setValue,
+  trigger,
   errors,
   showErrors,
 }) {
-  // scalp hair cut
+  // NEW: parent scalp cut question
+  const cutInLast12Months = watch("hair_cut_in_last_12_months"); // "Yes"/"No"
+
+  // scalp hair cut follow-ups
   const cutUnsure = watch("hair_last_cut_unsure");
 
   // body hair removed in last 12 months (Yes/No)
@@ -28,12 +32,31 @@ export default function HairAndInfluencingSection({
   const legsSelected = watch("hair_removed_sites_legs");
   const chestSelected = watch("hair_removed_sites_chest");
   const backSelected = watch("hair_removed_sites_back");
+  const underarmsSelected = watch("hair_removed_sites_underarms");
 
   // per-site unsure flags
   const armsUnsure = watch("hair_removed_sites_arms_last_shaved_unsure");
   const legsUnsure = watch("hair_removed_sites_legs_last_shaved_unsure");
   const chestUnsure = watch("hair_removed_sites_chest_last_shaved_unsure");
   const backUnsure = watch("hair_removed_sites_back_last_shaved_unsure");
+  const underarmsUnsure = watch("hair_removed_sites_underarms_last_shaved_unsure");
+
+  // NEW: per-site last collection flags
+  const armsLastCollection = watch(
+    "hair_removed_sites_arms_last_shaved_last_collection"
+  );
+  const legsLastCollection = watch(
+    "hair_removed_sites_legs_last_shaved_last_collection"
+  );
+  const chestLastCollection = watch(
+    "hair_removed_sites_chest_last_shaved_last_collection"
+  );
+  const backLastCollection = watch(
+    "hair_removed_sites_back_last_shaved_last_collection"
+  );
+  const underarmsLastCollection = watch(
+    "hair_removed_sites_underarms_last_shaved_last_collection"
+  );
 
   // influencing parent questions
   const thermal = watch("hair_thermal_applications"); // "Yes"/"No"
@@ -48,126 +71,335 @@ export default function HairAndInfluencingSection({
   watch("sprays_sites_legs");
   watch("sprays_sites_back");
 
+  /**
+   * -------------------------
+   * Scalp cut logic
+   * -------------------------
+   */
+
+  // If parent is not Yes, clear all cut follow-ups
+  useEffect(() => {
+    if (cutInLast12Months !== "Yes") {
+      setValue("hair_last_cut_date", "", { shouldDirty: false });
+      setValue("hair_last_cut_unsure", false, { shouldDirty: false });
+      setValue("hair_cut_shaved_to_skin", "", { shouldDirty: false });
+    }
+  }, [cutInLast12Months, setValue]);
+
   // clear scalp cut date if unsure
   useEffect(() => {
-    if (cutUnsure) setValue("hair_last_cut_date", "");
+    if (cutUnsure) setValue("hair_last_cut_date", "", { shouldDirty: false });
   }, [cutUnsure, setValue]);
+
+  // Re-trigger validations when scalp-cut state changes
+  useEffect(() => {
+    trigger?.([
+      "hair_cut_in_last_12_months",
+      "hair_last_cut_date",
+      "hair_last_cut_unsure",
+      "hair_cut_shaved_to_skin",
+    ]);
+  }, [cutInLast12Months, cutUnsure, trigger]);
+
+  /**
+   * -------------------------
+   * Pregnancy logic
+   * -------------------------
+   */
 
   // clear pregnancy date if unsure ticked
   useEffect(() => {
-    if (dueUnsure) setValue("pregnancy_due_or_birth_date", "");
+    if (dueUnsure)
+      setValue("pregnancy_due_or_birth_date", "", { shouldDirty: false });
   }, [dueUnsure, setValue]);
 
   // if not pregnant, clear pregnancy follow-ups
   useEffect(() => {
     if (pregnant !== "Yes") {
-      setValue("pregnancy_due_or_birth_date", "");
-      setValue("pregnancy_due_date_unsure", false);
-      setValue("pregnancy_weeks", "");
+      setValue("pregnancy_due_or_birth_date", "", { shouldDirty: false });
+      setValue("pregnancy_due_date_unsure", false, { shouldDirty: false });
+      setValue("pregnancy_weeks", "", { shouldDirty: false });
     }
   }, [pregnant, setValue]);
+
+  useEffect(() => {
+    trigger?.(["pregnancy_due_or_birth_date", "pregnancy_due_date_unsure"]);
+  }, [pregnant, trigger]);
+
+  useEffect(() => {
+    trigger?.(["pregnancy_due_or_birth_date", "pregnancy_due_date_unsure"]);
+  }, [dueUnsure, trigger]);
+
+  /**
+   * -------------------------
+   * Dyed/bleached logic
+   * -------------------------
+   */
 
   // if not dyed/bleached, clear follow-up date
   useEffect(() => {
     if (dyedBleached !== "Yes") {
-      setValue("hair_last_dyed_bleached_date", "");
+      setValue("hair_last_dyed_bleached_date", "", { shouldDirty: false });
     }
   }, [dyedBleached, setValue]);
+
+  /**
+   * -------------------------
+   * Body hair removal logic
+   * -------------------------
+   */
 
   // if body hair removal is not Yes, clear all sites + per-site details
   useEffect(() => {
     if (removedBodyHair !== "Yes") {
-      setValue("hair_removed_sites_arms", false);
-      setValue("hair_removed_sites_legs", false);
-      setValue("hair_removed_sites_chest", false);
-      setValue("hair_removed_sites_back", false);
+      setValue("hair_removed_sites_arms", false, { shouldDirty: false });
+      setValue("hair_removed_sites_legs", false, { shouldDirty: false });
+      setValue("hair_removed_sites_chest", false, { shouldDirty: false });
+      setValue("hair_removed_sites_back", false, { shouldDirty: false });
+      setValue("hair_removed_sites_underarms", false, { shouldDirty: false });
 
-      setValue("hair_removed_sites_arms_last_shaved_date", "");
-      setValue("hair_removed_sites_arms_last_shaved_unsure", false);
+      // arms
+      setValue("hair_removed_sites_arms_last_shaved_date", "", {
+        shouldDirty: false,
+      });
+      setValue("hair_removed_sites_arms_last_shaved_unsure", false, {
+        shouldDirty: false,
+      });
+      setValue("hair_removed_sites_arms_last_shaved_last_collection", false, {
+        shouldDirty: false,
+      });
 
-      setValue("hair_removed_sites_legs_last_shaved_date", "");
-      setValue("hair_removed_sites_legs_last_shaved_unsure", false);
+      // legs
+      setValue("hair_removed_sites_legs_last_shaved_date", "", {
+        shouldDirty: false,
+      });
+      setValue("hair_removed_sites_legs_last_shaved_unsure", false, {
+        shouldDirty: false,
+      });
+      setValue("hair_removed_sites_legs_last_shaved_last_collection", false, {
+        shouldDirty: false,
+      });
 
-      setValue("hair_removed_sites_chest_last_shaved_date", "");
-      setValue("hair_removed_sites_chest_last_shaved_unsure", false);
+      // chest
+      setValue("hair_removed_sites_chest_last_shaved_date", "", {
+        shouldDirty: false,
+      });
+      setValue("hair_removed_sites_chest_last_shaved_unsure", false, {
+        shouldDirty: false,
+      });
+      setValue("hair_removed_sites_chest_last_shaved_last_collection", false, {
+        shouldDirty: false,
+      });
 
-      setValue("hair_removed_sites_back_last_shaved_date", "");
-      setValue("hair_removed_sites_back_last_shaved_unsure", false);
+      // back
+      setValue("hair_removed_sites_back_last_shaved_date", "", {
+        shouldDirty: false,
+      });
+      setValue("hair_removed_sites_back_last_shaved_unsure", false, {
+        shouldDirty: false,
+      });
+      setValue("hair_removed_sites_back_last_shaved_last_collection", false, {
+        shouldDirty: false,
+      });
+
+      // underarms
+      setValue("hair_removed_sites_underarms_last_shaved_date", "", {
+        shouldDirty: false,
+      });
+      setValue("hair_removed_sites_underarms_last_shaved_unsure", false, {
+        shouldDirty: false,
+      });
+      setValue(
+        "hair_removed_sites_underarms_last_shaved_last_collection",
+        false,
+        { shouldDirty: false }
+      );
     }
   }, [removedBodyHair, setValue]);
 
-  // per-site clearing logic (untick clears; unsure clears date)
-  useEffect(() => {
-    if (!armsSelected) {
-      setValue("hair_removed_sites_arms_last_shaved_date", "");
-      setValue("hair_removed_sites_arms_last_shaved_unsure", false);
-    } else if (armsUnsure) {
-      setValue("hair_removed_sites_arms_last_shaved_date", "");
+  // --- Helper: enforce mutual exclusion & clear date if unsure/last-collection
+  function handleSiteState({
+    selected,
+    unsure,
+    lastCollection,
+    dateField,
+    unsureField,
+    lastCollectionField,
+  }) {
+    if (!selected) {
+      setValue(dateField, "", { shouldDirty: false });
+      setValue(unsureField, false, { shouldDirty: false });
+      setValue(lastCollectionField, false, { shouldDirty: false });
+      return;
     }
-  }, [armsSelected, armsUnsure, setValue]);
+
+    if (unsure) {
+      setValue(dateField, "", { shouldDirty: false });
+      setValue(lastCollectionField, false, { shouldDirty: false });
+      return;
+    }
+
+    if (lastCollection) {
+      setValue(dateField, "", { shouldDirty: false });
+      setValue(unsureField, false, { shouldDirty: false });
+    }
+  }
+
+  // Per-site clearing logic
+  useEffect(() => {
+    handleSiteState({
+      selected: armsSelected,
+      unsure: armsUnsure,
+      lastCollection: armsLastCollection,
+      dateField: "hair_removed_sites_arms_last_shaved_date",
+      unsureField: "hair_removed_sites_arms_last_shaved_unsure",
+      lastCollectionField: "hair_removed_sites_arms_last_shaved_last_collection",
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [armsSelected, armsUnsure, armsLastCollection]);
 
   useEffect(() => {
-    if (!legsSelected) {
-      setValue("hair_removed_sites_legs_last_shaved_date", "");
-      setValue("hair_removed_sites_legs_last_shaved_unsure", false);
-    } else if (legsUnsure) {
-      setValue("hair_removed_sites_legs_last_shaved_date", "");
-    }
-  }, [legsSelected, legsUnsure, setValue]);
+    handleSiteState({
+      selected: legsSelected,
+      unsure: legsUnsure,
+      lastCollection: legsLastCollection,
+      dateField: "hair_removed_sites_legs_last_shaved_date",
+      unsureField: "hair_removed_sites_legs_last_shaved_unsure",
+      lastCollectionField: "hair_removed_sites_legs_last_shaved_last_collection",
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [legsSelected, legsUnsure, legsLastCollection]);
 
   useEffect(() => {
-    if (!chestSelected) {
-      setValue("hair_removed_sites_chest_last_shaved_date", "");
-      setValue("hair_removed_sites_chest_last_shaved_unsure", false);
-    } else if (chestUnsure) {
-      setValue("hair_removed_sites_chest_last_shaved_date", "");
-    }
-  }, [chestSelected, chestUnsure, setValue]);
+    handleSiteState({
+      selected: chestSelected,
+      unsure: chestUnsure,
+      lastCollection: chestLastCollection,
+      dateField: "hair_removed_sites_chest_last_shaved_date",
+      unsureField: "hair_removed_sites_chest_last_shaved_unsure",
+      lastCollectionField:
+        "hair_removed_sites_chest_last_shaved_last_collection",
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chestSelected, chestUnsure, chestLastCollection]);
 
   useEffect(() => {
-    if (!backSelected) {
-      setValue("hair_removed_sites_back_last_shaved_date", "");
-      setValue("hair_removed_sites_back_last_shaved_unsure", false);
-    } else if (backUnsure) {
-      setValue("hair_removed_sites_back_last_shaved_date", "");
-    }
-  }, [backSelected, backUnsure, setValue]);
+    handleSiteState({
+      selected: backSelected,
+      unsure: backUnsure,
+      lastCollection: backLastCollection,
+      dateField: "hair_removed_sites_back_last_shaved_date",
+      unsureField: "hair_removed_sites_back_last_shaved_unsure",
+      lastCollectionField: "hair_removed_sites_back_last_shaved_last_collection",
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [backSelected, backUnsure, backLastCollection]);
+
+  useEffect(() => {
+    handleSiteState({
+      selected: underarmsSelected,
+      unsure: underarmsUnsure,
+      lastCollection: underarmsLastCollection,
+      dateField: "hair_removed_sites_underarms_last_shaved_date",
+      unsureField: "hair_removed_sites_underarms_last_shaved_unsure",
+      lastCollectionField:
+        "hair_removed_sites_underarms_last_shaved_last_collection",
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [underarmsSelected, underarmsUnsure, underarmsLastCollection]);
+
+  /**
+   * -------------------------
+   * Influencing factor clearing
+   * -------------------------
+   */
 
   // clear thermal frequency if "No"
   useEffect(() => {
-    if (thermal !== "Yes") setValue("hair_thermal_frequency", "");
+    if (thermal !== "Yes")
+      setValue("hair_thermal_frequency", "", { shouldDirty: false });
   }, [thermal, setValue]);
 
   // clear swimming frequency if "No"
   useEffect(() => {
-    if (swimming !== "Yes") setValue("frequent_swimming_frequency", "");
+    if (swimming !== "Yes")
+      setValue("frequent_swimming_frequency", "", { shouldDirty: false });
   }, [swimming, setValue]);
 
   // clear sunbeds frequency if "No"
   useEffect(() => {
-    if (sunbeds !== "Yes") setValue("frequent_sunbeds_frequency", "");
+    if (sunbeds !== "Yes")
+      setValue("frequent_sunbeds_frequency", "", { shouldDirty: false });
   }, [sunbeds, setValue]);
 
   // sprays follow-ups clearing if "No"
   useEffect(() => {
     if (sprays !== "Yes") {
-      setValue("frequent_sprays_frequency", "");
-      setValue("sprays_sites_scalp", false);
-      setValue("sprays_sites_arms", false);
-      setValue("sprays_sites_chest", false);
-      setValue("sprays_sites_legs", false);
-      setValue("sprays_sites_back", false);
+      setValue("frequent_sprays_frequency", "", { shouldDirty: false });
+      setValue("sprays_sites_scalp", false, { shouldDirty: false });
+      setValue("sprays_sites_arms", false, { shouldDirty: false });
+      setValue("sprays_sites_chest", false, { shouldDirty: false });
+      setValue("sprays_sites_legs", false, { shouldDirty: false });
+      setValue("sprays_sites_back", false, { shouldDirty: false });
     }
   }, [sprays, setValue]);
 
   const pregnancyDisabled = pregnant !== "Yes";
 
-  // ✅ conditional rules
-  const weeksRules = pregnant === "Yes" ? { required: "Please select an option" } : undefined;
+  // conditional rules
+  const weeksRules =
+    pregnant === "Yes" ? { required: "Please select an option" } : undefined;
 
-  // Optional: make due/birth date required only if pregnant === "Yes" and not unsure
-  // const dueDateRules =
-  //   pregnant === "Yes" && !dueUnsure ? { required: "Please provide a date or tick unsure" } : undefined;
+  // Reusable UI chunk for site "unsure/last collection" ticks
+  // Reusable UI chunk for site "unsure/last collection" ticks
+  const SiteFlags = ({ unsureName, lastCollectionName }) => {
+    const unsureReg = register(unsureName);
+    const lastReg = register(lastCollectionName);
+
+    return (
+      <div style={styles.unsureWrap}>
+        <label style={styles.checkboxLabel}>
+          <input
+            type="checkbox"
+            {...unsureReg}
+            onChange={(e) => {
+              // ✅ let react-hook-form update state
+              unsureReg.onChange(e);
+
+              // ✅ then apply your rule
+              if (e.target.checked) {
+                setValue(lastCollectionName, false, {
+                  shouldDirty: true,
+                  shouldValidate: true,
+                });
+              }
+            }}
+          />
+          Unsure
+        </label>
+
+        <label style={styles.checkboxLabel}>
+          <input
+            type="checkbox"
+            {...lastReg}
+            onChange={(e) => {
+              // ✅ let react-hook-form update state
+              lastReg.onChange(e);
+
+              // ✅ then apply your rule
+              if (e.target.checked) {
+                setValue(unsureName, false, {
+                  shouldDirty: true,
+                  shouldValidate: true,
+                });
+              }
+            }}
+          />
+          Last collection
+        </label>
+      </div>
+    );
+  };
 
   return (
     <section style={styles.section}>
@@ -175,25 +407,125 @@ export default function HairAndInfluencingSection({
         Hair Cutting (within the 12 months prior to sampling)
       </h2>
 
-      {/* Last scalp hair cut */}
-      <div style={styles.row}>
-        <div style={styles.field}>
-          <label style={styles.label}>When did you last cut your scalp hair?</label>
-          <input
-            style={styles.input}
-            type="date"
-            max={todayISO}
-            disabled={cutUnsure}
-            {...register("hair_last_cut_date")}
-          />
-        </div>
-        <div style={styles.unsureWrap}>
-          <label style={styles.checkboxLabel}>
-            <input type="checkbox" {...register("hair_last_cut_unsure")} />
-            Unsure
+      {/* Parent scalp cut question */}
+      <div style={styles.field}>
+        <label style={styles.label}>
+          Have you cut your scalp hair in the 12 months prior to sample
+          collection/since your previous test?
+        </label>
+
+        <div style={styles.inline}>
+          <label style={styles.radioLabel}>
+            <input
+              type="radio"
+              value="Yes"
+              {...register("hair_cut_in_last_12_months", {
+                required: "Please select an option",
+              })}
+            />{" "}
+            Yes
+          </label>
+
+          <label style={styles.radioLabel}>
+            <input
+              type="radio"
+              value="No"
+              {...register("hair_cut_in_last_12_months", {
+                required: "Please select an option",
+              })}
+            />{" "}
+            No
           </label>
         </div>
+
+        {showErrors && errors?.hair_cut_in_last_12_months && (
+          <div style={styles.errorText}>
+            {errors.hair_cut_in_last_12_months.message}
+          </div>
+        )}
       </div>
+
+      {/* Only show cut follow-ups if Yes */}
+      {cutInLast12Months === "Yes" && (
+        <>
+          {/* Last scalp hair cut date */}
+          <div style={styles.row}>
+            <div style={styles.field}>
+              <label style={styles.label}>
+                When did you last cut your scalp hair?
+              </label>
+              <input
+                style={styles.input}
+                type="date"
+                max={todayISO}
+                disabled={cutUnsure}
+                {...register("hair_last_cut_date", {
+                  validate: (v) => {
+                    if (cutInLast12Months !== "Yes") return true;
+                    if (cutUnsure) return true;
+                    return (v || "").trim()
+                      ? true
+                      : "Please enter a date or tick Unsure";
+                  },
+                })}
+              />
+            </div>
+            <div style={styles.unsureWrap}>
+              <label style={styles.checkboxLabel}>
+                <input type="checkbox" {...register("hair_last_cut_unsure")} />
+                Unsure
+              </label>
+            </div>
+          </div>
+
+          {showErrors && errors?.hair_last_cut_date && (
+            <div style={styles.errorText}>
+              {errors.hair_last_cut_date.message}
+            </div>
+          )}
+
+          {/* Was shaved to the skin? */}
+          <div style={styles.field}>
+            <label style={styles.label}>Was scalp hair shaved to the skin?</label>
+
+            <div style={styles.inline}>
+              <label style={styles.radioLabel}>
+                <input
+                  type="radio"
+                  value="Yes"
+                  {...register("hair_cut_shaved_to_skin", {
+                    validate: (v) => {
+                      if (cutInLast12Months !== "Yes") return true;
+                      return v ? true : "Please select an option";
+                    },
+                  })}
+                />{" "}
+                Yes
+              </label>
+
+              <label style={styles.radioLabel}>
+                <input
+                  type="radio"
+                  value="No"
+                  {...register("hair_cut_shaved_to_skin", {
+                    validate: (v) => {
+                      if (cutInLast12Months !== "Yes") return true;
+                      return v ? true : "Please select an option";
+                    },
+                  })}
+                />{" "}
+                No
+              </label>
+            </div>
+
+            {showErrors && errors?.hair_cut_shaved_to_skin && (
+              <div style={styles.errorText}>
+                {errors.hair_cut_shaved_to_skin.message}
+              </div>
+            )}
+          </div>
+        </>
+      )}
 
       {/* Body hair removed yes/no */}
       <div style={styles.field}>
@@ -255,6 +587,13 @@ export default function HairAndInfluencingSection({
                 <input type="checkbox" {...register("hair_removed_sites_back")} />
                 Back
               </label>
+              <label style={styles.checkboxLabel}>
+                <input
+                  type="checkbox"
+                  {...register("hair_removed_sites_underarms")}
+                />
+                Underarms
+              </label>
             </div>
           </div>
 
@@ -266,19 +605,30 @@ export default function HairAndInfluencingSection({
                   style={styles.input}
                   type="date"
                   max={todayISO}
-                  disabled={armsUnsure}
-                  {...register("hair_removed_sites_arms_last_shaved_date")}
+                  disabled={armsUnsure || armsLastCollection}
+                  {...register("hair_removed_sites_arms_last_shaved_date", {
+                    onChange: (e) => {
+                      if ((e.target.value || "").trim()) {
+                        setValue(
+                          "hair_removed_sites_arms_last_shaved_unsure",
+                          false,
+                          { shouldDirty: false }
+                        );
+                        setValue(
+                          "hair_removed_sites_arms_last_shaved_last_collection",
+                          false,
+                          { shouldDirty: false }
+                        );
+                      }
+                    },
+                  })}
                 />
               </div>
-              <div style={styles.unsureWrap}>
-                <label style={styles.checkboxLabel}>
-                  <input
-                    type="checkbox"
-                    {...register("hair_removed_sites_arms_last_shaved_unsure")}
-                  />
-                  Unsure
-                </label>
-              </div>
+
+              <SiteFlags
+                unsureName="hair_removed_sites_arms_last_shaved_unsure"
+                lastCollectionName="hair_removed_sites_arms_last_shaved_last_collection"
+              />
             </div>
           )}
 
@@ -290,43 +640,67 @@ export default function HairAndInfluencingSection({
                   style={styles.input}
                   type="date"
                   max={todayISO}
-                  disabled={legsUnsure}
-                  {...register("hair_removed_sites_legs_last_shaved_date")}
+                  disabled={legsUnsure || legsLastCollection}
+                  {...register("hair_removed_sites_legs_last_shaved_date", {
+                    onChange: (e) => {
+                      if ((e.target.value || "").trim()) {
+                        setValue(
+                          "hair_removed_sites_legs_last_shaved_unsure",
+                          false,
+                          { shouldDirty: false }
+                        );
+                        setValue(
+                          "hair_removed_sites_legs_last_shaved_last_collection",
+                          false,
+                          { shouldDirty: false }
+                        );
+                      }
+                    },
+                  })}
                 />
               </div>
-              <div style={styles.unsureWrap}>
-                <label style={styles.checkboxLabel}>
-                  <input
-                    type="checkbox"
-                    {...register("hair_removed_sites_legs_last_shaved_unsure")}
-                  />
-                  Unsure
-                </label>
-              </div>
+
+              <SiteFlags
+                unsureName="hair_removed_sites_legs_last_shaved_unsure"
+                lastCollectionName="hair_removed_sites_legs_last_shaved_last_collection"
+              />
             </div>
           )}
 
           {chestSelected && (
             <div style={styles.row}>
               <div style={styles.field}>
-                <label style={styles.label}>When did you last shave your chest?</label>
+                <label style={styles.label}>
+                  When did you last shave your chest?
+                </label>
                 <input
                   style={styles.input}
                   type="date"
                   max={todayISO}
-                  disabled={chestUnsure}
-                  {...register("hair_removed_sites_chest_last_shaved_date")}
+                  disabled={chestUnsure || chestLastCollection}
+                  {...register("hair_removed_sites_chest_last_shaved_date", {
+                    onChange: (e) => {
+                      if ((e.target.value || "").trim()) {
+                        setValue(
+                          "hair_removed_sites_chest_last_shaved_unsure",
+                          false,
+                          { shouldDirty: false }
+                        );
+                        setValue(
+                          "hair_removed_sites_chest_last_shaved_last_collection",
+                          false,
+                          { shouldDirty: false }
+                        );
+                      }
+                    },
+                  })}
                 />
               </div>
-              <div style={styles.unsureWrap}>
-                <label style={styles.checkboxLabel}>
-                  <input
-                    type="checkbox"
-                    {...register("hair_removed_sites_chest_last_shaved_unsure")}
-                  />
-                  Unsure
-                </label>
-              </div>
+
+              <SiteFlags
+                unsureName="hair_removed_sites_chest_last_shaved_unsure"
+                lastCollectionName="hair_removed_sites_chest_last_shaved_last_collection"
+              />
             </div>
           )}
 
@@ -338,19 +712,67 @@ export default function HairAndInfluencingSection({
                   style={styles.input}
                   type="date"
                   max={todayISO}
-                  disabled={backUnsure}
-                  {...register("hair_removed_sites_back_last_shaved_date")}
+                  disabled={backUnsure || backLastCollection}
+                  {...register("hair_removed_sites_back_last_shaved_date", {
+                    onChange: (e) => {
+                      if ((e.target.value || "").trim()) {
+                        setValue(
+                          "hair_removed_sites_back_last_shaved_unsure",
+                          false,
+                          { shouldDirty: false }
+                        );
+                        setValue(
+                          "hair_removed_sites_back_last_shaved_last_collection",
+                          false,
+                          { shouldDirty: false }
+                        );
+                      }
+                    },
+                  })}
                 />
               </div>
-              <div style={styles.unsureWrap}>
-                <label style={styles.checkboxLabel}>
-                  <input
-                    type="checkbox"
-                    {...register("hair_removed_sites_back_last_shaved_unsure")}
-                  />
-                  Unsure
+
+              <SiteFlags
+                unsureName="hair_removed_sites_back_last_shaved_unsure"
+                lastCollectionName="hair_removed_sites_back_last_shaved_last_collection"
+              />
+            </div>
+          )}
+
+          {underarmsSelected && (
+            <div style={styles.row}>
+              <div style={styles.field}>
+                <label style={styles.label}>
+                  When did you last shave your underarms?
                 </label>
+                <input
+                  style={styles.input}
+                  type="date"
+                  max={todayISO}
+                  disabled={underarmsUnsure || underarmsLastCollection}
+                  {...register("hair_removed_sites_underarms_last_shaved_date", {
+                    onChange: (e) => {
+                      if ((e.target.value || "").trim()) {
+                        setValue(
+                          "hair_removed_sites_underarms_last_shaved_unsure",
+                          false,
+                          { shouldDirty: false }
+                        );
+                        setValue(
+                          "hair_removed_sites_underarms_last_shaved_last_collection",
+                          false,
+                          { shouldDirty: false }
+                        );
+                      }
+                    },
+                  })}
+                />
               </div>
+
+              <SiteFlags
+                unsureName="hair_removed_sites_underarms_last_shaved_unsure"
+                lastCollectionName="hair_removed_sites_underarms_last_shaved_last_collection"
+              />
             </div>
           )}
         </>
@@ -363,7 +785,8 @@ export default function HairAndInfluencingSection({
       {/* Pregnant */}
       <div style={styles.field}>
         <label style={styles.label}>
-          Are you currently pregnant or have you been pregnant in the 12 months prior sampling?
+          Are you currently pregnant or have you been pregnant in the 12 months
+          prior sampling?
         </label>
 
         <div style={styles.inline}>
@@ -390,41 +813,64 @@ export default function HairAndInfluencingSection({
         </div>
 
         {showErrors && errors?.pregnant_last_12_months && (
-          <div style={styles.errorText}>{errors.pregnant_last_12_months.message}</div>
+          <div style={styles.errorText}>
+            {errors.pregnant_last_12_months.message}
+          </div>
         )}
       </div>
 
       {/* Due date / birth date */}
       <div style={styles.row}>
         <div style={styles.field}>
-          <label style={styles.label}>If so, when is your due date/when did you give birth?</label>
+          <label style={styles.label}>
+            If so, when is your due date/when did you give birth?
+          </label>
           <input
             style={styles.input}
             type="date"
-            max={todayISO}
-            disabled={pregnancyDisabled || dueUnsure}
-            {...register("pregnancy_due_or_birth_date")}
-            // If you want conditional requirement, use:
-            // {...register("pregnancy_due_or_birth_date", dueDateRules)}
+            disabled={pregnant !== "Yes" || dueUnsure}
+            {...register("pregnancy_due_or_birth_date", {
+              validate: (v) => {
+                if (pregnant !== "Yes") return true;
+                if (dueUnsure) return true;
+                return (v || "").trim()
+                  ? true
+                  : "Please enter a due/birth date or tick Unsure";
+              },
+            })}
           />
-          {/* If you enable dueDateRules, also show its error */}
-          {/* {showErrors && errors?.pregnancy_due_or_birth_date && (
-            <div style={styles.errorText}>{errors.pregnancy_due_or_birth_date.message}</div>
-          )} */}
         </div>
         <div style={styles.unsureWrap}>
           <label style={styles.checkboxLabel}>
             <input
               type="checkbox"
-              disabled={pregnancyDisabled}
-              {...register("pregnancy_due_date_unsure")}
+              disabled={pregnant !== "Yes"}
+              {...register("pregnancy_due_date_unsure", {
+                validate: (v) => {
+                  if (pregnant !== "Yes") return true;
+                  if (v) return true;
+                  const dateVal = watch("pregnancy_due_or_birth_date");
+                  return (dateVal || "").trim()
+                    ? true
+                    : "Please enter a due/birth date or tick Unsure";
+                },
+              })}
             />
             Unsure
           </label>
         </div>
       </div>
 
-      {/* Weeks pregnant (required only if pregnant === "Yes") */}
+      {showErrors &&
+        (errors?.pregnancy_due_or_birth_date ||
+          errors?.pregnancy_due_date_unsure) && (
+          <div style={styles.errorText}>
+            {errors?.pregnancy_due_or_birth_date?.message ||
+              errors?.pregnancy_due_date_unsure?.message}
+          </div>
+        )}
+
+      {/* Weeks pregnant */}
       <div style={styles.field}>
         <label style={styles.label}>
           How many weeks pregnant were you when you gave birth? (if applicable)
@@ -432,16 +878,18 @@ export default function HairAndInfluencingSection({
 
         <select
           style={styles.select}
-          disabled={pregnancyDisabled}
+          disabled={pregnant !== "Yes"}
           {...register("pregnancy_weeks", weeksRules)}
         >
           <option value="">Choose an item</option>
           <option value="Unsure">Unsure</option>
-          {Array.from({ length: 45 }, (_, i) => i).reverse().map((w) => (
-            <option key={w} value={String(w)}>
-              {w}
-            </option>
-          ))}
+          {Array.from({ length: 45 }, (_, i) => i)
+            .reverse()
+            .map((w) => (
+              <option key={w} value={String(w)}>
+                {w}
+              </option>
+            ))}
         </select>
 
         {showErrors && errors?.pregnancy_weeks && (
@@ -449,7 +897,7 @@ export default function HairAndInfluencingSection({
         )}
       </div>
 
-      {/* Dyed/bleached (REQUIRED) */}
+      {/* Dyed/bleached */}
       <YesNo
         label="Have you dyed/bleached your hair in the 12 months prior to sampling?"
         name="hair_dyed_bleached"
@@ -460,11 +908,11 @@ export default function HairAndInfluencingSection({
         showErrors={showErrors}
       />
 
-      {/* Follow-up if dyed/bleached */}
       {dyedBleached === "Yes" && (
         <div style={styles.field}>
           <label style={styles.label}>
-            To the best of your knowledge, when did you last dye/bleach your scalp hair? (if unsure leave blank)
+            To the best of your knowledge, when did you last dye/bleach your
+            scalp hair? (if unsure leave blank)
           </label>
           <input
             style={styles.input}
@@ -475,7 +923,7 @@ export default function HairAndInfluencingSection({
         </div>
       )}
 
-      {/* Thermal applications (REQUIRED) */}
+      {/* Thermal applications */}
       <YesNo
         label="Have you used thermal applications (i.e. hair straighteners) on your scalp hair?"
         name="hair_thermal_applications"
@@ -486,7 +934,6 @@ export default function HairAndInfluencingSection({
         showErrors={showErrors}
       />
 
-      {/* thermal frequency */}
       {thermal === "Yes" && (
         <div style={styles.field}>
           <label style={styles.label}>How often do you use thermal applications?</label>
@@ -526,7 +973,7 @@ export default function HairAndInfluencingSection({
         </select>
       </div>
 
-      {/* Swim/hot tubs (REQUIRED) */}
+      {/* Swim/hot tubs */}
       <YesNo
         label="Do you swim in a pool or use hot tubs?"
         name="frequent_swimming"
@@ -537,7 +984,6 @@ export default function HairAndInfluencingSection({
         showErrors={showErrors}
       />
 
-      {/* swimming frequency */}
       {swimming === "Yes" && (
         <div style={styles.field}>
           <label style={styles.label}>How often do you swim or use hot tubs?</label>
@@ -552,7 +998,7 @@ export default function HairAndInfluencingSection({
         </div>
       )}
 
-      {/* Sunbeds (REQUIRED) */}
+      {/* Sunbeds */}
       <YesNo
         label="Do you use sunbeds?"
         name="frequent_sunbeds"
@@ -563,7 +1009,6 @@ export default function HairAndInfluencingSection({
         showErrors={showErrors}
       />
 
-      {/* sunbeds frequency */}
       {sunbeds === "Yes" && (
         <div style={styles.field}>
           <label style={styles.label}>How often do you use sunbeds?</label>
@@ -578,7 +1023,7 @@ export default function HairAndInfluencingSection({
         </div>
       )}
 
-      {/* Sprays on sample sites (REQUIRED) */}
+      {/* Sprays */}
       <YesNo
         label="Have you applied hairspray, perfume/aftershave, deodorant and/or dry shampoo to the sample sites?"
         name="frequent_sprays_on_sites"
@@ -589,7 +1034,6 @@ export default function HairAndInfluencingSection({
         showErrors={showErrors}
       />
 
-      {/* sprays follow-ups */}
       {sprays === "Yes" && (
         <>
           <div style={styles.field}>
@@ -683,11 +1127,29 @@ const styles = {
   field: { display: "flex", flexDirection: "column", gap: 8, marginBottom: 14 },
   label: { fontWeight: 600 },
 
-  input: { padding: 8, borderRadius: 6, border: "1px solid #ccc", minWidth: 240 },
+  input: {
+    padding: 8,
+    borderRadius: 6,
+    border: "1px solid #ccc",
+    minWidth: 240,
+  },
   select: { padding: 8, borderRadius: 6, border: "1px solid #ccc", minWidth: 280 },
 
-  unsureWrap: { paddingBottom: 2 },
-  checkboxLabel: { display: "flex", gap: 8, alignItems: "center", fontWeight: 600 },
+  // updated so two checkboxes sit nicely
+  unsureWrap: {
+    paddingBottom: 2,
+    display: "flex",
+    gap: 12,
+    alignItems: "center",
+    flexWrap: "wrap",
+  },
+
+  checkboxLabel: {
+    display: "flex",
+    gap: 8,
+    alignItems: "center",
+    fontWeight: 600,
+  },
 
   inline: { display: "flex", gap: 18, alignItems: "center" },
   radioLabel: { display: "flex", gap: 8, alignItems: "center" },

@@ -268,6 +268,19 @@
       height: auto;
       object-fit: contain;
     }
+
+    /* =========================================
+       ✅ Child period rows (subtle + numbered)
+       Parent row = period 1 (implicit)
+       Children = "Additional period 2+"
+       ========================================= */
+    tr.child-period-row {
+      background: #f3f4f6; /* light grey tint */
+    }
+    tr.child-period-row td {
+      font-size: 10px;
+      color: var(--muted);
+    }
   </style>
 </head>
 
@@ -302,6 +315,16 @@
 
   {% macro show_date(date_str, unsure_flag) -%}
     {%- if unsure_flag -%}
+      Unsure
+    {%- else -%}
+      {{ uk_date(date_str) }}
+    {%- endif -%}
+  {%- endmacro %}
+
+  {% macro show_date_or_last_collection(date_str, unsure_flag, last_collection_flag) -%}
+    {%- if last_collection_flag -%}
+      Last collection
+    {%- elif unsure_flag -%}
       Unsure
     {%- else -%}
       {{ uk_date(date_str) }}
@@ -397,7 +420,7 @@
       </div>
     </div>
   </section>
-  
+
   {% if (d.testing_type or "") != "Alcohol Only" %}
   <div class="section drug-use-section">
     <div class="section-title">Drug Use</div>
@@ -414,6 +437,7 @@
           <th style="width: 10%;">Prescribed</th>
         </tr>
       </thead>
+
       <tbody>
         {% for r in (d.drug_use or []) %}
           <tr>
@@ -433,9 +457,11 @@
           </tr>
 
           {% for p in (r.periods or []) %}
-            <tr>
-              <td style="padding-left:18px; font-style: italic;">↳ Period</td>
-              <td>—</td>
+            <tr class="child-period-row">
+              <td style="padding-left:18px; font-style: italic;">
+                Additional period {{ loop.index + 1 }}
+              </td>
+              <td class="muted">—</td>
               <td>{{ show(p.level_of_use) }}</td>
               <td>{{ uk_date(p.start_date_of_use) }}</td>
               <td>{{ uk_date(p.date_of_last_use) }}</td>
@@ -461,9 +487,18 @@
   {% endif %}
 
   {% if (d.testing_type or "") != "Alcohol Only" %}
-    <div class="section">
-      <div class="section-title">Drug Exposure</div>
+  <div class="section">
+    <div class="section-title">Drug Exposure</div>
 
+    {% if d.drug_exposure_any == "No" %}
+      <div class="field">
+        <div class="label">
+          Have you been exposed to any of the drugs listed above during the 12 months prior to sampling?
+        </div>
+        <div class="value">No</div>
+      </div>
+
+    {% elif d.drug_exposure_any == "Yes" %}
       <table>
         <thead>
           <tr>
@@ -479,7 +514,6 @@
 
         <tbody>
           {% for r in (d.drug_exposure or []) %}
-            {# -------- Parent row -------- #}
             <tr>
               <td>
                 {{ show(r.drug_name) }}
@@ -489,7 +523,7 @@
               </td>
 
               <td>
-                {% if r.status == "exposed" %}
+                {% if r.status == "Exposed" %}
                   Exposed
                 {% else %}
                   Not exposed
@@ -503,11 +537,10 @@
               <td>{{ join_list(r.type_of_exposure) }}</td>
             </tr>
 
-            {# -------- Child period rows -------- #}
             {% for p in (r.periods or []) %}
-              <tr>
+              <tr class="child-period-row">
                 <td style="padding-left:18px; font-style: italic;">
-                  <span class="muted">↳ Period {{ loop.index + 1 }}</span>
+                  <span class="muted">Additional period {{ loop.index + 1 }}</span>
                 </td>
 
                 <td class="muted">—</td>
@@ -522,10 +555,11 @@
         </tbody>
       </table>
 
-    <div class="note-box">
-      <div class="label">Other information (Drug Exposure)</div>
-      <div class="value normal">{{ show(d.drug_exposure_other_info) }}</div>
-    </div>
+      <div class="note-box">
+        <div class="label">Other information (Drug Exposure)</div>
+        <div class="value normal">{{ show(d.drug_exposure_other_info) }}</div>
+      </div>
+    {% endif %}
   </div>
 {% endif %}
 
@@ -571,9 +605,23 @@
 
     <div class="grid">
       <div class="field">
-        <div class="label">When did you last cut your hair? (Date)</div>
-        <div class="value">{{ show_date(d.hair_last_cut_date, d.hair_last_cut_unsure) }}</div>
+        <div class="label">
+          Have you cut your scalp hair in the 12 months prior to sample collection/since your previous test?
+        </div>
+        <div class="value">{{ show(d.hair_cut_in_last_12_months) }}</div>
       </div>
+
+      {% if d.hair_cut_in_last_12_months == "Yes" %}
+        <div class="field">
+          <div class="label">When did you last cut your scalp hair? (Date)</div>
+          <div class="value">{{ show_date(d.hair_last_cut_date, d.hair_last_cut_unsure) }}</div>
+        </div>
+
+        <div class="field">
+          <div class="label">Was scalp hair shaved to the skin?</div>
+          <div class="value">{{ show(d.hair_cut_shaved_to_skin) }}</div>
+        </div>
+      {% endif %}
 
       <div class="field">
         <div class="label">Have you shaved/removed any body hair in the last 12 months?</div>
@@ -586,7 +634,11 @@
 
           <div class="value">
             {% set any_site =
-              (d.hair_removed_sites_arms or d.hair_removed_sites_legs or d.hair_removed_sites_chest or d.hair_removed_sites_back)
+              (d.hair_removed_sites_arms
+               or d.hair_removed_sites_legs
+               or d.hair_removed_sites_chest
+               or d.hair_removed_sites_back
+               or d.hair_removed_sites_underarms)
             %}
 
             {% if not any_site %}
@@ -596,28 +648,55 @@
                 {% if d.hair_removed_sites_arms %}
                   <div>
                     <strong>Arms:</strong>
-                    {{ show_date(d.hair_removed_sites_arms_last_shaved_date, d.hair_removed_sites_arms_last_shaved_unsure) }}
+                    {{ show_date_or_last_collection(
+                      d.hair_removed_sites_arms_last_shaved_date,
+                      d.hair_removed_sites_arms_last_shaved_unsure,
+                      d.hair_removed_sites_arms_last_shaved_last_collection
+                    ) }}
                   </div>
                 {% endif %}
 
                 {% if d.hair_removed_sites_legs %}
                   <div>
                     <strong>Legs:</strong>
-                    {{ show_date(d.hair_removed_sites_legs_last_shaved_date, d.hair_removed_sites_legs_last_shaved_unsure) }}
+                    {{ show_date_or_last_collection(
+                      d.hair_removed_sites_legs_last_shaved_date,
+                      d.hair_removed_sites_legs_last_shaved_unsure,
+                      d.hair_removed_sites_legs_last_shaved_last_collection
+                    ) }}
                   </div>
                 {% endif %}
 
                 {% if d.hair_removed_sites_chest %}
                   <div>
                     <strong>Chest:</strong>
-                    {{ show_date(d.hair_removed_sites_chest_last_shaved_date, d.hair_removed_sites_chest_last_shaved_unsure) }}
+                    {{ show_date_or_last_collection(
+                      d.hair_removed_sites_chest_last_shaved_date,
+                      d.hair_removed_sites_chest_last_shaved_unsure,
+                      d.hair_removed_sites_chest_last_shaved_last_collection
+                    ) }}
                   </div>
                 {% endif %}
 
                 {% if d.hair_removed_sites_back %}
                   <div>
                     <strong>Back:</strong>
-                    {{ show_date(d.hair_removed_sites_back_last_shaved_date, d.hair_removed_sites_back_last_shaved_unsure) }}
+                    {{ show_date_or_last_collection(
+                      d.hair_removed_sites_back_last_shaved_date,
+                      d.hair_removed_sites_back_last_shaved_unsure,
+                      d.hair_removed_sites_back_last_shaved_last_collection
+                    ) }}
+                  </div>
+                {% endif %}
+
+                {% if d.hair_removed_sites_underarms %}
+                  <div>
+                    <strong>Underarms:</strong>
+                    {{ show_date_or_last_collection(
+                      d.hair_removed_sites_underarms_last_shaved_date,
+                      d.hair_removed_sites_underarms_last_shaved_unsure,
+                      d.hair_removed_sites_underarms_last_shaved_last_collection
+                    ) }}
                   </div>
                 {% endif %}
               </div>
@@ -731,7 +810,6 @@
       {% endif %}
     </div>
   </div>
-
 
   <div class="section signatures-section">
     <div class="section-title">Signatures</div>

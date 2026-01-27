@@ -57,19 +57,24 @@ function DrugUseRow({ drug, index, register, errors, showErrors, control, setVal
   const periods =
     useWatch({ control, name: `drug_use.${index}.periods` }) || [];
 
+  // ✅ watch parent start + unsure so we can validate parent end date
+  const parentStart =
+    useWatch({ control, name: `drug_use.${index}.start_date_of_use` }) || "";
+  const parentUnsure =
+    useWatch({ control, name: `drug_use.${index}.unsure_date` }) || false;
+
   // Base checkbox controls whether periods exist at all
   useEffect(() => {
     if (baseHasChange) {
       if (!Array.isArray(periods) || periods.length === 0) {
-        setValue(`drug_use.${index}.periods`, [blankPeriod()]);
+        setValue(`drug_use.${index}.periods`, [blankPeriod()], { shouldDirty: false });
       }
     } else {
       if (Array.isArray(periods) && periods.length > 0) {
-        setValue(`drug_use.${index}.periods`, []);
+        setValue(`drug_use.${index}.periods`, [], { shouldDirty: false });
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [baseHasChange]);
+  }, [baseHasChange, periods, index, setValue]);
 
   // Chain behaviour: ensure exactly ONE new blank row exists after the last ticked period
   useEffect(() => {
@@ -82,7 +87,11 @@ function DrugUseRow({ drug, index, register, errors, showErrors, control, setVal
 
     if (lastTicked === -1) {
       if (periods.length !== 1) {
-        setValue(`drug_use.${index}.periods`, [periods[0] || blankPeriod()]);
+        setValue(
+          `drug_use.${index}.periods`,
+          [periods[0] || blankPeriod()],
+          { shouldDirty: false }
+        );
       }
       return;
     }
@@ -92,7 +101,7 @@ function DrugUseRow({ drug, index, register, errors, showErrors, control, setVal
     if (periods.length < desiredLen) {
       const next = [...periods];
       while (next.length < desiredLen) next.push(blankPeriod());
-      setValue(`drug_use.${index}.periods`, next);
+      setValue(`drug_use.${index}.periods`, next, { shouldDirty: false });
       return;
     }
 
@@ -101,11 +110,14 @@ function DrugUseRow({ drug, index, register, errors, showErrors, control, setVal
       const allTailEmpty = tail.every(isEmptyPeriod);
 
       if (allTailEmpty) {
-        setValue(`drug_use.${index}.periods`, periods.slice(0, desiredLen));
+        setValue(
+          `drug_use.${index}.periods`,
+          periods.slice(0, desiredLen),
+          { shouldDirty: false }
+        );
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [periods]);
+  }, [periods, index, setValue]);
 
   const statusErr = errors?.drug_use?.[index]?.status;
 
@@ -137,13 +149,25 @@ function DrugUseRow({ drug, index, register, errors, showErrors, control, setVal
           />
         </td>
 
-        {/* End date */}
+        {/* ✅ End date: cannot be before start date */}
         <td style={styles.td}>
           <input
             style={styles.input}
             type="date"
             max={todayISO}
-            {...register(`drug_use.${index}.date_of_last_use`)}
+            min={parentStart || undefined} // UX: prevents selecting earlier in picker
+            {...register(`drug_use.${index}.date_of_last_use`, {
+              validate: (end) => {
+                // allow blanks
+                if (!end || !parentStart) return true;
+                // if unsure, ignore ordering
+                if (parentUnsure) return true;
+
+                return end >= parentStart
+                  ? true
+                  : "End date cannot be before start date";
+              },
+            })}
           />
         </td>
 
@@ -189,6 +213,9 @@ function DrugUseRow({ drug, index, register, errors, showErrors, control, setVal
           const pErr = errors?.drug_use?.[index]?.periods?.[pIndex] || {};
           const periodActive = isPeriodActive(p);
 
+          // ✅ pull start directly from the period object (no hook needed)
+          const periodStart = (p?.start_date_of_use || "").trim();
+
           return (
             <React.Fragment key={`${drug.name}-period-${pIndex}`}>
               <tr>
@@ -221,12 +248,21 @@ function DrugUseRow({ drug, index, register, errors, showErrors, control, setVal
                     style={styles.input}
                     type="date"
                     max={todayISO}
+                    min={periodStart || undefined} // UX: prevents selecting earlier
                     {...register(`drug_use.${index}.periods.${pIndex}.date_of_last_use`, {
-                      validate: (v) => {
+                      validate: (end) => {
                         if (!baseHasChange) return true;
                         if (!periodActive) return true;
                         if (p?.unsure_date) return true;
-                        return (v || "").trim() ? true : "End date is required";
+
+                        // required rule
+                        if (!(end || "").trim()) return "End date is required";
+
+                        // ✅ ordering rule
+                        if (periodStart && end < periodStart) {
+                          return "End date cannot be before start date";
+                        }
+                        return true;
                       },
                     })}
                   />

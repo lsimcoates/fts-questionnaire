@@ -25,9 +25,10 @@ export default function QuestionnairePage() {
     setValue,
     control,
     reset,
+    clearErrors,
     formState: { errors, submitCount },
   } = useForm({
-    shouldUnregister: true, // ✅ important: hidden sections won't block validation/submit
+    shouldUnregister: false, 
     defaultValues: {
       // Personal Details
       consent: "",
@@ -45,9 +46,9 @@ export default function QuestionnairePage() {
       // Drug tables
       drug_use: [],
       drug_exposure: [],
+      drug_exposure_any: "",
       drug_use_other_info: "",
       drug_exposure_other_info: "",
-      shouldUnregister: true,
 
       // Medication
       has_other_medications: "",
@@ -61,8 +62,10 @@ export default function QuestionnairePage() {
       alcohol_other_info: "",
 
       // Hair + Influencing
+      hair_cut_in_last_12_months: "",
       hair_last_cut_date: "",
       hair_last_cut_unsure: false,
+      hair_cut_shaved_to_skin: false,
       hair_removed_body_hair_last_12_months: "",
 
       hair_removed_sites_arms: false,
@@ -80,6 +83,17 @@ export default function QuestionnairePage() {
       hair_removed_sites_back: false,
       hair_removed_sites_back_last_shaved_date: "",
       hair_removed_sites_back_last_shaved_unsure: false,
+
+      hair_removed_underarms: false,
+      hair_removed_underarms_last_shaved_date: "",
+      hair_removed_underarms_last_shaved_unsure: false,
+
+      hair_removed_sites_arms_last_shaved_last_collection: false,
+      hair_removed_sites_legs_last_shaved_last_collection: false,
+      hair_removed_sites_chest_last_shaved_last_collection: false,
+      hair_removed_sites_back_last_shaved_last_collection: false,
+      hair_removed_sites_underarms_last_shaved_last_collection: false,
+
 
       pregnant_last_12_months: "",
       pregnancy_due_or_birth_date: "",
@@ -144,12 +158,13 @@ export default function QuestionnairePage() {
   // ✅ if Alcohol Only, clear drug section fields (prevents stale data being saved)
   useEffect(() => {
     if (isAlcoholOnly) {
-      setValue("drug_use", []);
-      setValue("drug_exposure", []);
-      setValue("drug_use_other_info", "");
-      setValue("drug_exposure_other_info", "");
+      setValue("drug_use", [], { shouldDirty: false });
+      setValue("drug_exposure", [], { shouldDirty: false });
+      setValue("drug_use_other_info", "", { shouldDirty: false });
+      setValue("drug_exposure_other_info", "", { shouldDirty: false });
+      clearErrors(["drug_use", "drug_exposure", "drug_use_other_info", "drug_exposure_other_info"]);
     }
-  }, [isAlcoholOnly, setValue]);
+  }, [isAlcoholOnly, setValue, clearErrors]);
 
   // Load saved draft if we have an ID
   useEffect(() => {
@@ -320,6 +335,7 @@ export default function QuestionnairePage() {
               register={register}
               watch={watch}
               setValue={setValue}
+              clearErrors={clearErrors}
               errors={errors}
               showErrors={showErrors}
             />

@@ -14,6 +14,7 @@ export default function AlcoholSection({
   register,
   watch,
   setValue,
+  clearErrors,
   errors,
   showErrors,
 }) {
@@ -23,20 +24,27 @@ export default function AlcoholSection({
   // If they tick unsure, clear the date
   useEffect(() => {
     if (unsureLastDate) {
-      setValue("alcohol_last_consumed_date", "");
+      setValue("alcohol_last_consumed_date", "", { shouldDirty: false });
+      clearErrors?.("alcohol_last_consumed_date");
     }
-  }, [unsureLastDate, setValue]);
+  }, [unsureLastDate, setValue, clearErrors]);
 
   // If they say No alcohol, clear related fields
   useEffect(() => {
     if (consumedAlcohol === "No") {
-      setValue("alcohol_last_consumed_date", "");
-      setValue("alcohol_last_date_unsure", false);
-      setValue("alcohol_weekly_options", []); // array of checked options
-      setValue("alcohol_other_info", "");
-    }
-  }, [consumedAlcohol, setValue]);
+      setValue("alcohol_last_consumed_date", "", { shouldDirty: false });
+      setValue("alcohol_last_date_unsure", false, { shouldDirty: false });
+      setValue("alcohol_weekly_options", [], { shouldDirty: false }); // array of checked options
+      setValue("alcohol_other_info", "", { shouldDirty: false });
 
+      clearErrors?.([
+        "alcohol_last_consumed_date",
+        "alcohol_last_date_unsure",
+        "alcohol_weekly_options",
+        "alcohol_other_info",
+      ]);
+    }
+  }, [consumedAlcohol, setValue, clearErrors]);
   const disabled = consumedAlcohol === "No";
 
   return (
@@ -120,7 +128,10 @@ export default function AlcoholSection({
                 value={label}
                 disabled={disabled}
                 {...register("alcohol_weekly_options", {
-                  required: "Please select at least one option",
+                  validate: (v) => {
+                    if (consumedAlcohol !== "Yes") return true;
+                    return Array.isArray(v) && v.length > 0 ? true : "Please select at least one option";
+                  },
                 })}
               />
               {label}

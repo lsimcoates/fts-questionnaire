@@ -4,13 +4,15 @@ import { drugExposureRows } from "../config/drugExposureConfig";
 import { todayISO } from "../config/dateUtils";
 
 const EXPOSURE_OPTIONS = [
-  "Formal contact with a user",
-  "Intimate contact with a user",
+  "Close and physical contact with a user",
+  "Sexual contact with a user",
   "To a place where drugs have been used",
   "Direct contact with the drug",
   "Outdoor exposure",
   "Unsure",
 ];
+
+const STATUS_OPTIONS = ["Exposed", "Not exposed"];
 
 const PARENT_LEVEL_OPTIONS = [
   "Single Occassion",
@@ -78,21 +80,28 @@ function DrugExposureRow({
   const periods =
     useWatch({ control, name: `drug_exposure.${index}.periods` }) || [];
 
-  // Base checkbox controls whether periods exist at all
+  // ✅ watch parent start + unsure for end-date validation
+  const parentStart =
+    useWatch({ control, name: `drug_exposure.${index}.start_date_of_exposure` }) || "";
+  const parentUnsure =
+    useWatch({ control, name: `drug_exposure.${index}.unsure_date` }) || false;
+
+  // ✅ Base checkbox controls whether periods exist at all (rehydration-safe)
   useEffect(() => {
     if (baseHasChange) {
       if (!Array.isArray(periods) || periods.length === 0) {
-        setValue(`drug_exposure.${index}.periods`, [blankExposurePeriod()]);
+        setValue(`drug_exposure.${index}.periods`, [blankExposurePeriod()], {
+          shouldDirty: false,
+        });
       }
     } else {
       if (Array.isArray(periods) && periods.length > 0) {
-        setValue(`drug_exposure.${index}.periods`, []);
+        setValue(`drug_exposure.${index}.periods`, [], { shouldDirty: false });
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [baseHasChange]);
+  }, [baseHasChange, periods, index, setValue]);
 
-  // Chain behaviour: ensure exactly ONE new blank row exists after the last ticked period
+  // ✅ Chain behaviour: ensure exactly ONE new blank row exists after the last ticked period
   useEffect(() => {
     if (!Array.isArray(periods) || periods.length === 0) return;
 
@@ -106,7 +115,8 @@ function DrugExposureRow({
       if (periods.length !== 1) {
         setValue(
           `drug_exposure.${index}.periods`,
-          [periods[0] || blankExposurePeriod()]
+          [periods[0] || blankExposurePeriod()],
+          { shouldDirty: false }
         );
       }
       return;
@@ -117,7 +127,7 @@ function DrugExposureRow({
     if (periods.length < desiredLen) {
       const next = [...periods];
       while (next.length < desiredLen) next.push(blankExposurePeriod());
-      setValue(`drug_exposure.${index}.periods`, next);
+      setValue(`drug_exposure.${index}.periods`, next, { shouldDirty: false });
       return;
     }
 
@@ -125,11 +135,12 @@ function DrugExposureRow({
       const tail = periods.slice(desiredLen);
       const allTailEmpty = tail.every(isEmptyPeriod);
       if (allTailEmpty) {
-        setValue(`drug_exposure.${index}.periods`, periods.slice(0, desiredLen));
+        setValue(`drug_exposure.${index}.periods`, periods.slice(0, desiredLen), {
+          shouldDirty: false,
+        });
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [periods]);
+  }, [periods, index, setValue]);
 
   const statusErr = errors?.drug_exposure?.[index]?.status;
 
@@ -139,15 +150,22 @@ function DrugExposureRow({
       <tr>
         <td style={styles.td}>{drugName}</td>
 
-        {/* ✅ Only one column now: Exposed */}
+        {/* ✅ Status column: two radios stacked vertically */}
         <td style={styles.tdCenter}>
-          <input
-            type="radio"
-            value="exposed"
-            {...register(`drug_exposure.${index}.status`, {
-              required: "Please confirm if exposed",
-            })}
-          />
+          <div style={styles.statusStack}>
+            {STATUS_OPTIONS.map((label) => (
+              <label key={label} style={styles.statusOption}>
+                <input
+                  type="radio"
+                  value={label}
+                  {...register(`drug_exposure.${index}.status`, {
+                    required: "Please select Exposed or Not exposed",
+                  })}
+                />
+                <span>{label}</span>
+              </label>
+            ))}
+          </div>
         </td>
 
         {/* Start date */}
@@ -160,21 +178,27 @@ function DrugExposureRow({
           />
         </td>
 
-        {/* End date */}
+        {/* ✅ End date: cannot be before start date */}
         <td style={styles.td}>
           <input
             style={styles.input}
             type="date"
             max={todayISO}
-            {...register(`drug_exposure.${index}.date_of_last_exposure`)}
+            min={parentStart || undefined}
+            {...register(`drug_exposure.${index}.date_of_last_exposure`, {
+              validate: (end) => {
+                if (!end || !parentStart) return true;
+                if (parentUnsure) return true;
+                return end >= parentStart
+                  ? true
+                  : "End date cannot be before start date";
+              },
+            })}
           />
         </td>
 
         <td style={styles.tdCenter}>
-          <input
-            type="checkbox"
-            {...register(`drug_exposure.${index}.unsure_date`)}
-          />
+          <input type="checkbox" {...register(`drug_exposure.${index}.unsure_date`)} />
         </td>
 
         <td style={styles.td}>
@@ -208,10 +232,7 @@ function DrugExposureRow({
 
         {/* Changes/fluctuations */}
         <td style={styles.tdCenter}>
-          <input
-            type="checkbox"
-            {...register(`drug_exposure.${index}.has_change`)}
-          />
+          <input type="checkbox" {...register(`drug_exposure.${index}.has_change`)} />
         </td>
 
         {/* hidden: store drug name */}
@@ -229,6 +250,9 @@ function DrugExposureRow({
           const pErr = errors?.drug_exposure?.[index]?.periods?.[pIndex] || {};
           const periodActive = isPeriodActive(p);
 
+          // ✅ use period object directly (no hooks in map)
+          const periodStart = (p?.start_date_of_exposure || "").trim();
+
           return (
             <React.Fragment key={`${drugName}-period-${pIndex}`}>
               <tr>
@@ -236,7 +260,7 @@ function DrugExposureRow({
                   <span style={styles.subRowArrow}>↳</span> Period {pIndex + 2}
                 </td>
 
-                {/* ✅ Only ONE placeholder column now (matches Exposed) */}
+                {/* Status placeholder */}
                 <td style={styles.tdCenter}>
                   <span style={styles.muted}>—</span>
                 </td>
@@ -254,31 +278,36 @@ function DrugExposureRow({
                           if (!baseHasChange) return true;
                           if (!periodActive) return true;
                           if (p?.unsure_date) return true;
-                          return (v || "").trim()
-                            ? true
-                            : "Start date is required";
+                          return (v || "").trim() ? true : "Start date is required";
                         },
                       }
                     )}
                   />
                 </td>
 
-                {/* End date */}
+                {/* ✅ End date with ordering rule */}
                 <td style={styles.td}>
                   <input
                     style={styles.input}
                     type="date"
                     max={todayISO}
+                    min={periodStart || undefined}
                     {...register(
                       `drug_exposure.${index}.periods.${pIndex}.date_of_last_exposure`,
                       {
-                        validate: (v) => {
+                        validate: (end) => {
                           if (!baseHasChange) return true;
                           if (!periodActive) return true;
                           if (p?.unsure_date) return true;
-                          return (v || "").trim()
-                            ? true
-                            : "End date is required";
+
+                          // existing required rule
+                          if (!(end || "").trim()) return "End date is required";
+
+                          // ✅ ordering rule
+                          if (periodStart && end < periodStart) {
+                            return "End date cannot be before start date";
+                          }
+                          return true;
                         },
                       }
                     )}
@@ -288,9 +317,7 @@ function DrugExposureRow({
                 <td style={styles.tdCenter}>
                   <input
                     type="checkbox"
-                    {...register(
-                      `drug_exposure.${index}.periods.${pIndex}.unsure_date`
-                    )}
+                    {...register(`drug_exposure.${index}.periods.${pIndex}.unsure_date`)}
                   />
                 </td>
 
@@ -342,9 +369,7 @@ function DrugExposureRow({
                 <td style={styles.tdCenter}>
                   <input
                     type="checkbox"
-                    {...register(
-                      `drug_exposure.${index}.periods.${pIndex}.has_change`
-                    )}
+                    {...register(`drug_exposure.${index}.periods.${pIndex}.has_change`)}
                   />
                 </td>
               </tr>
@@ -390,68 +415,113 @@ export default function DrugExposureTable({
   errors,
   showErrors,
 }) {
+  // ✅ overarching yes/no
+  const anyExposure = useWatch({ control, name: "drug_exposure_any" }) || "";
+
+  // ✅ Optional: when user selects "No", clear table so stale data doesn't submit
+  useEffect(() => {
+    if (anyExposure === "No") {
+      // Clear array rows
+      setValue("drug_exposure", [], { shouldDirty: false });
+
+      // Clear other info too (optional, but usually desired)
+      setValue("drug_exposure_other_info", "", { shouldDirty: false });
+    }
+  }, [anyExposure, setValue]);
+
   return (
     <section style={styles.section}>
       <h2 style={styles.h2}>Passive Exposure to drugs</h2>
 
-      <p style={styles.infoText}>
-        <strong>Drug Exposure:</strong> Please provide details of your drug
-        exposure to the best of your knowledge in the table below. If there has
-        been any fluctuations or changes in pattern of drug exposure please
-        clarify these in the 'Other information' box at the end of the table.
-      </p>
+      {/* ✅ Overarching question */}
+      <div style={styles.topQuestionBox}>
+        <div style={styles.topQuestionLabel}>
+          Have you been exposed to any of the drugs listed above during the 12 months prior to
+          sampling?
+        </div>
 
-      <div style={styles.tableWrapper}>
-        <table style={styles.table}>
-          <thead>
-            <tr>
-              <th style={styles.th}>Drug</th>
-              <th style={styles.thCenter}>Exposed</th>
-              <th style={styles.th}>Start date</th>
-              <th style={styles.th}>End date</th>
-              <th style={styles.thCenter}>Unsure</th>
-              <th style={styles.th}>Level of exposure</th>
-              <th style={{ ...styles.th, ...styles.exposureColHeader }}>
-                Type of exposure (tick all that apply)
-              </th>
-              <th style={styles.thCenter}>Any changes/fluctuations</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {drugExposureRows.map((drugName, index) => (
-              <DrugExposureRow
-                key={drugName}
-                drugName={drugName}
-                index={index}
-                register={register}
-                errors={errors}
-                showErrors={showErrors}
-                control={control}
-                setValue={setValue}
+        <div style={styles.topQuestionOptions}>
+          {["Yes", "No"].map((v) => (
+            <label key={v} style={styles.topQuestionOption}>
+              <input
+                type="radio"
+                value={v}
+                {...register("drug_exposure_any", {
+                  required: "Please select Yes or No",
+                })}
               />
-            ))}
-          </tbody>
+              <span>{v}</span>
+            </label>
+          ))}
+        </div>
 
-          <tfoot>
-            <tr>
-              {/* ✅ 8 columns now (was 9) */}
-              <td style={styles.td} colSpan={8}>
-                <label style={styles.otherInfoLabel}>
-                  Other information (additional drugs, and changes in
-                  frequency/pattern of exposure)
-                </label>
-                <textarea
-                  style={styles.textarea}
-                  rows={4}
-                  {...register("drug_exposure_other_info")}
-                  placeholder="Enter any additional information here..."
-                />
-              </td>
-            </tr>
-          </tfoot>
-        </table>
+        {showErrors && errors?.drug_exposure_any && (
+          <div style={styles.topQuestionError}>{errors.drug_exposure_any.message}</div>
+        )}
       </div>
+
+      {/* ✅ Only show the table if Yes */}
+      {anyExposure === "Yes" && (
+        <>
+          <p style={styles.infoText}>
+            <strong>Drug Exposure:</strong> Please provide details of your drug exposure to the
+            best of your knowledge in the table below. If there has been any fluctuations or
+            changes in pattern of drug exposure please clarify these in the 'Other information'
+            box at the end of the table.
+          </p>
+
+          <div style={styles.tableWrapper}>
+            <table style={styles.table}>
+              <thead>
+                <tr>
+                  <th style={styles.th}>Drug</th>
+                  <th style={styles.thCenter}>Have you been exposed?</th>
+                  <th style={styles.th}>Start date</th>
+                  <th style={styles.th}>End date</th>
+                  <th style={styles.thCenter}>Unsure</th>
+                  <th style={styles.th}>Level of exposure</th>
+                  <th style={{ ...styles.th, ...styles.exposureColHeader }}>
+                    Type of exposure (tick all that apply)
+                  </th>
+                  <th style={styles.thCenter}>Any changes/fluctuations</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {drugExposureRows.map((drugName, index) => (
+                  <DrugExposureRow
+                    key={drugName}
+                    drugName={drugName}
+                    index={index}
+                    register={register}
+                    errors={errors}
+                    showErrors={showErrors}
+                    control={control}
+                    setValue={setValue}
+                  />
+                ))}
+              </tbody>
+
+              <tfoot>
+                <tr>
+                  <td style={styles.td} colSpan={8}>
+                    <label style={styles.otherInfoLabel}>
+                      Other information (additional drugs, and changes in frequency/pattern of
+                      exposure)
+                    </label>
+                    <textarea
+                      style={styles.textarea}
+                      rows={4}
+                      {...register("drug_exposure_other_info")}
+                      placeholder="Enter any additional information here..."
+                    />
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </>
+      )}
     </section>
   );
 }
@@ -464,6 +534,38 @@ const styles = {
     marginBottom: 16,
   },
   h2: { marginBottom: 12, color: "#904369" },
+
+  // ✅ Overarching question styling
+  topQuestionBox: {
+    border: "1px solid #eee",
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 12,
+    background: "#fafafa",
+  },
+  topQuestionLabel: {
+    fontWeight: 700,
+    marginBottom: 8,
+    lineHeight: 1.3,
+  },
+  topQuestionOptions: {
+    display: "flex",
+    gap: 18,
+    alignItems: "center",
+    flexWrap: "wrap",
+  },
+  topQuestionOption: {
+    display: "flex",
+    gap: 8,
+    alignItems: "center",
+  },
+  topQuestionError: {
+    marginTop: 8,
+    color: "crimson",
+    fontSize: 12,
+    fontWeight: 600,
+  },
+
   infoText: { marginTop: 0, marginBottom: 12, lineHeight: 1.35 },
 
   tableWrapper: { overflowX: "auto" },
@@ -512,6 +614,19 @@ const styles = {
 
   checkboxList: { display: "flex", flexDirection: "column", gap: 6 },
   checkboxLabel: { display: "flex", gap: 8, alignItems: "flex-start", lineHeight: 1.2 },
+
+  statusStack: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 6,
+    alignItems: "flex-start",
+  },
+  statusOption: {
+    display: "flex",
+    gap: 8,
+    alignItems: "center",
+    lineHeight: 1.1,
+  },
 
   subRowDrug: { paddingLeft: 22, color: "#444", fontStyle: "italic" },
   subRowArrow: { display: "inline-block", marginRight: 6, color: "#666", fontStyle: "normal" },

@@ -4,7 +4,7 @@
   "version": 3,
   "status": "draft",
   "created_at": "2026-01-15T14:31:16.233552",
-  "updated_at": "2026-01-15T14:59:34.319325",
+  "updated_at": "2026-01-27T15:54:17.824596",
   "submitted_at": null,
   "redo_of_id": null,
   "data": {
@@ -24,43 +24,36 @@
         "unsure_date": false,
         "level_of_use": "",
         "prescribed": false,
-        "drug_name": "Cannabis"
+        "drug_name": "Cannabis",
+        "start_date_of_use": "",
+        "has_change": false
       },
       {
         "status": "Not Used",
         "date_of_last_use": "",
         "unsure_date": false,
         "level_of_use": "",
-        "drug_name": "Cocaine"
+        "drug_name": "Cocaine",
+        "start_date_of_use": "",
+        "has_change": false
       },
       {
         "status": "Not Used",
         "date_of_last_use": "",
         "unsure_date": false,
         "level_of_use": "",
-        "drug_name": "Crack Cocaine"
+        "drug_name": "Crack Cocaine",
+        "start_date_of_use": "",
+        "has_change": false
       },
       {
         "status": "Not Used",
         "date_of_last_use": "",
         "unsure_date": false,
         "level_of_use": "",
-        "drug_name": "MDMA"
-      },
-      {
-        "status": "Not Used",
-        "date_of_last_use": "",
-        "unsure_date": false,
-        "level_of_use": "",
-        "prescribed": false,
-        "drug_name": "Amphetamine (including certain medications e.g. Elvanse, Lisdexamphetamine/Dexamphetamine)"
-      },
-      {
-        "status": "Not Used",
-        "date_of_last_use": "",
-        "unsure_date": false,
-        "level_of_use": "",
-        "drug_name": "Methamphetamine"
+        "drug_name": "MDMA",
+        "start_date_of_use": "",
+        "has_change": false
       },
       {
         "status": "Not Used",
@@ -68,7 +61,18 @@
         "unsure_date": false,
         "level_of_use": "",
         "prescribed": false,
-        "drug_name": "Ketamine"
+        "drug_name": "Amphetamine (including certain medications e.g. Elvanse, Lisdexamphetamine/Dexamphetamine)",
+        "start_date_of_use": "",
+        "has_change": false
+      },
+      {
+        "status": "Not Used",
+        "date_of_last_use": "",
+        "unsure_date": false,
+        "level_of_use": "",
+        "drug_name": "Methamphetamine",
+        "start_date_of_use": "",
+        "has_change": false
       },
       {
         "status": "Not Used",
@@ -76,7 +80,9 @@
         "unsure_date": false,
         "level_of_use": "",
         "prescribed": false,
-        "drug_name": "Heroin (Diamorphine - pharmaceutical grade heroin)"
+        "drug_name": "Ketamine",
+        "start_date_of_use": "",
+        "has_change": false
       },
       {
         "status": "Not Used",
@@ -84,7 +90,9 @@
         "unsure_date": false,
         "level_of_use": "",
         "prescribed": false,
-        "drug_name": "Codeine"
+        "drug_name": "Heroin (Diamorphine - pharmaceutical grade heroin)",
+        "start_date_of_use": "",
+        "has_change": false
       },
       {
         "status": "Not Used",
@@ -92,7 +100,9 @@
         "unsure_date": false,
         "level_of_use": "",
         "prescribed": false,
-        "drug_name": "Dihydrocodeine"
+        "drug_name": "Codeine",
+        "start_date_of_use": "",
+        "has_change": false
       },
       {
         "status": "Not Used",
@@ -100,7 +110,9 @@
         "unsure_date": false,
         "level_of_use": "",
         "prescribed": false,
-        "drug_name": "Morphine"
+        "drug_name": "Dihydrocodeine",
+        "start_date_of_use": "",
+        "has_change": false
       },
       {
         "status": "Not Used",
@@ -108,7 +120,9 @@
         "unsure_date": false,
         "level_of_use": "",
         "prescribed": false,
-        "drug_name": "Oxycodone (including oxymorphone)"
+        "drug_name": "Morphine",
+        "start_date_of_use": "",
+        "has_change": false
       },
       {
         "status": "Not Used",
@@ -116,7 +130,9 @@
         "unsure_date": false,
         "level_of_use": "",
         "prescribed": false,
-        "drug_name": "Diazepam (including nordiazepam)"
+        "drug_name": "Oxycodone (including oxymorphone)",
+        "start_date_of_use": "",
+        "has_change": false
       },
       {
         "status": "Not Used",
@@ -124,7 +140,9 @@
         "unsure_date": false,
         "level_of_use": "",
         "prescribed": false,
-        "drug_name": "Other Benzodiazepines (please specify below)"
+        "drug_name": "Diazepam (including nordiazepam)",
+        "start_date_of_use": "",
+        "has_change": false
       },
       {
         "status": "Not Used",
@@ -132,7 +150,9 @@
         "unsure_date": false,
         "level_of_use": "",
         "prescribed": false,
-        "drug_name": "Amitriptyline"
+        "drug_name": "Other Benzodiazepines (please specify below)",
+        "start_date_of_use": "",
+        "has_change": false
       },
       {
         "status": "Not Used",
@@ -140,7 +160,9 @@
         "unsure_date": false,
         "level_of_use": "",
         "prescribed": false,
-        "drug_name": "Pregabalin"
+        "drug_name": "Amitriptyline",
+        "start_date_of_use": "",
+        "has_change": false
       },
       {
         "status": "Not Used",
@@ -148,7 +170,9 @@
         "unsure_date": false,
         "level_of_use": "",
         "prescribed": false,
-        "drug_name": "Gabapentin"
+        "drug_name": "Pregabalin",
+        "start_date_of_use": "",
+        "has_change": false
       },
       {
         "status": "Not Used",
@@ -156,7 +180,9 @@
         "unsure_date": false,
         "level_of_use": "",
         "prescribed": false,
-        "drug_name": "Buprenorphine"
+        "drug_name": "Gabapentin",
+        "start_date_of_use": "",
+        "has_change": false
       },
       {
         "status": "Not Used",
@@ -164,7 +190,9 @@
         "unsure_date": false,
         "level_of_use": "",
         "prescribed": false,
-        "drug_name": "Methadone"
+        "drug_name": "Buprenorphine",
+        "start_date_of_use": "",
+        "has_change": false
       },
       {
         "status": "Not Used",
@@ -172,171 +200,22 @@
         "unsure_date": false,
         "level_of_use": "",
         "prescribed": false,
-        "drug_name": "Tramadol"
+        "drug_name": "Methadone",
+        "start_date_of_use": "",
+        "has_change": false
+      },
+      {
+        "status": "Not Used",
+        "date_of_last_use": "",
+        "unsure_date": false,
+        "level_of_use": "",
+        "prescribed": false,
+        "drug_name": "Tramadol",
+        "start_date_of_use": "",
+        "has_change": false
       }
     ],
-    "drug_exposure": [
-      {
-        "status": "none",
-        "date_of_last_exposure": "",
-        "unsure_date": false,
-        "level_of_exposure": "",
-        "type_of_exposure": false,
-        "drug_name": "Cannabis"
-      },
-      {
-        "status": "none",
-        "date_of_last_exposure": "",
-        "unsure_date": false,
-        "level_of_exposure": "",
-        "type_of_exposure": false,
-        "drug_name": "Cocaine"
-      },
-      {
-        "status": "none",
-        "date_of_last_exposure": "",
-        "unsure_date": false,
-        "level_of_exposure": "",
-        "type_of_exposure": false,
-        "drug_name": "Crack Cocaine"
-      },
-      {
-        "status": "none",
-        "date_of_last_exposure": "",
-        "unsure_date": false,
-        "level_of_exposure": "",
-        "type_of_exposure": false,
-        "drug_name": "MDMA"
-      },
-      {
-        "status": "none",
-        "date_of_last_exposure": "",
-        "unsure_date": false,
-        "level_of_exposure": "",
-        "type_of_exposure": false,
-        "drug_name": "Amphetamine"
-      },
-      {
-        "status": "none",
-        "date_of_last_exposure": "",
-        "unsure_date": false,
-        "level_of_exposure": "",
-        "type_of_exposure": false,
-        "drug_name": "Methamphetamine"
-      },
-      {
-        "status": "none",
-        "date_of_last_exposure": "",
-        "unsure_date": false,
-        "level_of_exposure": "",
-        "type_of_exposure": false,
-        "drug_name": "Ketamine"
-      },
-      {
-        "status": "none",
-        "date_of_last_exposure": "",
-        "unsure_date": false,
-        "level_of_exposure": "",
-        "type_of_exposure": false,
-        "drug_name": "Heroin"
-      },
-      {
-        "status": "none",
-        "date_of_last_exposure": "",
-        "unsure_date": false,
-        "level_of_exposure": "",
-        "type_of_exposure": false,
-        "drug_name": "Codeine"
-      },
-      {
-        "status": "none",
-        "date_of_last_exposure": "",
-        "unsure_date": false,
-        "level_of_exposure": "",
-        "type_of_exposure": false,
-        "drug_name": "Dihydrocodeine"
-      },
-      {
-        "status": "none",
-        "date_of_last_exposure": "",
-        "unsure_date": false,
-        "level_of_exposure": "",
-        "type_of_exposure": false,
-        "drug_name": "Morphine"
-      },
-      {
-        "status": "none",
-        "date_of_last_exposure": "",
-        "unsure_date": false,
-        "level_of_exposure": "",
-        "type_of_exposure": false,
-        "drug_name": "Oxycodone (including oxymorphone)"
-      },
-      {
-        "status": "none",
-        "date_of_last_exposure": "",
-        "unsure_date": false,
-        "level_of_exposure": "",
-        "type_of_exposure": false,
-        "drug_name": "Diazepam (including nordiazepam)"
-      },
-      {
-        "status": "none",
-        "date_of_last_exposure": "",
-        "unsure_date": false,
-        "level_of_exposure": "",
-        "type_of_exposure": false,
-        "drug_name": "Other Benzodiazepines (please specify below)"
-      },
-      {
-        "status": "none",
-        "date_of_last_exposure": "",
-        "unsure_date": false,
-        "level_of_exposure": "",
-        "type_of_exposure": false,
-        "drug_name": "Amitriptyline"
-      },
-      {
-        "status": "none",
-        "date_of_last_exposure": "",
-        "unsure_date": false,
-        "level_of_exposure": "",
-        "type_of_exposure": false,
-        "drug_name": "Pregabalin"
-      },
-      {
-        "status": "none",
-        "date_of_last_exposure": "",
-        "unsure_date": false,
-        "level_of_exposure": "",
-        "type_of_exposure": false,
-        "drug_name": "Gabapentin"
-      },
-      {
-        "status": "none",
-        "date_of_last_exposure": "",
-        "unsure_date": false,
-        "level_of_exposure": "",
-        "type_of_exposure": false,
-        "drug_name": "Buprenorphine"
-      },
-      {
-        "status": "none",
-        "date_of_last_exposure": "",
-        "unsure_date": false,
-        "level_of_exposure": "",
-        "type_of_exposure": false,
-        "drug_name": "Methadone"
-      },
-      {
-        "status": "none",
-        "date_of_last_exposure": "",
-        "unsure_date": false,
-        "level_of_exposure": "",
-        "type_of_exposure": false,
-        "drug_name": "Tramadol"
-      }
-    ],
+    "drug_exposure": [],
     "drug_use_other_info": "",
     "drug_exposure_other_info": "",
     "has_other_medications": "No",
@@ -360,7 +239,7 @@
     "hair_removed_sites_chest": false,
     "hair_removed_sites_chest_last_shaved_date": "",
     "hair_removed_sites_chest_last_shaved_unsure": false,
-    "hair_removed_sites_back": false,
+    "hair_removed_sites_back": true,
     "hair_removed_sites_back_last_shaved_date": "",
     "hair_removed_sites_back_last_shaved_unsure": false,
     "pregnant_last_12_months": "Yes",
@@ -392,6 +271,19 @@
     "collector_signature_png": "",
     "refusal_print_name": "",
     "refusal_signature_date": "",
-    "refusal_signature_png": ""
+    "refusal_signature_png": "",
+    "testing_type": "",
+    "ethnicity": "",
+    "hair_cut_in_last_12_months": "No",
+    "hair_removed_sites_underarms": true,
+    "hair_cut_shaved_to_skin": "",
+    "hair_removed_sites_arms_last_shaved_last_collection": false,
+    "hair_removed_sites_legs_last_shaved_last_collection": false,
+    "hair_removed_sites_chest_last_shaved_last_collection": false,
+    "hair_removed_sites_back_last_shaved_last_collection": true,
+    "hair_removed_sites_underarms_last_shaved_date": "",
+    "hair_removed_sites_underarms_last_shaved_unsure": true,
+    "hair_removed_sites_underarms_last_shaved_last_collection": false,
+    "drug_exposure_any": "No"
   }
 }
