@@ -353,8 +353,7 @@ export default function DrugUseTable({ register, control, setValue, errors, show
 
       <p style={styles.infoText}>
         <strong>Drug Use:</strong> Please provide details of your drug use to the best of your
-        knowledge in the table below. If there has been any fluctuations or changes in pattern
-        of drug use please clarify these in the 'Other information' box at the end of the table.
+        knowledge in the table below.
       </p>
 
       <div style={styles.tableWrapper}>
@@ -392,7 +391,7 @@ export default function DrugUseTable({ register, control, setValue, errors, show
             <tr>
               <td style={styles.td} colSpan={9}>
                 <label style={styles.otherInfoLabel}>
-                  Other information (additional drugs, and changes in frequency/pattern of use)
+                  Other information
                 </label>
                 <textarea
                   style={styles.textarea}

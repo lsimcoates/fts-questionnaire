@@ -4,7 +4,7 @@
   "version": 3,
   "status": "draft",
   "created_at": "2026-01-15T14:31:16.233552",
-  "updated_at": "2026-01-27T15:54:17.824596",
+  "updated_at": "2026-01-28T11:29:50.497409",
   "submitted_at": null,
   "redo_of_id": null,
   "data": {
@@ -15,7 +15,10 @@
     "dob": "2026-01-15",
     "sex_at_birth": "Female",
     "natural_hair_colour": "Black",
-    "blood_borne_infections": "No",
+    "blood_borne_infections": [
+      "Hepatitis A",
+      "HIV/AIDS"
+    ],
     "occupation": "Forensic Scientist",
     "drug_use": [
       {
@@ -35,7 +38,8 @@
         "level_of_use": "",
         "drug_name": "Cocaine",
         "start_date_of_use": "",
-        "has_change": false
+        "has_change": false,
+        "prescribed": false
       },
       {
         "status": "Not Used",
@@ -72,7 +76,8 @@
         "level_of_use": "",
         "drug_name": "Methamphetamine",
         "start_date_of_use": "",
-        "has_change": false
+        "has_change": false,
+        "prescribed": false
       },
       {
         "status": "Not Used",
@@ -213,6 +218,16 @@
         "drug_name": "Tramadol",
         "start_date_of_use": "",
         "has_change": false
+      },
+      {
+        "status": null,
+        "start_date_of_use": "",
+        "date_of_last_use": "",
+        "unsure_date": false,
+        "level_of_use": "",
+        "prescribed": false,
+        "has_change": false,
+        "drug_name": "Tramadol"
       }
     ],
     "drug_exposure": [],
@@ -245,13 +260,13 @@
     "pregnant_last_12_months": "Yes",
     "pregnancy_due_or_birth_date": "",
     "pregnancy_due_date_unsure": false,
-    "pregnancy_weeks": "44",
-    "hair_dyed_bleached": "No",
-    "hair_last_dyed_bleached_date": "",
-    "hair_thermal_applications": "Yes",
+    "pregnancy_weeks": "",
+    "hair_dyed_bleached": "Yes",
+    "hair_last_dyed_bleached_date": "2026-01-11",
+    "hair_thermal_applications": "No",
     "hair_wash_frequency": "",
     "nails_contact_bleach": "",
-    "frequent_swimming": "No",
+    "frequent_swimming": "Yes",
     "frequent_sunbeds": "Yes",
     "frequent_sprays_on_sites": "No",
     "hair_thermal_frequency": "",
@@ -267,7 +282,7 @@
     "client_signature_date": "",
     "client_signature_png": "",
     "collector_print_name": "",
-    "collector_signature_date": "",
+    "collector_signature_date": "2026-01-28",
     "collector_signature_png": "",
     "refusal_print_name": "",
     "refusal_signature_date": "",
@@ -284,6 +299,9 @@
     "hair_removed_sites_underarms_last_shaved_date": "",
     "hair_removed_sites_underarms_last_shaved_unsure": true,
     "hair_removed_sites_underarms_last_shaved_last_collection": false,
-    "drug_exposure_any": "No"
+    "drug_exposure_any": "No",
+    "pregnancy_due_date_not_applicable": false,
+    "pregnancy_outcome": "",
+    "ethnicity_other_detail": ""
   }
 }

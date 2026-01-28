@@ -99,6 +99,8 @@ export default function QuestionnairePage() {
       pregnancy_due_or_birth_date: "",
       pregnancy_due_date_unsure: false,
       pregnancy_weeks: "",
+      pregnancy_due_date_not_applicable: false,
+      pregnancy_outcome: "",
       hair_dyed_bleached: "",
       hair_last_dyed_bleached_date: "",
       hair_thermal_applications: "",

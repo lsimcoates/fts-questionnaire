@@ -1,8 +1,15 @@
+// src/app/questionnaire/sections/PersonalDetails.jsx
 import React, { useEffect } from "react";
 import { hairColourOptions, infectionOptions } from "../config/options";
 import { todayISO } from "../config/dateUtils";
 
-export default function PersonalDetails({ register, watch, setValue, errors, showErrors }) {
+export default function PersonalDetails({
+  register,
+  watch,
+  setValue,
+  errors,
+  showErrors,
+}) {
   const eth = watch?.("ethnicity") || "";
 
   const needsOther =
@@ -17,6 +24,28 @@ export default function PersonalDetails({ register, watch, setValue, errors, sho
     if (!setValue) return;
     if (!needsOther) setValue("ethnicity_other_detail", "");
   }, [needsOther, setValue]);
+
+  // ✅ Blood-borne infections (multi-select)
+  const infections = watch?.("blood_borne_infections") || [];
+
+  // ✅ "No" and "Prefer not to say" should be exclusive
+  useEffect(() => {
+    if (!setValue) return;
+
+    const arr = Array.isArray(infections) ? infections : [];
+    const hasNo = arr.includes("No");
+    const hasPnts = arr.includes("Prefer not to say");
+
+    if (hasNo && arr.length > 1) {
+      setValue("blood_borne_infections", ["No"], { shouldValidate: true });
+    }
+
+    if (hasPnts && arr.length > 1) {
+      setValue("blood_borne_infections", ["Prefer not to say"], {
+        shouldValidate: true,
+      });
+    }
+  }, [infections, setValue]);
 
   return (
     <section style={styles.section}>
@@ -130,7 +159,7 @@ export default function PersonalDetails({ register, watch, setValue, errors, sho
         </div>
 
         <div style={styles.field}>
-          <label style={styles.label}>What is your sex at birth?</label>
+          <label style={styles.label}>What was your sex at birth?</label>
           <select
             style={styles.input}
             {...register("sex_at_birth", { required: "Sex at birth is required" })}
@@ -161,23 +190,42 @@ export default function PersonalDetails({ register, watch, setValue, errors, sho
         </select>
       </div>
 
-      {/* Blood-borne infections */}
+      {/* ✅ Blood-borne infections (multi-select) */}
       <div style={styles.field}>
         <label style={styles.label}>
-          Do you have any blood-borne infections that you are aware of? (Such as HIV, HEP)
+          Do you have any blood-borne infections that you are aware of?
         </label>
-        <select
-          style={styles.input}
-          {...register("blood_borne_infections", { required: "This field is required" })}
-          defaultValue=""
-        >
-          <option value="">Choose an item</option>
-          {infectionOptions.map((opt) => (
-            <option key={opt} value={opt}>
-              {opt}
-            </option>
-          ))}
-        </select>
+
+        <div style={{ display: "grid",
+          gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 8, marginTop: 6 }}>
+          {infectionOptions.map((opt) => {
+            const isExclusive = opt === "No" || opt === "Prefer not to say";
+            const selected = Array.isArray(infections) ? infections : [];
+            const exclusiveSelected =
+              selected.includes("No") || selected.includes("Prefer not to say");
+            const disabled = exclusiveSelected && !isExclusive;
+
+            return (
+              <label
+                key={opt}
+                style={{ display: "flex", gap: 8, alignItems: "center" }}
+              >
+                <input
+                  type="checkbox"
+                  value={opt}
+                  disabled={disabled}
+                  {...register("blood_borne_infections", {
+                    validate: (v) =>
+                      (Array.isArray(v) && v.length > 0) ||
+                      "Please select at least one option",
+                  })}
+                />
+                {opt}
+              </label>
+            );
+          })}
+        </div>
+
         {errors?.blood_borne_infections && (
           <p style={styles.error}>{errors.blood_borne_infections.message}</p>
         )}
@@ -233,9 +281,13 @@ export default function PersonalDetails({ register, watch, setValue, errors, sho
                 English, Welsh, Scottish, Northern Irish or British
               </option>
               <option value="White - Irish">Irish</option>
-              <option value="White - Gypsy or Irish Traveller">Gypsy or Irish Traveller</option>
+              <option value="White - Gypsy or Irish Traveller">
+                Gypsy or Irish Traveller
+              </option>
               <option value="White - Roma">Roma</option>
-              <option value="White - Any other White background">Any other White background</option>
+              <option value="White - Any other White background">
+                Any other White background
+              </option>
             </optgroup>
 
             <optgroup label="Other ethnic group">

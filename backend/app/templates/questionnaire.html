@@ -339,6 +339,17 @@
     {%- endif -%}
   {%- endmacro %}
 
+  {% macro show_pregnancy_date(date_str, unsure_flag, not_applicable_flag, outcome) -%}
+    {%- if not_applicable_flag -%}
+      Not applicable{% if outcome %} – {{ show(outcome) }}{% endif %}
+    {%- elif unsure_flag -%}
+      Unsure
+    {%- else -%}
+      {{ uk_date(date_str) }}
+    {%- endif -%}
+  {%- endmacro %}
+
+
   <div class="first-page-header">
     {% if top_logo_src %}
       <img class="logo-top" src="{{ top_logo_src }}" alt="Company logo" />
@@ -408,7 +419,7 @@
       <div class="pd-item">
         <div class="pd-line">
           <span class="pd-label">Infections:</span>
-          <span class="pd-value">{{ show(d.blood_borne_infections) }}</span>
+          <span class="pd-value">{{ join_list(d.blood_borne_infections) }}</span>
         </div>
       </div>
 
@@ -712,7 +723,14 @@
 
       <div class="field">
         <div class="label">If so, when is your due date/when did you give birth?</div>
-        <div class="value">{{ show_date(d.pregnancy_due_or_birth_date, d.pregnancy_due_date_unsure) }}</div>
+        <div class="value">{{ show_pregnancy_date(
+    d.pregnancy_due_or_birth_date,
+    d.pregnancy_due_date_unsure,
+    d.pregnancy_due_date_not_applicable,
+    d.pregnancy_outcome
+  ) }}
+</div>
+
       </div>
 
       <div class="field">
@@ -728,7 +746,15 @@
       {% if d.hair_dyed_bleached == "Yes" %}
       <div class="field">
         <div class="label">When did you last dye/bleach your hair?</div>
-        <div class="value">{{ uk_date(d.hair_last_dyed_bleached_date) }}</div>
+        <div class="value">
+  {{ uk_date(d.hair_last_dyed_bleached_date) }}
+  {% if d.hair_last_dyed_bleached_approx_before %}
+    <div class="muted" style="font-size:10px; margin-top:2px;">
+      {{ d.hair_last_dyed_bleached_approx_before }}
+    </div>
+  {% endif %}
+</div>
+
       </div>
       {% endif %}
 
@@ -755,7 +781,7 @@
       </div>
 
       <div class="field">
-        <div class="label">Do you swim in a pool or use hot tubs?</div>
+        <div class="label">Do you swim in a pool or use hot tubs and submerge your head?</div>
         <div class="value">{{ show(d.frequent_swimming) }}</div>
       </div>
 

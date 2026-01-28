@@ -8,7 +8,10 @@ export const hairColourOptions = [
 ];
 
 export const infectionOptions = [
+  "Hepatitis A",
+  "Hepatitis B",
+  "Hepatitis C",
+  "HIV/AIDS",
   "No",
-  "Yes",
   "Prefer not to say",
 ];

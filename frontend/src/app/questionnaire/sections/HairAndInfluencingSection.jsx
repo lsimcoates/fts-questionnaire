@@ -21,8 +21,14 @@ export default function HairAndInfluencingSection({
   const removedBodyHair = watch("hair_removed_body_hair_last_12_months"); // "Yes"/"No"
 
   // pregnancy
+  const sexAtBirth = watch("sex_at_birth"); // "Male" / "Female" / etc
+  const pregnancyLocked = sexAtBirth === "Male";
   const pregnant = watch("pregnant_last_12_months"); // "Yes"/"No"
   const dueUnsure = watch("pregnancy_due_date_unsure");
+
+  // NEW: pregnancy not applicable + outcome
+  const dueNotApplicable = watch("pregnancy_due_date_not_applicable"); // boolean
+  const pregnancyOutcome = watch("pregnancy_outcome"); // string
 
   // dyed/bleached
   const dyedBleached = watch("hair_dyed_bleached"); // "Yes"/"No"
@@ -41,7 +47,7 @@ export default function HairAndInfluencingSection({
   const backUnsure = watch("hair_removed_sites_back_last_shaved_unsure");
   const underarmsUnsure = watch("hair_removed_sites_underarms_last_shaved_unsure");
 
-  // NEW: per-site last collection flags
+  // per-site last collection flags
   const armsLastCollection = watch(
     "hair_removed_sites_arms_last_shaved_last_collection"
   );
@@ -106,29 +112,71 @@ export default function HairAndInfluencingSection({
    * Pregnancy logic
    * -------------------------
    */
+  useEffect(() => {
+    if (!pregnancyLocked) return;
+
+    // force parent answer to No
+    setValue("pregnant_last_12_months", "No", { shouldDirty: true });
+
+    // clear all pregnancy follow-ups
+    setValue("pregnancy_due_or_birth_date", "", { shouldDirty: false });
+    setValue("pregnancy_due_date_unsure", false, { shouldDirty: false });
+    setValue("pregnancy_due_date_not_applicable", false, { shouldDirty: false });
+    setValue("pregnancy_outcome", "", { shouldDirty: false });
+    setValue("pregnancy_weeks", "", { shouldDirty: false });
+
+    // revalidate in case pregnancy errors were showing
+    trigger?.([
+      "pregnant_last_12_months",
+      "pregnancy_due_or_birth_date",
+      "pregnancy_due_date_unsure",
+      "pregnancy_due_date_not_applicable",
+      "pregnancy_outcome",
+      "pregnancy_weeks",
+    ]);
+  }, [pregnancyLocked, setValue, trigger]);
 
   // clear pregnancy date if unsure ticked
   useEffect(() => {
-    if (dueUnsure)
+    if (dueUnsure) {
       setValue("pregnancy_due_or_birth_date", "", { shouldDirty: false });
+      // mutual exclusion
+      setValue("pregnancy_due_date_not_applicable", false, { shouldDirty: false });
+      setValue("pregnancy_outcome", "", { shouldDirty: false });
+    }
   }, [dueUnsure, setValue]);
+
+  // clear pregnancy date if not-applicable ticked (and mutually exclude unsure)
+  useEffect(() => {
+    if (dueNotApplicable) {
+      setValue("pregnancy_due_or_birth_date", "", { shouldDirty: false });
+      setValue("pregnancy_due_date_unsure", false, { shouldDirty: false });
+    } else {
+      // if they untick not applicable, clear outcome
+      setValue("pregnancy_outcome", "", { shouldDirty: false });
+    }
+  }, [dueNotApplicable, setValue]);
 
   // if not pregnant, clear pregnancy follow-ups
   useEffect(() => {
     if (pregnant !== "Yes") {
       setValue("pregnancy_due_or_birth_date", "", { shouldDirty: false });
       setValue("pregnancy_due_date_unsure", false, { shouldDirty: false });
+      setValue("pregnancy_due_date_not_applicable", false, { shouldDirty: false });
+      setValue("pregnancy_outcome", "", { shouldDirty: false });
       setValue("pregnancy_weeks", "", { shouldDirty: false });
     }
   }, [pregnant, setValue]);
 
+  // Re-trigger pregnancy validations when relevant state changes
   useEffect(() => {
-    trigger?.(["pregnancy_due_or_birth_date", "pregnancy_due_date_unsure"]);
-  }, [pregnant, trigger]);
-
-  useEffect(() => {
-    trigger?.(["pregnancy_due_or_birth_date", "pregnancy_due_date_unsure"]);
-  }, [dueUnsure, trigger]);
+    trigger?.([
+      "pregnancy_due_or_birth_date",
+      "pregnancy_due_date_unsure",
+      "pregnancy_due_date_not_applicable",
+      "pregnancy_outcome",
+    ]);
+  }, [pregnant, dueUnsure, dueNotApplicable, pregnancyOutcome, trigger]);
 
   /**
    * -------------------------
@@ -344,13 +392,9 @@ export default function HairAndInfluencingSection({
     }
   }, [sprays, setValue]);
 
-  const pregnancyDisabled = pregnant !== "Yes";
+  // pregnancy weeks is NOT required (user request)
+  // const weeksRules = undefined;
 
-  // conditional rules
-  const weeksRules =
-    pregnant === "Yes" ? { required: "Please select an option" } : undefined;
-
-  // Reusable UI chunk for site "unsure/last collection" ticks
   // Reusable UI chunk for site "unsure/last collection" ticks
   const SiteFlags = ({ unsureName, lastCollectionName }) => {
     const unsureReg = register(unsureName);
@@ -363,10 +407,7 @@ export default function HairAndInfluencingSection({
             type="checkbox"
             {...unsureReg}
             onChange={(e) => {
-              // ✅ let react-hook-form update state
               unsureReg.onChange(e);
-
-              // ✅ then apply your rule
               if (e.target.checked) {
                 setValue(lastCollectionName, false, {
                   shouldDirty: true,
@@ -383,10 +424,7 @@ export default function HairAndInfluencingSection({
             type="checkbox"
             {...lastReg}
             onChange={(e) => {
-              // ✅ let react-hook-form update state
               lastReg.onChange(e);
-
-              // ✅ then apply your rule
               if (e.target.checked) {
                 setValue(unsureName, false, {
                   shouldDirty: true,
@@ -530,7 +568,7 @@ export default function HairAndInfluencingSection({
       {/* Body hair removed yes/no */}
       <div style={styles.field}>
         <label style={styles.label}>
-          Have you shaved/removed any body hair in the last 12 months?
+          Have you shaved (to the skin)/removed any body hair in the last 12 months?
         </label>
 
         <div style={styles.inline}>
@@ -794,6 +832,7 @@ export default function HairAndInfluencingSection({
             <input
               type="radio"
               value="Yes"
+              disabled={pregnancyLocked}
               {...register("pregnant_last_12_months", {
                 required: "Please select an option",
               })}
@@ -804,6 +843,7 @@ export default function HairAndInfluencingSection({
             <input
               type="radio"
               value="No"
+              disabled={pregnancyLocked}
               {...register("pregnant_last_12_months", {
                 required: "Please select an option",
               })}
@@ -828,18 +868,19 @@ export default function HairAndInfluencingSection({
           <input
             style={styles.input}
             type="date"
-            disabled={pregnant !== "Yes" || dueUnsure}
+            disabled={pregnancyLocked || pregnant !== "Yes" || dueUnsure || dueNotApplicable}
             {...register("pregnancy_due_or_birth_date", {
               validate: (v) => {
                 if (pregnant !== "Yes") return true;
-                if (dueUnsure) return true;
+                if (dueUnsure || dueNotApplicable) return true;
                 return (v || "").trim()
                   ? true
-                  : "Please enter a due/birth date or tick Unsure";
+                  : "Please enter a due/birth date or tick Unsure / Not applicable";
               },
             })}
           />
         </div>
+
         <div style={styles.unsureWrap}>
           <label style={styles.checkboxLabel}>
             <input
@@ -849,28 +890,115 @@ export default function HairAndInfluencingSection({
                 validate: (v) => {
                   if (pregnant !== "Yes") return true;
                   if (v) return true;
+                  const naVal = watch("pregnancy_due_date_not_applicable");
+                  if (naVal) return true;
                   const dateVal = watch("pregnancy_due_or_birth_date");
                   return (dateVal || "").trim()
                     ? true
-                    : "Please enter a due/birth date or tick Unsure";
+                    : "Please enter a due/birth date or tick Unsure / Not applicable";
                 },
               })}
+              onChange={(e) => {
+                const checked = e.target.checked;
+                setValue("pregnancy_due_date_unsure", checked, {
+                  shouldDirty: true,
+                  shouldValidate: true,
+                });
+                if (checked) {
+                  setValue("pregnancy_due_date_not_applicable", false, {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  });
+                  setValue("pregnancy_outcome", "", {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  });
+                }
+              }}
             />
             Unsure
+          </label>
+
+          <label style={styles.checkboxLabel}>
+            <input
+              type="checkbox"
+              disabled={pregnancyLocked || pregnant !== "Yes"}
+              {...register("pregnancy_due_date_not_applicable", {
+                validate: (v) => {
+                  if (pregnant !== "Yes") return true;
+                  if (v) return true;
+                  const unsureVal = watch("pregnancy_due_date_unsure");
+                  if (unsureVal) return true;
+                  const dateVal = watch("pregnancy_due_or_birth_date");
+                  return (dateVal || "").trim()
+                    ? true
+                    : "Please enter a due/birth date or tick Unsure / Not applicable";
+                },
+              })}
+              onChange={(e) => {
+                const checked = e.target.checked;
+                setValue("pregnancy_due_date_not_applicable", checked, {
+                  shouldDirty: true,
+                  shouldValidate: true,
+                });
+                if (checked) {
+                  setValue("pregnancy_due_date_unsure", false, {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  });
+                } else {
+                  setValue("pregnancy_outcome", "", {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  });
+                }
+              }}
+            />
+            Not applicable
           </label>
         </div>
       </div>
 
       {showErrors &&
         (errors?.pregnancy_due_or_birth_date ||
-          errors?.pregnancy_due_date_unsure) && (
+          errors?.pregnancy_due_date_unsure ||
+          errors?.pregnancy_due_date_not_applicable) && (
           <div style={styles.errorText}>
             {errors?.pregnancy_due_or_birth_date?.message ||
-              errors?.pregnancy_due_date_unsure?.message}
+              errors?.pregnancy_due_date_unsure?.message ||
+              errors?.pregnancy_due_date_not_applicable?.message}
           </div>
         )}
 
-      {/* Weeks pregnant */}
+      {/* Outcome only if Not applicable */}
+      {pregnant === "Yes" && dueNotApplicable && (
+        <div style={styles.field}>
+          <label style={styles.label}>Reason (if not applicable)</label>
+          <select
+            style={styles.select}
+            {...register("pregnancy_outcome", {
+              validate: (v) => {
+                if (pregnant !== "Yes") return true;
+                if (!dueNotApplicable) return true;
+                return v ? true : "Please select an option";
+              },
+            })}
+          >
+            <option value="">Choose an item</option>
+            <option value="Termination">Termination</option>
+            <option value="Miscarriage">Miscarriage</option>
+            <option value="Miscarriage in 3rd trimester">
+              Miscarriage in 3rd trimester
+            </option>
+          </select>
+
+          {showErrors && errors?.pregnancy_outcome && (
+            <div style={styles.errorText}>{errors.pregnancy_outcome.message}</div>
+          )}
+        </div>
+      )}
+
+      {/* Weeks pregnant (NOT required) */}
       <div style={styles.field}>
         <label style={styles.label}>
           How many weeks pregnant were you when you gave birth? (if applicable)
@@ -878,8 +1006,8 @@ export default function HairAndInfluencingSection({
 
         <select
           style={styles.select}
-          disabled={pregnant !== "Yes"}
-          {...register("pregnancy_weeks", weeksRules)}
+          disabled={pregnancyLocked || pregnant !== "Yes"}
+          {...register("pregnancy_weeks")}
         >
           <option value="">Choose an item</option>
           <option value="Unsure">Unsure</option>
@@ -925,7 +1053,7 @@ export default function HairAndInfluencingSection({
 
       {/* Thermal applications */}
       <YesNo
-        label="Have you used thermal applications (i.e. hair straighteners) on your scalp hair?"
+        label="Have you used thermal applications (e.g. hair straighteners) applied from the roots of the scalp hair?"
         name="hair_thermal_applications"
         register={register}
         required={true}
@@ -975,7 +1103,7 @@ export default function HairAndInfluencingSection({
 
       {/* Swim/hot tubs */}
       <YesNo
-        label="Do you swim in a pool or use hot tubs?"
+        label="Do you swim in a pool or use hot tubs and submerge your head?"
         name="frequent_swimming"
         register={register}
         required={true}
@@ -1135,7 +1263,6 @@ const styles = {
   },
   select: { padding: 8, borderRadius: 6, border: "1px solid #ccc", minWidth: 280 },
 
-  // updated so two checkboxes sit nicely
   unsureWrap: {
     paddingBottom: 2,
     display: "flex",

@@ -18,6 +18,17 @@ def _file_to_data_uri(path: str) -> str | None:
         b64 = base64.b64encode(f.read()).decode("ascii")
     return f"data:{mime};base64,{b64}"
 
+def show(val) -> str:
+    if val is None:
+        return ""
+    # Convert lists (e.g. checkboxes) to a nice comma-separated string
+    if isinstance(val, list):
+        return ", ".join(str(v) for v in val if v not in (None, ""))
+    # Convert everything else to string
+    s = str(val).strip()
+    return s
+
+
 def render_questionnaire_html(
     data: dict,
     *,
@@ -30,14 +41,24 @@ def render_questionnaire_html(
     top_logo_path = os.path.join(STATIC_IMAGES_DIR, "logotext.png")
     bottom_logo_path = os.path.join(STATIC_IMAGES_DIR, "logo.png")
 
+    # ---- computed fields for PDF ----
+    ref_sig = (data.get("collector_signature_date") or data.get("client_signature_date"))
+    data["hair_last_dyed_bleached_approx_before"] = approx_before_text(
+        data.get("hair_last_dyed_bleached_date"),
+        ref_sig,
+    )
+
     return template.render(
         data=data,
+        d=data,  # for backward compatibility in the template
         version=version,
         status=status,
         submitted_at=submitted_at,
         top_logo_src=_file_to_data_uri(top_logo_path),
         bottom_logo_src=_file_to_data_uri(bottom_logo_path),
+        show=show,
     )
+
 
 def html_to_pdf_bytes(html: str) -> bytes:
     with sync_playwright() as p:
@@ -66,3 +87,38 @@ def html_to_pdf_bytes(html: str) -> bytes:
 
         browser.close()
         return pdf_bytes
+
+
+from datetime import date
+
+def parse_iso_date(s: str | None):
+    if not s:
+        return None
+    s = str(s).strip()
+    if len(s) >= 10 and s[4] == "-" and s[7] == "-":
+        try:
+            return date(int(s[0:4]), int(s[5:7]), int(s[8:10]))
+        except ValueError:
+            return None
+    return None
+
+def approx_before_text(event_iso: str | None, ref_iso: str | None) -> str:
+    event_d = parse_iso_date(event_iso)
+    ref_d = parse_iso_date(ref_iso)
+    if not event_d or not ref_d:
+        return ""
+
+    days = (ref_d - event_d).days
+    if days < 0:
+        return ""  # or: "Approx after signature"
+
+    if days < 7:
+        unit = "day" if days == 1 else "days"
+        return f"Approximately {days} {unit} prior to sample collection"
+    if days < 30:
+        weeks = max(1, round(days / 7))
+        unit = "week" if weeks == 1 else "weeks"
+        return f"Approximately {weeks} {unit} prior to sample collection"
+    months = max(1, round(days / 30))
+    unit = "month" if months == 1 else "months"
+    return f"Approximately {months} {unit} prior to sample collection"
