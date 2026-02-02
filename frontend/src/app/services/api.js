@@ -4,9 +4,74 @@ const isGithubPages = window.location.hostname.endsWith("github.io");
 
 // IMPORTANT: replace this with your actual Render backend URL (no /api at end)
 const RENDER_BASE = "https://fts-questionnaire.onrender.com";
-const LOCAL_BASE = "http://127.0.0.1:8000";
+const LOCAL_BASE = "http://localhost:8000";
 
 const BASE = `${isGithubPages ? RENDER_BASE : LOCAL_BASE}/api`;
+
+export async function authLogin(payload) {
+  const res = await fetch(`${BASE}/auth/login`, {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  return handleFetch(res);
+}
+
+export async function authSignup(payload) {
+  const res = await fetch(`${BASE}/auth/signup`, {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  return handleFetch(res);
+}
+
+export async function authMe() {
+  const res = await fetch(`${BASE}/auth/me`, {
+    method: "GET",
+    credentials: "include",
+  });
+  return handleFetch(res);
+}
+
+export async function authLogout() {
+  const res = await fetch(`${BASE}/auth/logout`, {
+    method: "POST",
+    credentials: "include",
+  });
+  return handleFetch(res);
+}
+
+export async function authVerify(token) {
+  const res = await fetch(`${BASE}/auth/verify?token=${encodeURIComponent(token)}`, {
+    method: "POST",
+    credentials: "include",
+  });
+  return handleFetch(res);
+}
+
+export async function authForgotPassword(email) {
+  const res = await fetch(`${BASE}/auth/forgot-password`, {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+  return handleFetch(res);
+}
+
+export async function authResetPassword(payload) {
+  const res = await fetch(`${BASE}/auth/reset-password`, {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  return handleFetch(res);
+}
+
 
 async function parseError(res) {
   try {
@@ -29,6 +94,7 @@ async function handleFetch(res) {
 export async function createQuestionnaire(data) {
   const res = await fetch(`${BASE}/questionnaires`, {
     method: "POST",
+    credentials: "include",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ data }),
   });
@@ -38,6 +104,7 @@ export async function createQuestionnaire(data) {
 export async function updateQuestionnaire(id, data) {
   const res = await fetch(`${BASE}/questionnaires/${id}`, {
     method: "PUT",
+    credentials: "include",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ data }),
   });
@@ -45,24 +112,32 @@ export async function updateQuestionnaire(id, data) {
 }
 
 export async function getQuestionnaire(id) {
-  const res = await fetch(`${BASE}/questionnaires/${id}`);
+  const res = await fetch(`${BASE}/questionnaires/${id}`, {
+    credentials: "include",
+  });
   return handleFetch(res);
 }
 
 export async function finalizeQuestionnaire(id) {
   const res = await fetch(`${BASE}/questionnaires/${id}/finalize`, {
     method: "POST",
+    credentials: "include",
   });
   return handleFetch(res);
 }
 
 export async function listQuestionnaires() {
-  const res = await fetch(`${BASE}/questionnaires`);
+  const res = await fetch(`${BASE}/questionnaires`, {
+    credentials: "include",
+  });
   return handleFetch(res);
 }
 
 export async function downloadQuestionnairePdf(id) {
-  const res = await fetch(`${BASE}/questionnaires/${id}/pdf`, { method: "POST" });
+  const res = await fetch(`${BASE}/questionnaires/${id}/pdf`, {
+    method: "POST",
+    credentials: "include",
+  });
   if (!res.ok) throw new Error(await res.text());
   return res.blob();
 }
@@ -70,6 +145,7 @@ export async function downloadQuestionnairePdf(id) {
 export async function deleteQuestionnaire(id) {
   const res = await fetch(`${BASE}/questionnaires/${id}`, {
     method: "DELETE",
+    credentials: "include",
   });
-  return handleFetch(res); // will return JSON {"ok": true, ...}
+  return handleFetch(res);
 }

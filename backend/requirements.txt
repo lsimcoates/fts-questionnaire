@@ -7,3 +7,10 @@ playwright==1.48.0
 pypdf
 sqlalchemy
 databases
+sqlmodel
+sqlalchemy
+passlib[bcrypt]
+python-jose[cryptography]
+python-multipart
+email-validator
+bcrypt==4.0.1

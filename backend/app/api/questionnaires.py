@@ -7,8 +7,10 @@ import json
 import uuid
 from fastapi.responses import Response
 from app.services.pdf import render_questionnaire_html, html_to_pdf_bytes
+from fastapi import Depends
+from app.auth.router import get_current_user
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(get_current_user)])
 
 # File storage:
 # backend/app/api/questionnaires.py  --> backend/app/data/questionnaires/
