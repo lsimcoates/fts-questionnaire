@@ -303,3 +303,35 @@ def generate_pdf(qid: str):
         headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
 
+@router.delete("/questionnaires/{qid}")
+def delete_questionnaire(qid: str):
+    """
+    Delete a questionnaire record:
+    - removes the JSON file
+    - removes the row from index.json
+    """
+    ensure_storage()
+
+    path = q_path(qid)
+    if not os.path.exists(path):
+        raise HTTPException(status_code=404, detail="Not found")
+
+    # Optional rule: prevent deleting submitted records
+    # (comment this out if you want to allow delete always)
+    with open(path, "r", encoding="utf-8") as f:
+        record = json.load(f)
+    if record.get("status") == "submitted":
+        raise HTTPException(status_code=400, detail="Submitted records cannot be deleted.")
+
+    # Remove the file
+    try:
+        os.remove(path)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to delete file: {e}")
+
+    # Remove from index
+    idx = load_index()
+    new_idx = [row for row in idx if row.get("id") != qid]
+    save_index(new_idx)
+
+    return {"ok": True, "id": qid}

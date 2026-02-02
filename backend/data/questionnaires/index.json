@@ -203,17 +203,7 @@
     "version": 2,
     "status": "draft",
     "created_at": "2026-01-13T15:59:25.023290",
-    "updated_at": "2026-01-14T11:12:12.814905",
-    "submitted_at": null,
-    "redo_of_id": null
-  },
-  {
-    "id": "9365b448406f4380b69ced6cfd50e096",
-    "case_number": "7",
-    "version": 2,
-    "status": "draft",
-    "created_at": "2026-01-14T11:17:13.146078",
-    "updated_at": "2026-01-14T12:05:24.295344",
+    "updated_at": "2026-02-02T13:37:26.579819",
     "submitted_at": null,
     "redo_of_id": null
   },
@@ -223,7 +213,7 @@
     "version": 3,
     "status": "draft",
     "created_at": "2026-01-15T14:31:16.233552",
-    "updated_at": "2026-01-28T11:29:50.497409",
+    "updated_at": "2026-02-02T12:44:49.953534",
     "submitted_at": null,
     "redo_of_id": null
   },
@@ -245,6 +235,26 @@
     "created_at": "2026-01-21T12:04:44.233795",
     "updated_at": "2026-01-21T12:55:18.559843",
     "submitted_at": "2026-01-21T12:55:18.559843",
+    "redo_of_id": null
+  },
+  {
+    "id": "1235be9f098b466cb9dbc579e18e2022",
+    "case_number": "7",
+    "version": 4,
+    "status": "draft",
+    "created_at": "2026-02-02T14:14:11.854365",
+    "updated_at": "2026-02-02T14:14:11.854365",
+    "submitted_at": null,
+    "redo_of_id": null
+  },
+  {
+    "id": "1524ad42b22e483f81c622fc8168a2f9",
+    "case_number": "1234.1",
+    "version": 2,
+    "status": "draft",
+    "created_at": "2026-02-02T14:14:32.461899",
+    "updated_at": "2026-02-02T14:14:36.155668",
+    "submitted_at": null,
     "redo_of_id": null
   }
 ]

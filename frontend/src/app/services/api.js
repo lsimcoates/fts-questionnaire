@@ -4,7 +4,6 @@ const isGithubPages = window.location.hostname.endsWith("github.io");
 
 // IMPORTANT: replace this with your actual Render backend URL (no /api at end)
 const RENDER_BASE = "https://fts-questionnaire.onrender.com";
-
 const LOCAL_BASE = "http://127.0.0.1:8000";
 
 const BASE = `${isGithubPages ? RENDER_BASE : LOCAL_BASE}/api`;
@@ -22,7 +21,6 @@ async function handleFetch(res) {
   if (!res.ok) {
     throw new Error(await parseError(res));
   }
-  // Some endpoints might return empty; be safe
   const contentType = res.headers.get("content-type") || "";
   if (contentType.includes("application/json")) return res.json();
   return res.text();
@@ -67,4 +65,11 @@ export async function downloadQuestionnairePdf(id) {
   const res = await fetch(`${BASE}/questionnaires/${id}/pdf`, { method: "POST" });
   if (!res.ok) throw new Error(await res.text());
   return res.blob();
+}
+
+export async function deleteQuestionnaire(id) {
+  const res = await fetch(`${BASE}/questionnaires/${id}`, {
+    method: "DELETE",
+  });
+  return handleFetch(res); // will return JSON {"ok": true, ...}
 }

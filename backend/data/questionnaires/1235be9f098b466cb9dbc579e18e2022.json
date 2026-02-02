@@ -1,0 +1,23 @@
+{
+  "id": "1235be9f098b466cb9dbc579e18e2022",
+  "case_number": "7",
+  "version": 4,
+  "status": "draft",
+  "created_at": "2026-02-02T14:14:11.854365",
+  "updated_at": "2026-02-02T14:14:11.854365",
+  "submitted_at": null,
+  "redo_of_id": null,
+  "data": {
+    "case_number": "7",
+    "consent": "",
+    "client_signature_png": "",
+    "client_print_name": "",
+    "client_signature_date": "",
+    "collector_signature_png": "",
+    "collector_print_name": "",
+    "collector_signature_date": "",
+    "refusal_signature_png": "",
+    "refusal_print_name": "",
+    "refusal_signature_date": ""
+  }
+}

@@ -398,6 +398,19 @@ export default function QuestionnairePage() {
           >
             Submit
           </button>
+
+          <button
+            type="button"
+            style={{
+              ...styles.homeBtnBottom,
+              ...(hovered === "homeBottom" ? styles.homeBtnBottomHover : {}),
+            }}
+            onMouseEnter={() => setHovered("homeBottom")}
+            onMouseLeave={() => setHovered(null)}
+            onClick={goHome}
+          >
+            Home
+          </button>
         </div>
 
         {statusMsg && <p style={styles.status}>{statusMsg}</p>}
@@ -496,4 +509,24 @@ const styles = {
 
   status: { marginTop: 10, fontSize: 14 },
   statusSmall: { marginTop: 6, fontSize: 12, color: "#555" },
+
+  homeBtnBottom: {
+    padding: "10px 14px",
+    borderRadius: 8,
+    border: "1px solid #ccc",
+    background: "#00528c",
+    color: "white",
+    cursor: "pointer",
+    fontSize: 14,
+    fontWeight: 700,
+    transition: "background 120ms ease, transform 120ms ease, box-shadow 120ms ease",
+    marginLeft: "auto", // ✅ push to right
+  },
+
+  homeBtnBottomHover: {
+    background: "#004270",
+    transform: "translateY(-1px)",
+    boxShadow: "0 4px 10px rgba(0,0,0,0.08)",
+  },
+
 };

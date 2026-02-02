@@ -281,6 +281,79 @@
       font-size: 10px;
       color: var(--muted);
     }
+
+    /* =========================================
+   ✅ Soft, document-matching tables
+   ========================================= */
+
+  .table-wrap {
+    border: 1px solid #cfcfcf;   /* soft outer edge */
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 8px;
+    background: #fff;
+  }
+
+  .drug-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    margin: 0;
+  }
+
+  /* Header row */
+  .drug-table thead th {
+    background: #f6f6f8;
+    color: var(--brand-blue);
+    font-weight: 700;
+    padding: 6px;
+    border-bottom: 1px solid #cfcfcf; /* subtle divider */
+  }
+
+  /* Body cells */
+  .drug-table td {
+    padding: 6px;
+    border-bottom: 1px solid #e3e3e3;
+    border-right: 1px solid #e3e3e3;
+    vertical-align: top;
+  }
+
+
+
+  /* Remove heavy edges */
+  .drug-table tr:last-child td {
+    border-bottom: none;
+  }
+  .drug-table th:last-child,
+  .drug-table td:last-child {
+    border-right: none;
+  }
+
+  /* Zebra striping (very subtle) */
+  .drug-table tbody tr:nth-child(even):not(.child-period-row) {
+    background: #fafafa;
+  }
+
+  /* Emphasise drug name only */
+  .drug-table td:first-child {
+    font-weight: 600;
+  }
+
+  /* Centre non-drug columns */
+  .drug-table td:not(:first-child),
+  .drug-table th:not(:first-child) {
+    text-align: center;
+  }
+
+  /* =========================================
+   🔧 Remove global black borders from drug tables
+   ========================================= */
+  .drug-table,
+  .drug-table th,
+  .drug-table td {
+    border: none;
+  }
+
   </style>
 </head>
 
@@ -348,7 +421,6 @@
       {{ uk_date(date_str) }}
     {%- endif -%}
   {%- endmacro %}
-
 
   <div class="first-page-header">
     {% if top_logo_src %}
@@ -436,59 +508,62 @@
   <div class="section drug-use-section">
     <div class="section-title">Drug Use</div>
 
-    <table>
-      <thead>
-        <tr>
-          <th style="width: 18%;">Drug</th>
-          <th style="width: 10%;">Status</th>
-          <th style="width: 14%;">Level of use</th>
-          <th style="width: 14%;">Start date</th>
-          <th style="width: 14%;">End date</th>
-          <th style="width: 10%;">Unsure</th>
-          <th style="width: 10%;">Prescribed</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        {% for r in (d.drug_use or []) %}
+    <!-- ✅ NEW: wrapper + classed table for rounding/zebra -->
+    <div class="table-wrap">
+      <table class="drug-table">
+        <thead>
           <tr>
-            <td>{{ show(r.drug_name) }}</td>
-            <td>{{ show(r.status) }}</td>
-            <td>{{ show(r.level_of_use) }}</td>
-            <td>{{ uk_date(r.start_date_of_use) }}</td>
-            <td>{{ uk_date(r.date_of_last_use) }}</td>
-            <td>{{ "Yes" if r.unsure_date else "No" }}</td>
-            <td>
-              {% if r.prescribed is defined %}
-                {{ "Yes" if r.prescribed else "No" }}
-              {% else %}
-                —
-              {% endif %}
-            </td>
+            <th style="width: 18%;">Drug</th>
+            <th style="width: 10%;">Status</th>
+            <th style="width: 14%;">Level of use</th>
+            <th style="width: 14%;">Start date</th>
+            <th style="width: 14%;">End date</th>
+            <th style="width: 10%;">Unsure</th>
+            <th style="width: 10%;">Prescribed</th>
           </tr>
+        </thead>
 
-          {% for p in (r.periods or []) %}
-            <tr class="child-period-row">
-              <td style="padding-left:18px; font-style: italic;">
-                Additional period {{ loop.index + 1 }}
-              </td>
-              <td class="muted">—</td>
-              <td>{{ show(p.level_of_use) }}</td>
-              <td>{{ uk_date(p.start_date_of_use) }}</td>
-              <td>{{ uk_date(p.date_of_last_use) }}</td>
-              <td>{{ "Yes" if p.unsure_date else "No" }}</td>
+        <tbody>
+          {% for r in (d.drug_use or []) %}
+            <tr>
+              <td>{{ show(r.drug_name) }}</td>
+              <td>{{ show(r.status) }}</td>
+              <td>{{ show(r.level_of_use) }}</td>
+              <td>{{ uk_date(r.start_date_of_use) }}</td>
+              <td>{{ uk_date(r.date_of_last_use) }}</td>
+              <td>{{ "Yes" if r.unsure_date else "No" }}</td>
               <td>
-                {% if p.prescribed is defined %}
-                  {{ "Yes" if p.prescribed else "No" }}
+                {% if r.prescribed is defined %}
+                  {{ "Yes" if r.prescribed else "No" }}
                 {% else %}
                   —
                 {% endif %}
               </td>
             </tr>
+
+            {% for p in (r.periods or []) %}
+              <tr class="child-period-row">
+                <td style="padding-left:18px; font-style: italic;">
+                  Additional period {{ loop.index + 1 }}
+                </td>
+                <td class="muted">—</td>
+                <td>{{ show(p.level_of_use) }}</td>
+                <td>{{ uk_date(p.start_date_of_use) }}</td>
+                <td>{{ uk_date(p.date_of_last_use) }}</td>
+                <td>{{ "Yes" if p.unsure_date else "No" }}</td>
+                <td>
+                  {% if p.prescribed is defined %}
+                    {{ "Yes" if p.prescribed else "No" }}
+                  {% else %}
+                    —
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
           {% endfor %}
-        {% endfor %}
-      </tbody>
-    </table>
+        </tbody>
+      </table>
+    </div>
 
     <div class="note-box">
       <div class="label">Other information (Drug Use)</div>
@@ -510,61 +585,64 @@
       </div>
 
     {% elif d.drug_exposure_any == "Yes" %}
-      <table>
-        <thead>
-          <tr>
-            <th style="width: 18%;">Drug</th>
-            <th style="width: 12%;">Exposure</th>
-            <th style="width: 14%;">Level of exposure</th>
-            <th style="width: 14%;">Start date</th>
-            <th style="width: 14%;">End date</th>
-            <th style="width: 8%;">Unsure</th>
-            <th style="width: 16%;">Type of exposure</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {% for r in (d.drug_exposure or []) %}
+      <!-- ✅ NEW: wrapper + classed table for rounding/zebra -->
+      <div class="table-wrap">
+        <table class="drug-table">
+          <thead>
             <tr>
-              <td>
-                {{ show(r.drug_name) }}
-                {% if r.periods and (r.periods|length > 0) %}
-                  <div class="muted" style="margin-top:2px;">Additional periods recorded</div>
-                {% endif %}
-              </td>
-
-              <td>
-                {% if r.status == "Exposed" %}
-                  Exposed
-                {% else %}
-                  Not exposed
-                {% endif %}
-              </td>
-
-              <td>{{ show(r.level_of_exposure) }}</td>
-              <td>{{ uk_date(r.start_date_of_exposure) }}</td>
-              <td>{{ show_date(r.date_of_last_exposure, r.unsure_date) }}</td>
-              <td>{{ "Yes" if r.unsure_date else "No" }}</td>
-              <td>{{ join_list(r.type_of_exposure) }}</td>
+              <th style="width: 18%;">Drug</th>
+              <th style="width: 12%;">Exposure</th>
+              <th style="width: 14%;">Level of exposure</th>
+              <th style="width: 14%;">Start date</th>
+              <th style="width: 14%;">End date</th>
+              <th style="width: 8%;">Unsure</th>
+              <th style="width: 16%;">Type of exposure</th>
             </tr>
+          </thead>
 
-            {% for p in (r.periods or []) %}
-              <tr class="child-period-row">
-                <td style="padding-left:18px; font-style: italic;">
-                  <span class="muted">Additional period {{ loop.index + 1 }}</span>
+          <tbody>
+            {% for r in (d.drug_exposure or []) %}
+              <tr>
+                <td>
+                  {{ show(r.drug_name) }}
+                  {% if r.periods and (r.periods|length > 0) %}
+                    <div class="muted" style="margin-top:2px;">Additional periods recorded</div>
+                  {% endif %}
                 </td>
 
-                <td class="muted">—</td>
-                <td>{{ show(p.level_of_exposure) }}</td>
-                <td>{{ uk_date(p.start_date_of_exposure) }}</td>
-                <td>{{ show_date(p.date_of_last_exposure, p.unsure_date) }}</td>
-                <td>{{ "Yes" if p.unsure_date else "No" }}</td>
-                <td>{{ join_list(p.type_of_exposure) }}</td>
+                <td>
+                  {% if r.status == "Exposed" %}
+                    Exposed
+                  {% else %}
+                    Not exposed
+                  {% endif %}
+                </td>
+
+                <td>{{ show(r.level_of_exposure) }}</td>
+                <td>{{ uk_date(r.start_date_of_exposure) }}</td>
+                <td>{{ show_date(r.date_of_last_exposure, r.unsure_date) }}</td>
+                <td>{{ "Yes" if r.unsure_date else "No" }}</td>
+                <td>{{ join_list(r.type_of_exposure) }}</td>
               </tr>
+
+              {% for p in (r.periods or []) %}
+                <tr class="child-period-row">
+                  <td style="padding-left:18px; font-style: italic;">
+                    <span class="muted">Additional period {{ loop.index + 1 }}</span>
+                  </td>
+
+                  <td class="muted">—</td>
+                  <td>{{ show(p.level_of_exposure) }}</td>
+                  <td>{{ uk_date(p.start_date_of_exposure) }}</td>
+                  <td>{{ show_date(p.date_of_last_exposure, p.unsure_date) }}</td>
+                  <td>{{ "Yes" if p.unsure_date else "No" }}</td>
+                  <td>{{ join_list(p.type_of_exposure) }}</td>
+                </tr>
+              {% endfor %}
             {% endfor %}
-          {% endfor %}
-        </tbody>
-      </table>
+          </tbody>
+        </table>
+      </div>
 
       <div class="note-box">
         <div class="label">Other information (Drug Exposure)</div>
@@ -572,8 +650,7 @@
       </div>
     {% endif %}
   </div>
-{% endif %}
-
+  {% endif %}
 
   <div class="section">
     <div class="section-title">Medication</div>
@@ -724,13 +801,11 @@
       <div class="field">
         <div class="label">If so, when is your due date/when did you give birth?</div>
         <div class="value">{{ show_pregnancy_date(
-    d.pregnancy_due_or_birth_date,
-    d.pregnancy_due_date_unsure,
-    d.pregnancy_due_date_not_applicable,
-    d.pregnancy_outcome
-  ) }}
-</div>
-
+          d.pregnancy_due_or_birth_date,
+          d.pregnancy_due_date_unsure,
+          d.pregnancy_due_date_not_applicable,
+          d.pregnancy_outcome
+        ) }}</div>
       </div>
 
       <div class="field">
@@ -747,14 +822,13 @@
       <div class="field">
         <div class="label">When did you last dye/bleach your hair?</div>
         <div class="value">
-  {{ uk_date(d.hair_last_dyed_bleached_date) }}
-  {% if d.hair_last_dyed_bleached_approx_before %}
-    <div class="muted" style="font-size:10px; margin-top:2px;">
-      {{ d.hair_last_dyed_bleached_approx_before }}
-    </div>
-  {% endif %}
-</div>
-
+          {{ uk_date(d.hair_last_dyed_bleached_date) }}
+          {% if d.hair_last_dyed_bleached_approx_before %}
+            <div class="muted" style="font-size:10px; margin-top:2px;">
+              {{ d.hair_last_dyed_bleached_approx_before }}
+            </div>
+          {% endif %}
+        </div>
       </div>
       {% endif %}
 

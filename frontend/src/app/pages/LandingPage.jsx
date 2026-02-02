@@ -4,7 +4,11 @@ import {
   createQuestionnaire,
   listQuestionnaires,
   downloadQuestionnairePdf,
+  getQuestionnaire,          // ✅ add
+  deleteQuestionnaire,       // ✅ add (you'll add this in api.js)
 } from "../services/api";
+
+const PAGE_SIZE = 10;
 
 export default function LandingPage() {
   const navigate = useNavigate();
@@ -14,6 +18,9 @@ export default function LandingPage() {
   const [rows, setRows] = useState([]);
   const [status, setStatus] = useState("");
 
+  // ✅ pagination
+  const [page, setPage] = useState(1);
+
   // ✅ hover tracking
   const [hovered, setHovered] = useState(null);
 
@@ -21,13 +28,16 @@ export default function LandingPage() {
     try {
       setStatus("Loading records...");
       const data = await listQuestionnaires();
+
       // newest first by updated_at, fallback created_at
       data.sort((a, b) => {
         const da = new Date(a.updated_at || a.created_at || 0).getTime();
         const db = new Date(b.updated_at || b.created_at || 0).getTime();
         return db - da;
       });
+
       setRows(data);
+      setPage(1);
       setStatus("");
     } catch (e) {
       setStatus(`Failed to load records: ${e.message}`);
@@ -46,7 +56,20 @@ export default function LandingPage() {
     );
   }, [rows, query]);
 
-  const recent = useMemo(() => filtered.slice(0, 12), [filtered]);
+  useEffect(() => {
+    setPage(1);
+  }, [query]);
+
+  const totalPages = useMemo(() => {
+    return Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  }, [filtered.length]);
+
+  const safePage = Math.min(page, totalPages);
+
+  const paged = useMemo(() => {
+    const start = (safePage - 1) * PAGE_SIZE;
+    return filtered.slice(start, start + PAGE_SIZE);
+  }, [filtered, safePage]);
 
   const createNew = async () => {
     const cn = caseNumber.trim();
@@ -57,10 +80,8 @@ export default function LandingPage() {
 
     try {
       setStatus("Creating new draft...");
-      // minimal payload: backend requires case_number
       const created = await createQuestionnaire({ case_number: cn, consent: "" });
 
-      // Optional: store draft id for resume behaviour
       localStorage.setItem("fts_qid", created.id);
 
       setStatus("");
@@ -105,6 +126,85 @@ export default function LandingPage() {
     a.click();
     a.remove();
     window.URL.revokeObjectURL(url);
+  };
+
+  // ✅ COPY: duplicates questionnaire into a new version (new draft) with signatures removed
+  const onCopy = async (r) => {
+    try {
+      const ok = window.confirm(
+        `Copy this questionnaire?\n\nCase ${r.case_number || "—"} v${r.version || ""}\n\nThis will create a NEW draft version with signatures removed.`
+      );
+      if (!ok) return;
+
+      setStatus("Copying questionnaire (removing signatures)...");
+
+      const record = await getQuestionnaire(r.id);
+
+      // your getQuestionnaire returns { data: ... } in QuestionnairePage
+      const src = record?.data ?? record;
+
+      // clone + strip fields that should not carry over
+      const payload = { ...(src || {}) };
+
+      // Ensure new record is created as next version for same case number
+      payload.case_number = src?.case_number || r.case_number || payload.case_number;
+
+      // strip identifiers / system fields if present
+      delete payload.id;
+      delete payload.version;
+      delete payload.status;
+      delete payload.created_at;
+      delete payload.updated_at;
+      delete payload.submitted_at;
+      delete payload.redo_of_id;
+
+      // ✅ signatures removed (png + names + dates)
+      payload.client_signature_png = "";
+      payload.client_print_name = "";
+      payload.client_signature_date = "";
+
+      payload.collector_signature_png = "";
+      payload.collector_print_name = "";
+      payload.collector_signature_date = "";
+
+      payload.refusal_signature_png = "";
+      payload.refusal_print_name = "";
+      payload.refusal_signature_date = "";
+
+      // (optional) if you also want to ensure it becomes a draft-like record:
+      // payload.consent = payload.consent ?? "";
+
+      const created = await createQuestionnaire(payload);
+
+      // store draft id for resume behaviour
+      localStorage.setItem("fts_qid", created.id);
+
+      setStatus("");
+      navigate(`/questionnaire/${created.id}`);
+    } catch (e) {
+      setStatus(`Copy failed: ${e.message}`);
+    }
+  };
+
+  // ✅ DELETE: removes entry (needs backend endpoint)
+  const onDelete = async (r) => {
+    try {
+      const ok = window.confirm(
+        `Delete this record?\n\nCase ${r.case_number || "—"} v${r.version || ""}\n\nThis cannot be undone.`
+      );
+      if (!ok) return;
+
+      setStatus("Deleting record...");
+
+      await deleteQuestionnaire(r.id);
+
+      // refresh list after delete
+      await load();
+
+      setStatus("");
+    } catch (e) {
+      setStatus(`Delete failed: ${e.message}`);
+    }
   };
 
   return (
@@ -187,61 +287,129 @@ export default function LandingPage() {
       <section style={styles.card}>
         <h2 style={styles.h2}>Recent questionnaires</h2>
 
-        {recent.length === 0 ? (
+        {paged.length === 0 ? (
           <p style={styles.empty}>No records found.</p>
         ) : (
-          <div style={styles.list}>
-            {recent.map((r) => (
-              <div key={r.id} style={styles.item}>
-                <div style={{ flex: 1 }}>
-                  <div style={styles.itemTitle}>
-                    Case <strong>{r.case_number || "—"}</strong>{" "}
-                    {r.version ? <span style={styles.badge}>v{r.version}</span> : null}
-                    {r.status ? (
-                      <span style={r.status === "submitted" ? styles.badgeGreen : styles.badgeGray}>
-                        {r.status}
-                      </span>
+          <>
+            <div style={styles.list}>
+              {paged.map((r) => (
+                <div key={r.id} style={styles.item}>
+                  <div style={{ flex: 1 }}>
+                    <div style={styles.itemTitle}>
+                      Case <strong>{r.case_number || "—"}</strong>{" "}
+                      {r.version ? <span style={styles.badge}>v{r.version}</span> : null}
+                      {r.status ? (
+                        <span
+                          style={r.status === "submitted" ? styles.badgeGreen : styles.badgeGray}
+                        >
+                          {r.status}
+                        </span>
+                      ) : null}
+                    </div>
+
+                    <div style={styles.itemMeta}>
+                      Updated: {prettyDate(r.updated_at)}{" "}
+                      {r.submitted_at ? ` • Submitted: ${prettyDate(r.submitted_at)}` : ""}
+                    </div>
+
+                    {r.redo_of_id ? (
+                      <div style={styles.itemMetaSmall}>Redo of: {r.redo_of_id}</div>
                     ) : null}
                   </div>
 
-                  <div style={styles.itemMeta}>
-                    Updated: {prettyDate(r.updated_at)}{" "}
-                    {r.submitted_at ? ` • Submitted: ${prettyDate(r.submitted_at)}` : ""}
+                  <div style={styles.btnGroup}>
+                    <button
+                      style={{
+                        ...styles.openBtn,
+                        ...(hovered === `open-${r.id}` ? styles.openBtnHover : {}),
+                      }}
+                      onMouseEnter={() => setHovered(`open-${r.id}`)}
+                      onMouseLeave={() => setHovered(null)}
+                      onClick={() => openRecord(r.id)}
+                    >
+                      Open
+                    </button>
+
+                    <button
+                      style={{
+                        ...styles.pdfBtn,
+                        ...(hovered === `pdf-${r.id}` ? styles.pdfBtnHover : {}),
+                      }}
+                      onMouseEnter={() => setHovered(`pdf-${r.id}`)}
+                      onMouseLeave={() => setHovered(null)}
+                      onClick={() => onGeneratePdf(r)}
+                    >
+                      Generate PDF
+                    </button>
+
+                    {/* ✅ NEW: Copy (blue, same size as Open) */}
+                    <button
+                      style={{
+                        ...styles.copyBtn,
+                        ...(hovered === `copy-${r.id}` ? styles.copyBtnHover : {}),
+                      }}
+                      onMouseEnter={() => setHovered(`copy-${r.id}`)}
+                      onMouseLeave={() => setHovered(null)}
+                      onClick={() => onCopy(r)}
+                    >
+                      Copy
+                    </button>
+
+                    {/* ✅ NEW: Delete (red) */}
+                    <button
+                      style={{
+                        ...styles.deleteBtn,
+                        ...(hovered === `del-${r.id}` ? styles.deleteBtnHover : {}),
+                      }}
+                      onMouseEnter={() => setHovered(`del-${r.id}`)}
+                      onMouseLeave={() => setHovered(null)}
+                      onClick={() => onDelete(r)}
+                    >
+                      Delete
+                    </button>
                   </div>
+                </div>
+              ))}
+            </div>
 
-                  {r.redo_of_id ? (
-                    <div style={styles.itemMetaSmall}>Redo of: {r.redo_of_id}</div>
-                  ) : null}
+            {/* ✅ Pagination controls */}
+            {filtered.length > 0 && (
+              <div style={styles.pagination}>
+                <button
+                  type="button"
+                  style={{
+                    ...styles.pageBtn,
+                    ...(safePage === 1 ? styles.pageBtnDisabled : {}),
+                  }}
+                  disabled={safePage === 1}
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                >
+                  ◀ Back
+                </button>
+
+                <div style={styles.pageInfo}>
+                  Page <strong>{safePage}</strong> of <strong>{totalPages}</strong>
+                  <span style={styles.pageInfoSmall}>
+                    {" "}
+                    • Showing {(safePage - 1) * PAGE_SIZE + 1}–
+                    {Math.min(safePage * PAGE_SIZE, filtered.length)} of {filtered.length}
+                  </span>
                 </div>
 
-                <div style={styles.btnGroup}>
-                  <button
-                    style={{
-                      ...styles.openBtn,
-                      ...(hovered === `open-${r.id}` ? styles.openBtnHover : {}),
-                    }}
-                    onMouseEnter={() => setHovered(`open-${r.id}`)}
-                    onMouseLeave={() => setHovered(null)}
-                    onClick={() => openRecord(r.id)}
-                  >
-                    Open
-                  </button>
-
-                  <button
-                    style={{
-                      ...styles.pdfBtn,
-                      ...(hovered === `pdf-${r.id}` ? styles.pdfBtnHover : {}),
-                    }}
-                    onMouseEnter={() => setHovered(`pdf-${r.id}`)}
-                    onMouseLeave={() => setHovered(null)}
-                    onClick={() => onGeneratePdf(r)}
-                  >
-                    Generate PDF
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  style={{
+                    ...styles.pageBtn,
+                    ...(safePage === totalPages ? styles.pageBtnDisabled : {}),
+                  }}
+                  disabled={safePage === totalPages}
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                >
+                  Next ▶
+                </button>
               </div>
-            ))}
-          </div>
+            )}
+          </>
         )}
       </section>
 
@@ -313,11 +481,6 @@ const styles = {
   },
 
   hint: { marginTop: 10, fontSize: 13, color: "#666" },
-
-  // ✅ shared transition feels consistent & subtle
-  btnTransition: {
-    transition: "background 120ms ease, transform 120ms ease, box-shadow 120ms ease",
-  },
 
   primaryBtn: {
     padding: "12px 18px",
@@ -397,6 +560,8 @@ const styles = {
     fontWeight: 700,
   },
 
+  btnGroup: { display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" },
+
   openBtn: {
     padding: "10px 14px",
     borderRadius: 10,
@@ -414,8 +579,6 @@ const styles = {
     boxShadow: "0 4px 10px rgba(0,0,0,0.08)",
   },
 
-  btnGroup: { display: "flex", gap: 10, alignItems: "center" },
-
   pdfBtn: {
     padding: "10px 14px",
     borderRadius: 10,
@@ -431,6 +594,75 @@ const styles = {
     background: "#7b3759",
     transform: "translateY(-1px)",
     boxShadow: "0 4px 10px rgba(0,0,0,0.08)",
+  },
+
+  // ✅ Copy (blue, same size as Open)
+  copyBtn: {
+    padding: "10px 14px",
+    borderRadius: 10,
+    border: "none",
+    cursor: "pointer",
+    background: "#00528c",
+    color: "white",
+    fontWeight: 700,
+    whiteSpace: "nowrap",
+    transition: "background 120ms ease, transform 120ms ease, box-shadow 120ms ease",
+  },
+  copyBtnHover: {
+    background: "#004270",
+    transform: "translateY(-1px)",
+    boxShadow: "0 4px 10px rgba(0,0,0,0.08)",
+  },
+
+  // ✅ Delete (red)
+  deleteBtn: {
+    padding: "10px 14px",
+    borderRadius: 10,
+    border: "none",
+    cursor: "pointer",
+    background: "#c0392b",
+    color: "white",
+    fontWeight: 700,
+    whiteSpace: "nowrap",
+    transition: "background 120ms ease, transform 120ms ease, box-shadow 120ms ease",
+  },
+  deleteBtnHover: {
+    background: "#a93226",
+    transform: "translateY(-1px)",
+    boxShadow: "0 4px 10px rgba(0,0,0,0.10)",
+  },
+
+  // ✅ Pagination styles
+  pagination: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+    marginTop: 12,
+    flexWrap: "wrap",
+  },
+  pageBtn: {
+    padding: "10px 14px",
+    borderRadius: 10,
+    border: "1px solid #ccc",
+    background: "white",
+    color: "#00528c",
+    cursor: "pointer",
+    fontWeight: 700,
+    transition: "background 120ms ease, transform 120ms ease, box-shadow 120ms ease",
+  },
+  pageBtnDisabled: {
+    opacity: 0.5,
+    cursor: "not-allowed",
+    color: "#999",
+  },
+  pageInfo: {
+    color: "#555",
+    fontSize: 13,
+  },
+  pageInfoSmall: {
+    color: "#777",
+    fontSize: 12,
   },
 
   empty: { margin: 0, color: "#666" },
