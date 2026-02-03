@@ -89,7 +89,7 @@ def clear_session_cookie(resp: Response):
     )
 
 
-def get_current_user(request: Request):
+def get_current_user(request: Request, response: Response) -> User:
     token = request.cookies.get(COOKIE_NAME)
     if not token:
         raise HTTPException(status_code=401, detail="Not logged in")
@@ -106,6 +106,15 @@ def get_current_user(request: Request):
         user = get_user_by_id(session, int(user_id))
         if not user or not user.is_active:
             raise HTTPException(status_code=401, detail="Account inactive")
+
+        # ✅ SLIDING / INACTIVITY EXPIRY:
+        # Re-mint a fresh session token and re-set cookie on every authenticated request.
+        new_token = create_jwt(
+            {"type": "session", "sub": str(user.id), "role": user.role},
+            expires_in_seconds=ACCESS_TOKEN_EXPIRE_SECONDS,
+        )
+        set_session_cookie(response, new_token)
+
         return user
 
 

@@ -8,6 +8,34 @@ const LOCAL_BASE = "http://localhost:8000";
 
 const BASE = `${isGithubPages ? RENDER_BASE : LOCAL_BASE}/api`;
 
+
+// ✅ Auth: who am I?
+export async function authMe() {
+  const res = await fetch(`${BASE}/auth/me`, {
+    method: "GET",
+    credentials: "include", // ✅ REQUIRED so cookies are sent
+  });
+
+  if (!res.ok) {
+    // if not logged in, /me returns 401
+    throw new Error("Not logged in");
+  }
+  return res.json();
+}
+
+// ✅ Auth: logout (clears cookie on server)
+export async function authLogout() {
+  const res = await fetch(`${BASE}/auth/logout`, {
+    method: "POST",
+    credentials: "include", // ✅ REQUIRED
+  });
+
+  if (!res.ok) {
+    throw new Error("Logout failed");
+  }
+  return res.json();
+}
+
 export async function authLogin(payload) {
   const res = await fetch(`${BASE}/auth/login`, {
     method: "POST",
@@ -28,21 +56,6 @@ export async function authSignup(payload) {
   return handleFetch(res);
 }
 
-export async function authMe() {
-  const res = await fetch(`${BASE}/auth/me`, {
-    method: "GET",
-    credentials: "include",
-  });
-  return handleFetch(res);
-}
-
-export async function authLogout() {
-  const res = await fetch(`${BASE}/auth/logout`, {
-    method: "POST",
-    credentials: "include",
-  });
-  return handleFetch(res);
-}
 
 export async function authVerify(token) {
   const res = await fetch(`${BASE}/auth/verify?token=${encodeURIComponent(token)}`, {
@@ -148,4 +161,89 @@ export async function deleteQuestionnaire(id) {
     credentials: "include",
   });
   return handleFetch(res);
+}
+
+export async function adminUsersList() {
+  const res = await fetch(`${BASE}/admin/users`, { credentials: "include" });
+  if (!res.ok) throw new Error("Failed to load users");
+  return res.json();
+}
+
+export async function adminUserSetRole(userId, role) {
+  const res = await fetch(`${BASE}/admin/users/${userId}/role`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ role }),
+  });
+  if (!res.ok) throw new Error("Failed to update role");
+  return res.json();
+}
+
+export async function adminUserDelete(userId) {
+  const res = await fetch(`${BASE}/admin/users/${userId}`, {
+    method: "DELETE",
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error("Failed to delete user");
+  return res.json();
+}
+
+export async function adminQuestionnaireSchema() {
+  const res = await fetch(`${BASE}/admin/questionnaires/schema`, {
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error("Failed to load schema");
+  return res.json();
+}
+
+export async function adminQuestionnaireSearch(payload) {
+  const res = await fetch(`${BASE}/admin/questionnaires/search`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error("Search failed");
+  return res.json();
+}
+
+export async function adminQuestionnaireExport(payload) {
+  const res = await fetch(`${BASE}/admin/questionnaires/export`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error("Export failed");
+  return res.blob();
+}
+
+export async function adminExportOptions() {
+  const res = await fetch(`${BASE}/admin/export/options`, {
+    method: "GET",
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function adminExportJson(params = {}) {
+  const qs = new URLSearchParams(params).toString();
+  const res = await fetch(`${BASE}/admin/export/json?${qs}`, {
+    method: "GET",
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.blob();
+}
+
+export async function adminExportCsv(params = {}) {
+  const qs = new URLSearchParams(params).toString();
+  const res = await fetch(`${BASE}/admin/export/csv?${qs}`, {
+    method: "GET",
+    credentials: "include",
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.blob();
 }

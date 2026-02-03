@@ -29,26 +29,33 @@ export default function LoginPage() {
         />
 
         <h1 style={styles.h1}>Login</h1>
-        <p style={styles.sub}>Use your @forensic-testing.co.uk account.</p>
+        <p style={styles.sub}>Use your @forensic-testing.co.uk email please.</p>
 
-        <input
-          style={styles.input}
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
+        <form
+          onSubmit={(e) => {
+            e.preventDefault(); // prevent page refresh
+            onLogin();
+          }}
+        >
+          <input
+            style={styles.input}
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
 
-        <input
-          style={styles.input}
-          placeholder="Password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+          <input
+            style={styles.input}
+            placeholder="Password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
 
-        <button style={styles.primaryBtn} onClick={onLogin}>
-          Login
-        </button>
+          <button type="submit" style={styles.primaryBtn}>
+            Login
+          </button>
+        </form>
 
         <div style={styles.linksRow}>
           <Link to="/signup" style={styles.link}>Create account</Link>

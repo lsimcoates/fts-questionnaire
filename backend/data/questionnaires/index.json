@@ -243,17 +243,7 @@
     "version": 4,
     "status": "draft",
     "created_at": "2026-02-02T14:14:11.854365",
-    "updated_at": "2026-02-02T14:14:11.854365",
-    "submitted_at": null,
-    "redo_of_id": null
-  },
-  {
-    "id": "1524ad42b22e483f81c622fc8168a2f9",
-    "case_number": "1234.1",
-    "version": 2,
-    "status": "draft",
-    "created_at": "2026-02-02T14:14:32.461899",
-    "updated_at": "2026-02-02T14:14:36.155668",
+    "updated_at": "2026-02-03T10:06:26.033155",
     "submitted_at": null,
     "redo_of_id": null
   }

@@ -5,7 +5,9 @@ import {
   listQuestionnaires,
   downloadQuestionnairePdf,
   getQuestionnaire,          // ✅ add
-  deleteQuestionnaire,       // ✅ add (you'll add this in api.js)
+  deleteQuestionnaire,
+  authMe,
+  authLogout       // ✅ add (you'll add this in api.js)
 } from "../services/api";
 
 const PAGE_SIZE = 10;
@@ -23,6 +25,28 @@ export default function LandingPage() {
 
   // ✅ hover tracking
   const [hovered, setHovered] = useState(null);
+
+  // ✅ user role for admin tools
+  const [role, setRole] = useState(null);
+  const isAdmin = role === "admin" || role === "superadmin";
+
+  const logout = async () => {
+    try {
+      await authLogout(); // ✅ clears httponly cookie
+    } catch {
+      // ignore - still clear local state
+    }
+
+    localStorage.removeItem("fts_qid");
+    setRole(null);
+    navigate("/login");
+  };
+
+
+  const goAdminTools = () => {
+    navigate("/admin-tools");
+  };
+
 
   const load = async () => {
     try {
@@ -45,8 +69,18 @@ export default function LandingPage() {
   };
 
   useEffect(() => {
-    load();
-  }, []);
+    (async () => {
+      try {
+        const me = await authMe();
+        setRole(me.role);
+        await load(); // ✅ only load after session confirmed
+      } catch (e) {
+        setRole(null);
+        navigate("/login");
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [navigate]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -225,17 +259,48 @@ export default function LandingPage() {
           </div>
         </div>
 
-        <button
-          style={{
-            ...styles.refreshBtn,
-            ...(hovered === "refresh" ? styles.refreshBtnHover : {}),
-          }}
-          onMouseEnter={() => setHovered("refresh")}
-          onMouseLeave={() => setHovered(null)}
-          onClick={load}
-        >
-          Refresh
-        </button>
+                <div style={styles.headerRight}>
+          {/* ✅ Admin Tools (only admins/superadmins) */}
+          {isAdmin && (
+            <button
+              style={{
+                ...styles.deleteBtn,
+                ...(hovered === "admintools" ? styles.deleteBtnHover: {}),
+              }}
+              onMouseEnter={() => setHovered("admintools")}
+              onMouseLeave={() => setHovered(null)}
+              onClick={goAdminTools}
+            >
+              Admin Tools
+            </button>
+          )}
+
+          {/* ✅ Refresh */}
+          <button
+            style={{
+              ...styles.refreshBtn,
+              ...(hovered === "refresh" ? styles.refreshBtnHover : {}),
+            }}
+            onMouseEnter={() => setHovered("refresh")}
+            onMouseLeave={() => setHovered(null)}
+            onClick={load}
+          >
+            Refresh
+          </button>
+
+          {/* ✅ Logout (company blue) */}
+          <button
+            style={{
+              ...styles.logoutBtn,
+              ...(hovered === "logout" ? styles.logoutBtnHover : {}),
+            }}
+            onMouseEnter={() => setHovered("logout")}
+            onMouseLeave={() => setHovered(null)}
+            onClick={logout}
+          >
+            Logout
+          </button>
+        </div>
       </header>
 
       <section style={styles.card}>
@@ -356,6 +421,7 @@ export default function LandingPage() {
                     </button>
 
                     {/* ✅ NEW: Delete (red) */}
+                    {isAdmin && (
                     <button
                       style={{
                         ...styles.deleteBtn,
@@ -367,6 +433,7 @@ export default function LandingPage() {
                     >
                       Delete
                     </button>
+                    )}
                   </div>
                 </div>
               ))}
@@ -437,6 +504,28 @@ const styles = {
     gap: 12,
     marginBottom: 16,
   },
+
+    headerRight: {
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+  },
+
+    logoutBtn: {
+      padding: "10px 14px",
+      borderRadius: 10,
+      border: "none",
+      cursor: "pointer",
+      background: "#00528c", // company blue
+      color: "white",
+      fontWeight: 700,
+      transition: "background 120ms ease, transform 120ms ease, box-shadow 120ms ease",
+    },
+    logoutBtnHover: {
+      background: "#004270",
+      transform: "translateY(-1px)",
+      boxShadow: "0 4px 10px rgba(0,0,0,0.08)",
+    },
 
   headerLeft: {
     display: "flex",

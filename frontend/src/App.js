@@ -11,6 +11,8 @@ import SignupPage from "./app/pages/SignupPage";
 import VerifyPage from "./app/pages/VerifyPage";
 import ForgotPasswordPage from "./app/pages/ForgotPasswordPage";
 import ResetPasswordPage from "./app/pages/ResetPasswordPage";
+import AdminToolsPage from "./app/pages/AdminToolsPage";
+
 
 export default function App() {
   return (
@@ -43,6 +45,15 @@ export default function App() {
 
       {/* fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />
+
+      <Route
+        path="/admin-tools"
+        element={
+          <RequireAuth>
+            <AdminToolsPage />
+          </RequireAuth>
+        }
+      />
     </Routes>
   );
 }

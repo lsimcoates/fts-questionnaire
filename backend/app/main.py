@@ -1,8 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
 from app.api.questionnaires import router as questionnaires_router
-
+from app.api.admin import router as admin_router
 
 app = FastAPI(title="FTS Questionnaire API")
 
@@ -30,5 +29,9 @@ app.include_router(questionnaires_router, prefix="/api")
 from fastapi.staticfiles import StaticFiles
 
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
+
+app.include_router(questionnaires_router, prefix="/api")
+app.include_router(admin_router, prefix="/api")
+
 
 
