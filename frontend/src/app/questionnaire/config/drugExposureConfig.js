@@ -1,6 +1,6 @@
 export const drugExposureRows = [
   "Cannabis",
-  "Cocaine",
+  "Powder Cocaine",
   "Crack Cocaine",
   "MDMA",
   "Amphetamine",

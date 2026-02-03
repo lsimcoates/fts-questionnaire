@@ -310,6 +310,12 @@
     border-bottom: 1px solid #cfcfcf; /* subtle divider */
   }
 
+  thead { display: table-header-group; }
+  /* ✅ Do NOT repeat headers for drug tables (but keep normal behaviour elsewhere) */
+  .drug-table thead {
+    display: table-row-group;
+  }
+
   /* Body cells */
   .drug-table td {
     padding: 6px;
@@ -412,6 +418,22 @@
     {%- endif -%}
   {%- endmacro %}
 
+  {% macro stack_list(v) -%}
+    {%- if v is sequence and (v is not string) -%}
+      {%- if v|length == 0 -%}
+        —
+      {%- else -%}
+        <div style="display:flex; flex-direction:column; gap:2px;">
+          {%- for item in v -%}
+            <div>{{ item }}</div>
+          {%- endfor -%}
+        </div>
+      {%- endif -%}
+    {%- else -%}
+      {{ show(v) }}
+    {%- endif -%}
+  {%- endmacro %}
+
   {% macro show_pregnancy_date(date_str, unsure_flag, not_applicable_flag, outcome) -%}
     {%- if not_applicable_flag -%}
       Not applicable{% if outcome %} – {{ show(outcome) }}{% endif %}
@@ -421,6 +443,30 @@
       {{ uk_date(date_str) }}
     {%- endif -%}
   {%- endmacro %}
+
+  {% macro pdf_drug_name(name) -%}
+    {%- set s = (name|string).strip() -%}
+
+    {# ---- PDF-only display overrides ---- #}
+    {%- if not s -%}
+      —
+    {%- elif s.startswith("Amphetamine") -%}
+      Amphetamine (incl. certain medications such as Elvanse)
+    {%- elif s.startswith("Dihydrocodeine") -%}
+      Dihydrocodeine
+    {%- elif s.startswith("Cannabis") -%}
+      Cannabis
+    {%- elif s.startswith("Methamphetamine") -%}
+      Methamphetamine
+    {%- elif s.startswith("Heroin") -%}
+      Heroin
+    {%- elif s.startswith("Codeine") -%}
+      Codeine
+    {%- else -%}
+      {{ s }}
+    {%- endif -%}
+  {%- endmacro %}
+
 
   <div class="first-page-header">
     {% if top_logo_src %}
@@ -526,7 +572,7 @@
         <tbody>
           {% for r in (d.drug_use or []) %}
             <tr>
-              <td>{{ show(r.drug_name) }}</td>
+              <td>{{ pdf_drug_name(r.drug_name) }}</td>
               <td>{{ show(r.status) }}</td>
               <td>{{ show(r.level_of_use) }}</td>
               <td>{{ uk_date(r.start_date_of_use) }}</td>
@@ -622,7 +668,7 @@
                 <td>{{ uk_date(r.start_date_of_exposure) }}</td>
                 <td>{{ show_date(r.date_of_last_exposure, r.unsure_date) }}</td>
                 <td>{{ "Yes" if r.unsure_date else "No" }}</td>
-                <td>{{ join_list(r.type_of_exposure) }}</td>
+                <td>{{ stack_list(r.type_of_exposure) }}</td>
               </tr>
 
               {% for p in (r.periods or []) %}
@@ -636,7 +682,7 @@
                   <td>{{ uk_date(p.start_date_of_exposure) }}</td>
                   <td>{{ show_date(p.date_of_last_exposure, p.unsure_date) }}</td>
                   <td>{{ "Yes" if p.unsure_date else "No" }}</td>
-                  <td>{{ join_list(p.type_of_exposure) }}</td>
+                  <td>{{ stack_list(p.type_of_exposure) }}</td>
                 </tr>
               {% endfor %}
             {% endfor %}

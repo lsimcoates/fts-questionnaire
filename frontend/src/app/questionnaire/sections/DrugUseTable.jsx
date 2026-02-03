@@ -13,6 +13,12 @@ const LEVEL_OPTIONS = [
   "Unsure",
 ];
 
+function isoMonthsAgo(months) {
+  const d = new Date();
+  d.setMonth(d.getMonth() - months);
+  return d.toISOString().slice(0, 10); // YYYY-MM-DD for <input type="date">
+}
+
 function blankPeriod() {
   return {
     start_date_of_use: "",
@@ -47,6 +53,22 @@ function isPeriodActive(p) {
     !!p.level_of_use ||
     !!p.unsure_date ||
     !!p.prescribed
+  );
+}
+
+function DateShortcuts({ onToday, onMinus3, onMinus6 }) {
+  return (
+    <div style={styles.dateShortcuts}>
+      <button type="button" style={styles.shortcutBtn} onClick={onToday}>
+        Today
+      </button>
+      <button type="button" style={styles.shortcutBtn} onClick={onMinus3}>
+        −3 months
+      </button>
+      <button type="button" style={styles.shortcutBtn} onClick={onMinus6}>
+        −6 months
+      </button>
+    </div>
   );
 }
 
@@ -147,9 +169,21 @@ function DrugUseRow({ drug, index, register, errors, showErrors, control, setVal
             max={todayISO}
             {...register(`drug_use.${index}.start_date_of_use`)}
           />
+
+          <DateShortcuts
+            onToday={() =>
+              setValue(`drug_use.${index}.start_date_of_use`, todayISO, { shouldDirty: true })
+            }
+            onMinus3={() =>
+              setValue(`drug_use.${index}.start_date_of_use`, isoMonthsAgo(3), { shouldDirty: true })
+            }
+            onMinus6={() =>
+              setValue(`drug_use.${index}.start_date_of_use`, isoMonthsAgo(6), { shouldDirty: true })
+            }
+          />
         </td>
 
-        {/* ✅ End date: cannot be before start date */}
+        {/* End date */}
         <td style={styles.td}>
           <input
             style={styles.input}
@@ -169,6 +203,8 @@ function DrugUseRow({ drug, index, register, errors, showErrors, control, setVal
               },
             })}
           />
+
+          
         </td>
 
         <td style={styles.tdCenter}>
@@ -227,6 +263,7 @@ function DrugUseRow({ drug, index, register, errors, showErrors, control, setVal
                 <td style={styles.tdCenter}><span style={styles.muted}>—</span></td>
                 <td style={styles.tdCenter}><span style={styles.muted}>—</span></td>
 
+                {/* Period start */}
                 <td style={styles.td}>
                   <input
                     style={styles.input}
@@ -241,8 +278,33 @@ function DrugUseRow({ drug, index, register, errors, showErrors, control, setVal
                       },
                     })}
                   />
+
+                  <DateShortcuts
+                    onToday={() =>
+                      setValue(
+                        `drug_use.${index}.periods.${pIndex}.start_date_of_use`,
+                        todayISO,
+                        { shouldDirty: true }
+                      )
+                    }
+                    onMinus3={() =>
+                      setValue(
+                        `drug_use.${index}.periods.${pIndex}.start_date_of_use`,
+                        isoMonthsAgo(3),
+                        { shouldDirty: true }
+                      )
+                    }
+                    onMinus6={() =>
+                      setValue(
+                        `drug_use.${index}.periods.${pIndex}.start_date_of_use`,
+                        isoMonthsAgo(6),
+                        { shouldDirty: true }
+                      )
+                    }
+                  />
                 </td>
 
+                {/* Period end */}
                 <td style={styles.td}>
                   <input
                     style={styles.input}
@@ -266,6 +328,8 @@ function DrugUseRow({ drug, index, register, errors, showErrors, control, setVal
                       },
                     })}
                   />
+
+                
                 </td>
 
                 <td style={styles.tdCenter}>
@@ -390,9 +454,7 @@ export default function DrugUseTable({ register, control, setValue, errors, show
           <tfoot>
             <tr>
               <td style={styles.td} colSpan={9}>
-                <label style={styles.otherInfoLabel}>
-                  Other information
-                </label>
+                <label style={styles.otherInfoLabel}>Other information</label>
                 <textarea
                   style={styles.textarea}
                   rows={4}
@@ -454,7 +516,7 @@ const styles = {
     verticalAlign: "middle",
   },
 
-  input: { padding: 6, borderRadius: 6, border: "1px solid #ccc" },
+  input: { padding: 6, borderRadius: 6, border: "1px solid #ccc", width: "100%" },
   select: { padding: 6, borderRadius: 6, border: "1px solid #ccc", width: "100%" },
 
   muted: { color: "#999" },
@@ -474,4 +536,19 @@ const styles = {
 
   errorRow: { padding: 10, borderBottom: "1px solid #eee", background: "#fff5f5" },
   errorText: { color: "crimson", fontSize: 12, fontWeight: 600 },
+
+  dateShortcuts: {
+    display: "flex",
+    gap: 6,
+    marginTop: 6,
+    flexWrap: "wrap",
+  },
+  shortcutBtn: {
+    padding: "4px 8px",
+    borderRadius: 6,
+    border: "1px solid #ccc",
+    background: "#fff",
+    cursor: "pointer",
+    fontSize: 11,
+  },
 };

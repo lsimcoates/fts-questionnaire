@@ -26,6 +26,28 @@ const PARENT_LEVEL_OPTIONS = [
 // Child rows need "Not exposed" as requested
 const CHILD_LEVEL_OPTIONS = ["Not exposed", ...PARENT_LEVEL_OPTIONS];
 
+function isoMonthsAgo(months) {
+  const d = new Date();
+  d.setMonth(d.getMonth() - months);
+  return d.toISOString().slice(0, 10); // YYYY-MM-DD for <input type="date">
+}
+
+function DateShortcuts({ onToday, onMinus3, onMinus6 }) {
+  return (
+    <div style={styles.dateShortcuts}>
+      <button type="button" style={styles.shortcutBtn} onClick={onToday}>
+        Today
+      </button>
+      <button type="button" style={styles.shortcutBtn} onClick={onMinus3}>
+        −3 months
+      </button>
+      <button type="button" style={styles.shortcutBtn} onClick={onMinus6}>
+        −6 months
+      </button>
+    </div>
+  );
+}
+
 function blankExposurePeriod() {
   return {
     start_date_of_exposure: "",
@@ -176,6 +198,30 @@ function DrugExposureRow({
             max={todayISO}
             {...register(`drug_exposure.${index}.start_date_of_exposure`)}
           />
+
+          <DateShortcuts
+            onToday={() =>
+              setValue(
+                `drug_exposure.${index}.start_date_of_exposure`,
+                todayISO,
+                { shouldDirty: true }
+              )
+            }
+            onMinus3={() =>
+              setValue(
+                `drug_exposure.${index}.start_date_of_exposure`,
+                isoMonthsAgo(3),
+                { shouldDirty: true }
+              )
+            }
+            onMinus6={() =>
+              setValue(
+                `drug_exposure.${index}.start_date_of_exposure`,
+                isoMonthsAgo(6),
+                { shouldDirty: true }
+              )
+            }
+          />
         </td>
 
         {/* ✅ End date: cannot be before start date */}
@@ -195,6 +241,7 @@ function DrugExposureRow({
               },
             })}
           />
+
         </td>
 
         <td style={styles.tdCenter}>
@@ -282,6 +329,30 @@ function DrugExposureRow({
                         },
                       }
                     )}
+                  />
+
+                  <DateShortcuts
+                    onToday={() =>
+                      setValue(
+                        `drug_exposure.${index}.periods.${pIndex}.start_date_of_exposure`,
+                        todayISO,
+                        { shouldDirty: true }
+                      )
+                    }
+                    onMinus3={() =>
+                      setValue(
+                        `drug_exposure.${index}.periods.${pIndex}.start_date_of_exposure`,
+                        isoMonthsAgo(3),
+                        { shouldDirty: true }
+                      )
+                    }
+                    onMinus6={() =>
+                      setValue(
+                        `drug_exposure.${index}.periods.${pIndex}.start_date_of_exposure`,
+                        isoMonthsAgo(6),
+                        { shouldDirty: true }
+                      )
+                    }
                   />
                 </td>
 
@@ -645,4 +716,20 @@ const styles = {
 
   errorRow: { padding: 10, borderBottom: "1px solid #eee", background: "#fff5f5" },
   errorText: { color: "crimson", fontSize: 12, fontWeight: 600 },
+
+  // ✅ Added: date shortcut buttons (same as DrugUseTable)
+  dateShortcuts: {
+    display: "flex",
+    gap: 6,
+    marginTop: 6,
+    flexWrap: "wrap",
+  },
+  shortcutBtn: {
+    padding: "4px 8px",
+    borderRadius: 6,
+    border: "1px solid #ccc",
+    background: "#fff",
+    cursor: "pointer",
+    fontSize: 11,
+  },
 };
