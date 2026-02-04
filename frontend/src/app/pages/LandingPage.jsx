@@ -4,10 +4,10 @@ import {
   createQuestionnaire,
   listQuestionnaires,
   downloadQuestionnairePdf,
-  getQuestionnaire,          // ✅ add
+  getQuestionnaire,
   deleteQuestionnaire,
   authMe,
-  authLogout       // ✅ add (you'll add this in api.js)
+  authLogout
 } from "../services/api";
 
 const PAGE_SIZE = 10;
@@ -42,11 +42,13 @@ export default function LandingPage() {
     navigate("/login");
   };
 
-
   const goAdminTools = () => {
     navigate("/admin-tools");
   };
 
+  const goChangePassword = () => {
+    navigate("/change-password");
+  };
 
   const load = async () => {
     try {
@@ -205,9 +207,6 @@ export default function LandingPage() {
       payload.refusal_print_name = "";
       payload.refusal_signature_date = "";
 
-      // (optional) if you also want to ensure it becomes a draft-like record:
-      // payload.consent = payload.consent ?? "";
-
       const created = await createQuestionnaire(payload);
 
       // store draft id for resume behaviour
@@ -259,13 +258,26 @@ export default function LandingPage() {
           </div>
         </div>
 
-                <div style={styles.headerRight}>
+        <div style={styles.headerRight}>
+          {/* ✅ Change Password */}
+          <button
+            style={{
+              ...styles.logoutBtn,
+              ...(hovered === "changepw" ? styles.logoutBtnHover: {}),
+            }}
+            onMouseEnter={() => setHovered("changepw")}
+            onMouseLeave={() => setHovered(null)}
+            onClick={goChangePassword}
+          >
+            Change Password
+          </button>
+
           {/* ✅ Admin Tools (only admins/superadmins) */}
           {isAdmin && (
             <button
               style={{
                 ...styles.deleteBtn,
-                ...(hovered === "admintools" ? styles.deleteBtnHover: {}),
+                ...(hovered === "admintools" ? styles.deleteBtnHover : {}),
               }}
               onMouseEnter={() => setHovered("admintools")}
               onMouseLeave={() => setHovered(null)}
@@ -302,6 +314,8 @@ export default function LandingPage() {
           </button>
         </div>
       </header>
+
+      {/* ...rest of your component unchanged... */}
 
       <section style={styles.card}>
         <h2 style={styles.h2}>Create a new questionnaire</h2>
@@ -407,7 +421,6 @@ export default function LandingPage() {
                       Generate PDF
                     </button>
 
-                    {/* ✅ NEW: Copy (blue, same size as Open) */}
                     <button
                       style={{
                         ...styles.copyBtn,
@@ -420,26 +433,24 @@ export default function LandingPage() {
                       Copy
                     </button>
 
-                    {/* ✅ NEW: Delete (red) */}
                     {isAdmin && (
-                    <button
-                      style={{
-                        ...styles.deleteBtn,
-                        ...(hovered === `del-${r.id}` ? styles.deleteBtnHover : {}),
-                      }}
-                      onMouseEnter={() => setHovered(`del-${r.id}`)}
-                      onMouseLeave={() => setHovered(null)}
-                      onClick={() => onDelete(r)}
-                    >
-                      Delete
-                    </button>
+                      <button
+                        style={{
+                          ...styles.deleteBtn,
+                          ...(hovered === `del-${r.id}` ? styles.deleteBtnHover : {}),
+                        }}
+                        onMouseEnter={() => setHovered(`del-${r.id}`)}
+                        onMouseLeave={() => setHovered(null)}
+                        onClick={() => onDelete(r)}
+                      >
+                        Delete
+                      </button>
                     )}
                   </div>
                 </div>
               ))}
             </div>
 
-            {/* ✅ Pagination controls */}
             {filtered.length > 0 && (
               <div style={styles.pagination}>
                 <button
@@ -505,27 +516,44 @@ const styles = {
     marginBottom: 16,
   },
 
-    headerRight: {
+  headerRight: {
     display: "flex",
     alignItems: "center",
     gap: 10,
   },
 
-    logoutBtn: {
-      padding: "10px 14px",
-      borderRadius: 10,
-      border: "none",
-      cursor: "pointer",
-      background: "#00528c", // company blue
-      color: "white",
-      fontWeight: 700,
-      transition: "background 120ms ease, transform 120ms ease, box-shadow 120ms ease",
-    },
-    logoutBtnHover: {
-      background: "#004270",
-      transform: "translateY(-1px)",
-      boxShadow: "0 4px 10px rgba(0,0,0,0.08)",
-    },
+  // ✅ NEW: Change password button (neutral)
+  changePwBtn: {
+    padding: "10px 14px",
+    borderRadius: 10,
+    border: "1px solid #cfd7e6",
+    background: "white",
+    color: "#00528c",
+    cursor: "pointer",
+    fontWeight: 800,
+    transition: "background 120ms ease, transform 120ms ease, box-shadow 120ms ease",
+  },
+  changePwBtnHover: {
+    background: "#f3f6fb",
+    transform: "translateY(-1px)",
+    boxShadow: "0 4px 10px rgba(0,0,0,0.06)",
+  },
+
+  logoutBtn: {
+    padding: "10px 14px",
+    borderRadius: 10,
+    border: "none",
+    cursor: "pointer",
+    background: "#00528c", // company blue
+    color: "white",
+    fontWeight: 700,
+    transition: "background 120ms ease, transform 120ms ease, box-shadow 120ms ease",
+  },
+  logoutBtnHover: {
+    background: "#004270",
+    transform: "translateY(-1px)",
+    boxShadow: "0 4px 10px rgba(0,0,0,0.08)",
+  },
 
   headerLeft: {
     display: "flex",
@@ -685,7 +713,6 @@ const styles = {
     boxShadow: "0 4px 10px rgba(0,0,0,0.08)",
   },
 
-  // ✅ Copy (blue, same size as Open)
   copyBtn: {
     padding: "10px 14px",
     borderRadius: 10,
@@ -703,7 +730,6 @@ const styles = {
     boxShadow: "0 4px 10px rgba(0,0,0,0.08)",
   },
 
-  // ✅ Delete (red)
   deleteBtn: {
     padding: "10px 14px",
     borderRadius: 10,
@@ -721,7 +747,6 @@ const styles = {
     boxShadow: "0 4px 10px rgba(0,0,0,0.10)",
   },
 
-  // ✅ Pagination styles
   pagination: {
     display: "flex",
     alignItems: "center",

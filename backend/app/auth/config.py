@@ -9,9 +9,6 @@ ALGORITHM = "HS256"
 # 1 hour sessions
 ACCESS_TOKEN_EXPIRE_SECONDS = int(os.getenv("ACCESS_TOKEN_EXPIRE_SECONDS", "3600"))
 
-# verification tokens (e.g. 24h)
-VERIFY_TOKEN_EXPIRE_SECONDS = int(os.getenv("VERIFY_TOKEN_EXPIRE_SECONDS", "86400"))
-
 # Cookie config
 COOKIE_NAME = os.getenv("COOKIE_NAME", "fts_session")
 COOKIE_SECURE = os.getenv("COOKIE_SECURE", "false").lower() == "true"

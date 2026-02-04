@@ -8,7 +8,6 @@ const LOCAL_BASE = "http://localhost:8000";
 
 const BASE = `${isGithubPages ? RENDER_BASE : LOCAL_BASE}/api`;
 
-
 // ✅ Auth: who am I?
 export async function authMe() {
   const res = await fetch(`${BASE}/auth/me`, {
@@ -46,8 +45,9 @@ export async function authLogin(payload) {
   return handleFetch(res);
 }
 
-export async function authSignup(payload) {
-  const res = await fetch(`${BASE}/auth/signup`, {
+// ✅ NEW: Change password (logged-in users)
+export async function authChangePassword(payload) {
+  const res = await fetch(`${BASE}/auth/change-password`, {
     method: "POST",
     credentials: "include",
     headers: { "Content-Type": "application/json" },
@@ -55,36 +55,6 @@ export async function authSignup(payload) {
   });
   return handleFetch(res);
 }
-
-
-export async function authVerify(token) {
-  const res = await fetch(`${BASE}/auth/verify?token=${encodeURIComponent(token)}`, {
-    method: "POST",
-    credentials: "include",
-  });
-  return handleFetch(res);
-}
-
-export async function authForgotPassword(email) {
-  const res = await fetch(`${BASE}/auth/forgot-password`, {
-    method: "POST",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email }),
-  });
-  return handleFetch(res);
-}
-
-export async function authResetPassword(payload) {
-  const res = await fetch(`${BASE}/auth/reset-password`, {
-    method: "POST",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  return handleFetch(res);
-}
-
 
 async function parseError(res) {
   try {
@@ -167,6 +137,17 @@ export async function adminUsersList() {
   const res = await fetch(`${BASE}/admin/users`, { credentials: "include" });
   if (!res.ok) throw new Error("Failed to load users");
   return res.json();
+}
+
+// ✅ NEW: Admin create user (returns temp password)
+export async function adminUserCreate(payload) {
+  const res = await fetch(`${BASE}/admin/users`, {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  return handleFetch(res);
 }
 
 export async function adminUserSetRole(userId, role) {

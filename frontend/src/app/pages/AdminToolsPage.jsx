@@ -5,6 +5,7 @@ import {
   adminExportCsv,
   adminExportOptions,
   adminUsersList,
+  adminUserCreate,
   adminUserSetRole,
   adminUserDelete,
 } from "../services/api";
@@ -201,6 +202,58 @@ export default function AdminToolsPage() {
       alert(e?.message || "Failed to delete user");
     } finally {
       setUsersBusyId(null);
+    }
+  };
+
+  // -----------------------------
+  // ✅ NEW: Create user state
+  // -----------------------------
+  const [newEmail, setNewEmail] = useState("");
+  const [newRole, setNewRole] = useState("user");
+  const [createBusy, setCreateBusy] = useState(false);
+  const [createdInfo, setCreatedInfo] = useState(null); // { email, role, temp_password }
+
+  const onCreateUser = async (e) => {
+    e.preventDefault();
+    setCreatedInfo(null);
+
+    const email = newEmail.trim();
+    if (!email) {
+      alert("Please enter an email.");
+      return;
+    }
+
+    setCreateBusy(true);
+    try {
+      const res = await adminUserCreate({ email, role: newRole });
+      setCreatedInfo({
+        email: res.email,
+        role: res.role,
+        temp_password: res.temp_password,
+      });
+      setNewEmail("");
+      setNewRole("user");
+      await loadUsers();
+    } catch (err) {
+      alert(err?.message || "Failed to create user");
+    } finally {
+      setCreateBusy(false);
+    }
+  };
+
+  const copyToClipboard = async (text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      alert("Copied to clipboard.");
+    } catch {
+      // fallback
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      ta.remove();
+      alert("Copied to clipboard.");
     }
   };
 
@@ -452,7 +505,73 @@ export default function AdminToolsPage() {
       </div>
 
       {/* =======================
-          Card 2: Users
+          Card 2: Create user (NEW)
+          ======================= */}
+      <div style={{ ...styles.card, marginTop: 16 }}>
+        <h2 style={styles.h2}>Create user</h2>
+
+        <form onSubmit={onCreateUser} style={createStyles.row}>
+          <div style={{ flex: 1, minWidth: 260 }}>
+            <div style={styles.label}>Email</div>
+            <input
+              style={styles.input}
+              placeholder="name@forensic-testing.co.uk"
+              value={newEmail}
+              onChange={(e) => setNewEmail(e.target.value)}
+            />
+          </div>
+
+          <div style={{ width: 220 }}>
+            <div style={styles.label}>Role</div>
+            <select
+              style={styles.input}
+              value={newRole}
+              onChange={(e) => setNewRole(e.target.value)}
+            >
+              <option value="user">user</option>
+              <option value="admin">admin</option>
+            </select>
+          </div>
+
+          <div style={{ alignSelf: "flex-end" }}>
+            <button style={styles.primaryBtn} type="submit" disabled={createBusy}>
+              {createBusy ? "Creating..." : "Create"}
+            </button>
+          </div>
+        </form>
+
+        {createdInfo && (
+          <div style={createStyles.resultBox}>
+            <div style={createStyles.resultTitle}>User created</div>
+            <div style={createStyles.resultRow}>
+              <strong>Email:</strong> {createdInfo.email}
+            </div>
+            <div style={createStyles.resultRow}>
+              <strong>Role:</strong> {createdInfo.role}
+            </div>
+
+            <div style={createStyles.pwRow}>
+              <div style={{ flex: 1 }}>
+                <div style={createStyles.pwLabel}>Temporary password</div>
+                <div style={createStyles.pwValue}>{createdInfo.temp_password}</div>
+                <div style={styles.note}>
+                  Share this securely. The user should change it after login.
+                </div>
+              </div>
+              <button
+                type="button"
+                style={createStyles.copyBtn}
+                onClick={() => copyToClipboard(createdInfo.temp_password)}
+              >
+                Copy
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* =======================
+          Card 3: Users
           ======================= */}
       <div style={{ ...styles.card, marginTop: 16 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -481,7 +600,6 @@ export default function AdminToolsPage() {
                 <tr>
                   <th style={userStyles.th}>Email</th>
                   <th style={userStyles.th}>Role</th>
-                  <th style={userStyles.th}>Verified</th>
                   <th style={userStyles.th}>Created</th>
                   <th style={userStyles.th}>Actions</th>
                 </tr>
@@ -496,13 +614,8 @@ export default function AdminToolsPage() {
                       <td style={userStyles.td}>{u.email}</td>
                       <td style={userStyles.td}>{u.role}</td>
                       <td style={userStyles.td}>
-                        {u.is_verified ? "Yes" : "No"}
-                      </td>
-                      <td style={userStyles.td}>
                         {u.created_at
-                          ? String(u.created_at)
-                              .slice(0, 19)
-                              .replace("T", " ")
+                          ? String(u.created_at).slice(0, 19).replace("T", " ")
                           : "-"}
                       </td>
 
@@ -550,7 +663,7 @@ export default function AdminToolsPage() {
 
                 {users.length === 0 && (
                   <tr>
-                    <td style={userStyles.td} colSpan={5}>
+                    <td style={userStyles.td} colSpan={4}>
                       No users found.
                     </td>
                   </tr>
@@ -656,6 +769,60 @@ const styles = {
   },
   status: { marginTop: 12, color: "#333" },
   note: { marginTop: 10, color: "#666", fontSize: 13 },
+};
+
+const createStyles = {
+  row: {
+    display: "flex",
+    gap: 12,
+    flexWrap: "wrap",
+    alignItems: "flex-start",
+  },
+  resultBox: {
+    marginTop: 14,
+    border: "1px solid #e6e6e6",
+    borderRadius: 12,
+    padding: 14,
+    background: "#fafafa",
+  },
+  resultTitle: {
+    fontWeight: 900,
+    color: "#00528c",
+    marginBottom: 8,
+  },
+  resultRow: {
+    color: "#333",
+    marginBottom: 6,
+  },
+  pwRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: 12,
+    marginTop: 10,
+    flexWrap: "wrap",
+  },
+  pwLabel: { fontWeight: 800, color: "#333", marginBottom: 4 },
+  pwValue: {
+    fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
+    fontSize: 16,
+    fontWeight: 900,
+    letterSpacing: 0.2,
+    padding: "10px 12px",
+    borderRadius: 10,
+    border: "1px solid #ddd",
+    background: "white",
+    display: "inline-block",
+  },
+  copyBtn: {
+    padding: "12px 14px",
+    borderRadius: 12,
+    border: "none",
+    background: "#904369",
+    color: "white",
+    cursor: "pointer",
+    fontWeight: 900,
+    whiteSpace: "nowrap",
+  },
 };
 
 const userStyles = {

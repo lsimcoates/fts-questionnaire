@@ -8,10 +8,14 @@ import os
 import json
 import csv
 import io
+import secrets
+import string
 
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 
 from app.auth.router import get_current_user
+from app.auth.security import hash_password
+from app.auth.config import ALLOWED_EMAIL_DOMAIN
 
 # ✅ DB access for managing users (make sure these paths match your project)
 from sqlmodel import select
@@ -58,6 +62,81 @@ def require_superadmin(user=Depends(get_current_user)):
             detail="Superadmin access required",
         )
     return user
+
+
+# -----------------------------
+# User creation helpers (NEW)
+# -----------------------------
+def _require_domain(email: str):
+    """
+    Reuse the same domain restriction concept as auth router.
+    """
+    domain = email.split("@")[-1].lower().strip()
+    if domain != ALLOWED_EMAIL_DOMAIN.lower():
+        raise HTTPException(
+            status_code=400,
+            detail=f"Email must end with @{ALLOWED_EMAIL_DOMAIN}",
+        )
+
+
+def _generate_temp_password(length: int = 12) -> str:
+    """
+    Simple temp password generator (no symbols to avoid copy/paste issues).
+    """
+    alphabet = string.ascii_letters + string.digits
+    return "".join(secrets.choice(alphabet) for _ in range(length))
+
+
+class AdminCreateUserPayload(BaseModel):
+    email: EmailStr
+    role: str = "user"  # "user" | "admin" (superadmin blocked here)
+
+
+@router.post("/users")
+def admin_create_user(payload: AdminCreateUserPayload, user=Depends(require_admin)):
+    """
+    Admin creates a user (no email flows).
+    Returns a one-time temporary password for the admin to share securely.
+
+    Safeguards:
+      - Enforces ALLOWED_EMAIL_DOMAIN
+      - Disallows creating superadmin via this endpoint
+    """
+    email = payload.email.lower().strip()
+
+    _require_domain(email)
+
+    if payload.role not in ("user", "admin"):
+        raise HTTPException(status_code=400, detail="role must be 'user' or 'admin'")
+
+    temp_password = _generate_temp_password()
+
+    with get_session() as session:
+        existing = session.exec(select(User).where(User.email == email)).first()
+        if existing:
+            raise HTTPException(status_code=400, detail="Account already exists")
+
+        new_user = User(
+            email=email,
+            password_hash=hash_password(temp_password),
+            role=payload.role,
+            is_active=True,
+            # If your User model still has these fields, they can remain,
+            # but they are no longer used when you remove email verification:
+            # is_verified=True,
+        )
+
+        session.add(new_user)
+        session.commit()
+        session.refresh(new_user)
+
+    return {
+        "ok": True,
+        "id": new_user.id,
+        "email": new_user.email,
+        "role": new_user.role,
+        "temp_password": temp_password,  # show once to admin
+    }
 
 
 # -----------------------------
@@ -655,11 +734,30 @@ def export_csv(
 
 
 # ============================================================
-# ✅ NEW: Users table for Admin Tools (list / promote / delete)
+# ✅ Users table for Admin Tools (list / promote / delete)
 # ============================================================
 
 class RoleUpdate(BaseModel):
     role: str  # "user" or "admin"
+
+class CreateUserPayload(BaseModel):
+    email: EmailStr
+    role: str = "user"  # user | admin
+
+
+def _require_domain(email: str):
+    domain = email.split("@")[-1].lower().strip()
+    if domain != ALLOWED_EMAIL_DOMAIN.lower():
+        raise HTTPException(
+            status_code=400,
+            detail=f"Email must end with @{ALLOWED_EMAIL_DOMAIN}",
+        )
+
+
+def _generate_temp_password(length: int = 14) -> str:
+    # Avoid ambiguous characters
+    alphabet = string.ascii_letters + string.digits + "!@#$%^&*"
+    return "".join(secrets.choice(alphabet) for _ in range(length))
 
 
 @router.get("/users")
@@ -676,13 +774,51 @@ def admin_list_users(user=Depends(require_admin)):
                 "email": u.email,
                 "role": u.role,
                 "is_active": u.is_active,
-                "is_verified": u.is_verified,
-                "verified_at": u.verified_at,
-                "created_at": u.created_at,
+                "created_at": getattr(u, "created_at", None),
             }
             for u in users
         ]
 
+@router.post("/users")
+def admin_create_user(payload: CreateUserPayload, user=Depends(require_admin)):
+    """
+    Create a user with a generated temporary password.
+    - Admins can create users/admins (but not superadmin)
+    - Email domain restricted
+    - Marks users as verified because email verification is removed
+    """
+    email = payload.email.strip().lower()
+    _require_domain(email)
+
+    if payload.role not in ("user", "admin"):
+        raise HTTPException(status_code=400, detail="role must be 'user' or 'admin'")
+
+    temp_password = _generate_temp_password()
+
+    with get_session() as session:
+        existing = session.exec(select(User).where(User.email == email)).first()
+        if existing:
+            raise HTTPException(status_code=400, detail="Account already exists")
+
+        u = User(
+            email=email,
+            password_hash=hash_password(temp_password),
+            role=payload.role,
+            is_active=True,
+            is_verified=True,   # ✅ since we're removing email verification
+            verified_at=datetime.utcnow().isoformat(),
+        )
+        session.add(u)
+        session.commit()
+        session.refresh(u)
+
+        return {
+            "ok": True,
+            "id": u.id,
+            "email": u.email,
+            "role": u.role,
+            "temp_password": temp_password,
+        }
 
 @router.patch("/users/{user_id}/role")
 def admin_update_user_role(

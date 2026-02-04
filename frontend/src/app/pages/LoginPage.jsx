@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { authLogin } from "../services/api";
 
 export default function LoginPage() {
@@ -33,7 +33,7 @@ export default function LoginPage() {
 
         <form
           onSubmit={(e) => {
-            e.preventDefault(); // prevent page refresh
+            e.preventDefault();
             onLogin();
           }}
         >
@@ -56,11 +56,6 @@ export default function LoginPage() {
             Login
           </button>
         </form>
-
-        <div style={styles.linksRow}>
-          <Link to="/signup" style={styles.link}>Create account</Link>
-          <Link to="/forgot-password" style={styles.link}>Forgot password?</Link>
-        </div>
 
         {status ? <p style={styles.status}>{status}</p> : null}
       </div>
@@ -105,11 +100,5 @@ const styles = {
     fontSize: 15,
     fontWeight: 700,
   },
-  linksRow: {
-    display: "flex",
-    justifyContent: "space-between",
-    marginTop: 10,
-  },
-  link: { color: "#00528c", textDecoration: "none", fontWeight: 600 },
   status: { marginTop: 10, color: "#333" },
 };
