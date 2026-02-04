@@ -311,7 +311,6 @@ export default function QuestionnairePage() {
         job_id: `job:${uuid()}`,
         type: "finalize",
         localDraftId,
-        serverQid: payload.__server_qid || null,
         created_at: Date.now(),
       });
 

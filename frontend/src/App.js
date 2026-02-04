@@ -1,3 +1,4 @@
+// frontend/src/App.js
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
@@ -10,51 +11,56 @@ import LoginPage from "./app/pages/LoginPage";
 import AdminToolsPage from "./app/pages/AdminToolsPage";
 import ChangePasswordPage from "./app/pages/ChangePasswordPage";
 
+import OfflineBanner from "./app/components/OfflineBanner";
+
 export default function App() {
   return (
-    <Routes>
-      {/* ✅ Public auth route */}
-      <Route path="/login" element={<LoginPage />} />
+    <>
+      <OfflineBanner />
+      <Routes>
+        {/* ✅ Public auth route */}
+        <Route path="/login" element={<LoginPage />} />
 
-      {/* ✅ Protected app routes */}
-      <Route
-        path="/"
-        element={
-          <RequireAuth>
-            <LandingPage />
-          </RequireAuth>
-        }
-      />
+        {/* ✅ Protected app routes */}
+        <Route
+          path="/"
+          element={
+            <RequireAuth>
+              <LandingPage />
+            </RequireAuth>
+          }
+        />
 
-      <Route
-        path="/questionnaire/:id"
-        element={
-          <RequireAuth>
-            <QuestionnairePage />
-          </RequireAuth>
-        }
-      />
+        <Route
+          path="/questionnaire/:id"
+          element={
+            <RequireAuth>
+              <QuestionnairePage />
+            </RequireAuth>
+          }
+        />
 
-      <Route
-        path="/change-password"
-        element={
-          <RequireAuth>
-            <ChangePasswordPage />
-          </RequireAuth>
-        }
-      />
+        <Route
+          path="/change-password"
+          element={
+            <RequireAuth>
+              <ChangePasswordPage />
+            </RequireAuth>
+          }
+        />
 
-      <Route
-        path="/admin-tools"
-        element={
-          <RequireAuth>
-            <AdminToolsPage />
-          </RequireAuth>
-        }
-      />
+        <Route
+          path="/admin-tools"
+          element={
+            <RequireAuth>
+              <AdminToolsPage />
+            </RequireAuth>
+          }
+        />
 
-      {/* fallback */}
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+        {/* fallback */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </>
   );
 }

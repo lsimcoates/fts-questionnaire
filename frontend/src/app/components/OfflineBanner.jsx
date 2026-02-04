@@ -1,3 +1,4 @@
+// frontend/src/app/components/OfflineBanner.jsx
 import React, { useEffect, useState } from "react";
 import { syncOutbox } from "../offline/sync";
 
@@ -8,11 +9,22 @@ export default function OfflineBanner() {
   useEffect(() => {
     const onUp = async () => {
       setOnline(true);
-      const r = await syncOutbox();
-      if (r?.synced) setMsg(`Synced ${r.synced} queued submission(s).`);
-      setTimeout(() => setMsg(""), 4000);
+
+      try {
+        const r = await syncOutbox();
+        if (r?.synced) setMsg(`Synced ${r.synced} queued submission(s).`);
+        else setMsg("Back online.");
+      } catch {
+        setMsg("Back online — sync pending.");
+      } finally {
+        setTimeout(() => setMsg(""), 4000);
+      }
     };
-    const onDown = () => setOnline(false);
+
+    const onDown = () => {
+      setOnline(false);
+      setMsg("");
+    };
 
     window.addEventListener("online", onUp);
     window.addEventListener("offline", onDown);

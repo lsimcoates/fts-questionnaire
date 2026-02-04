@@ -58,3 +58,25 @@ export async function removeJob(job_id) {
   const db = await getDB();
   await db.delete("outbox", job_id);
 }
+
+// add to frontend/src/offline/db.js
+
+export function makeLocalId() {
+  return `local:${crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random()}`;
+}
+
+export async function createLocalDraft(initialData = {}, meta = {}) {
+  const id = makeLocalId();
+  await saveLocalDraft(id, initialData, {
+    ...meta,
+    status: meta.status || "draft",
+    case_number: initialData.case_number || meta.case_number || "",
+    created_at: Date.now(),
+  });
+  return { id };
+}
+
+// Optional convenience to mark local draft queued
+export async function markLocalQueued(id, data) {
+  await saveLocalDraft(id, data, { case_number: data.case_number || "", status: "queued" });
+}

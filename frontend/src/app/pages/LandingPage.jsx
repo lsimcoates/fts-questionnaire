@@ -9,7 +9,9 @@ import {
   authMe,
   authLogout
 } from "../services/api";
-import { listLocalDrafts } from "../offline/db";
+import { listLocalDrafts, createLocalDraft } from "../offline/db";
+import { runOutboxSync } from "../offline/sync";
+
 
 
 const PAGE_SIZE = 10;
@@ -86,6 +88,7 @@ export default function LandingPage() {
         localStorage.setItem("fts_offline_allowed_at", String(Date.now()));
 
         await load();
+        await runOutboxSync(setStatus);
         setStatus("");
       } catch (e) {
         setRole(null);
@@ -152,15 +155,37 @@ export default function LandingPage() {
       return;
     }
 
+    // If offline-allowed device, try server but fallback to local
+    const offlineAllowed = localStorage.getItem("fts_offline_allowed") === "1";
+
+    // If browser reports offline, go local immediately
+    if (!navigator.onLine && offlineAllowed) {
+      setStatus("Offline: creating local draft...");
+      const local = await createLocalDraft({ case_number: cn, consent: "" }, { status: "draft" });
+      localStorage.setItem("fts_qid", local.id);
+      setStatus("");
+      navigate(`/questionnaire/${local.id}`);
+      return;
+    }
+
+    // Otherwise try server
     try {
       setStatus("Creating new draft...");
       const created = await createQuestionnaire({ case_number: cn, consent: "" });
-
       localStorage.setItem("fts_qid", created.id);
-
       setStatus("");
       navigate(`/questionnaire/${created.id}`);
     } catch (e) {
+      // Server unreachable -> fallback to local draft (if allowed)
+      if (offlineAllowed) {
+        setStatus("Server unreachable: creating local draft...");
+        const local = await createLocalDraft({ case_number: cn, consent: "" }, { status: "draft" });
+        localStorage.setItem("fts_qid", local.id);
+        setStatus("");
+        navigate(`/questionnaire/${local.id}`);
+        return;
+      }
+
       setStatus(`Create failed: ${e.message}`);
     }
   };
@@ -336,6 +361,27 @@ export default function LandingPage() {
             onClick={load}
           >
             Refresh
+          </button>
+
+          <button
+            style={{
+              ...styles.refreshBtn,
+              ...(hovered === "sync" ? styles.refreshBtnHover : {}),
+            }}
+            onMouseEnter={() => setHovered("sync")}
+            onMouseLeave={() => setHovered(null)}
+            onClick={async () => {
+              try {
+                setStatus("Syncing...");
+                await runOutboxSync(setStatus);
+                await load();
+                setStatus("Sync complete ✅");
+              } catch (e) {
+                setStatus(`Sync failed: ${e.message}`);
+              }
+            }}
+          >
+            Sync
           </button>
 
           {/* ✅ Logout (company blue) */}
