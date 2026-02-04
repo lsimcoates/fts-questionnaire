@@ -8,7 +8,7 @@ const LOCAL_BASE = "http://localhost:8000";
 
 const BASE = `${isGithubPages ? RENDER_BASE : LOCAL_BASE}/api`;
 
-// ✅ Auth: who am I?
+// Auth: who am I?
 export async function authMe() {
   try {
     const res = await fetch(`${BASE}/auth/me`, {
@@ -18,13 +18,13 @@ export async function authMe() {
 
     if (!res.ok) {
       const err = new Error("Not logged in");
-      err.status = res.status; // ✅ 401 vs others
+      err.status = res.status; //  401 vs others
       throw err;
     }
 
     return res.json();
   } catch (e) {
-    // ✅ Network/offline errors end up here (no res/status)
+    //  Network/offline errors end up here (no res/status)
     // Preserve the error but ensure status is undefined for network failures
     if (e && typeof e === "object" && !("status" in e)) {
       e.status = undefined;
@@ -33,11 +33,11 @@ export async function authMe() {
   }
 }
 
-// ✅ Auth: logout (clears cookie on server)
+//  Auth: logout (clears cookie on server)
 export async function authLogout() {
   const res = await fetch(`${BASE}/auth/logout`, {
     method: "POST",
-    credentials: "include", // ✅ REQUIRED
+    credentials: "include", //  REQUIRED
   });
 
   if (!res.ok) {
@@ -56,7 +56,7 @@ export async function authLogin(payload) {
   return handleFetch(res);
 }
 
-// ✅ NEW: Change password (logged-in users)
+//  NEW: Change password (logged-in users)
 export async function authChangePassword(payload) {
   const res = await fetch(`${BASE}/auth/change-password`, {
     method: "POST",
@@ -150,7 +150,7 @@ export async function adminUsersList() {
   return res.json();
 }
 
-// ✅ NEW: Admin create user (returns temp password)
+//  NEW: Admin create user (returns temp password)
 export async function adminUserCreate(payload) {
   const res = await fetch(`${BASE}/admin/users`, {
     method: "POST",
