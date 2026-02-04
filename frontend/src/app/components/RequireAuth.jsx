@@ -7,19 +7,55 @@ export default function RequireAuth({ children }) {
   const [ok, setOk] = useState(false);
 
   useEffect(() => {
-    (async () => {
+    let cancelled = false;
+
+    const allowed = () => localStorage.getItem("fts_offline_allowed") === "1";
+
+    const setSafe = (nextOk, nextLoading) => {
+      if (cancelled) return;
+      setOk(nextOk);
+      setLoading(nextLoading);
+    };
+
+    const recheck = async () => {
+      const offlineAllowed = allowed();
+
+      // Try to validate online session.
+      setSafe(ok, true);
+
       try {
         await authMe();
-        setOk(true);
+
+        // success: mark device as offline-capable
+        localStorage.setItem("fts_offline_allowed", "1");
+        localStorage.setItem("fts_offline_allowed_at", String(Date.now()));
+
+        setSafe(true, false);
       } catch {
-        setOk(false);
-      } finally {
-        setLoading(false);
+        // ✅ Key rule: if this device has been allowed before, treat authMe failure as "offline mode"
+        if (offlineAllowed) {
+          setSafe(true, false);
+        } else {
+          setSafe(false, false);
+        }
       }
-    })();
+    };
+
+    recheck();
+
+    window.addEventListener("online", recheck);
+    window.addEventListener("offline", recheck);
+
+    return () => {
+      cancelled = true;
+      window.removeEventListener("online", recheck);
+      window.removeEventListener("offline", recheck);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (loading) return <div style={{ padding: 24 }}>Loading...</div>;
   if (!ok) return <Navigate to="/login" replace />;
+
   return children;
 }

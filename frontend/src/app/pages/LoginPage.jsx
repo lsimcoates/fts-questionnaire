@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { authLogin } from "../services/api";
 
@@ -8,10 +8,37 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState("");
 
+  // ✅ If offline + this device has previously authenticated, go back to app (offline mode)
+  useEffect(() => {
+    const allowed = localStorage.getItem("fts_offline_allowed") === "1";
+    if (!navigator.onLine && allowed) {
+      navigate("/", { replace: true, state: { toast: "Offline mode enabled ✅" } });
+    }
+  }, [navigate]);
+
   const onLogin = async () => {
+    // ✅ Offline login is not possible (Option A). Give a friendly message.
+    if (!navigator.onLine) {
+      const allowed = localStorage.getItem("fts_offline_allowed") === "1";
+      setStatus(
+        allowed
+          ? "You’re offline. This device already supports offline mode — returning Home…"
+          : "You’re offline. Login requires internet. Please reconnect and try again."
+      );
+      if (allowed) {
+        setTimeout(() => navigate("/", { replace: true }), 400);
+      }
+      return;
+    }
+
     setStatus("Logging in...");
     try {
       await authLogin({ email, password });
+
+      // ✅ Mark device as offline-capable after a successful login
+      localStorage.setItem("fts_offline_allowed", "1");
+      localStorage.setItem("fts_offline_allowed_at", String(Date.now()));
+
       setStatus("");
       navigate("/");
     } catch (e) {
@@ -42,6 +69,7 @@ export default function LoginPage() {
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            autoComplete="username"
           />
 
           <input
@@ -50,6 +78,7 @@ export default function LoginPage() {
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            autoComplete="current-password"
           />
 
           <button type="submit" style={styles.primaryBtn}>

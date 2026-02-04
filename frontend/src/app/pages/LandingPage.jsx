@@ -11,6 +11,7 @@ import {
 } from "../services/api";
 import { listLocalDrafts } from "../offline/db";
 
+
 const PAGE_SIZE = 10;
 
 export default function LandingPage() {
@@ -75,39 +76,36 @@ export default function LandingPage() {
     (async () => {
       const offlineAllowed = localStorage.getItem("fts_offline_allowed") === "1";
 
-      // OFFLINE PATH
-      if (!navigator.onLine) {
-        if (!offlineAllowed) {
-          setStatus("Offline: please login once online on this device to enable offline mode.");
-          setRows([]);
-          return;
-        }
-
-        setStatus("Offline: showing local drafts only.");
-        const locals = await listLocalDrafts();
-        setRows(mapLocalDraftsToRows(locals));
-        setPage(1);
-        setRole(null);
-        return;
-      }
-
-      // ONLINE PATH
       try {
+        // Try online auth first
         const me = await authMe();
         setRole(me.role);
 
-        // ✅ This is Option A: remember device is allowed offline
+        // remember device is allowed offline
         localStorage.setItem("fts_offline_allowed", "1");
         localStorage.setItem("fts_offline_allowed_at", String(Date.now()));
 
         await load();
       } catch (e) {
         setRole(null);
+
+        // ✅ If device is allowed, show local drafts instead of redirecting to login
+        if (offlineAllowed) {
+          setStatus("Offline (or server unreachable): showing local drafts only.");
+          const locals = await listLocalDrafts();
+          setRows(mapLocalDraftsToRows(locals));
+          setPage(1);
+          return;
+        }
+
+        // Not allowed -> must login online at least once
+        setStatus("Offline: please login once online on this device to enable offline mode.");
         navigate("/login");
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigate]);
+
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
