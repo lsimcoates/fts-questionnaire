@@ -10,7 +10,7 @@ import {
   authLogout
 } from "../services/api";
 import { listLocalDrafts, createLocalDraft } from "../offline/db";
-import { runOutboxSync } from "../offline/sync";
+import { syncOutbox } from "../offline/sync";
 
 
 
@@ -88,7 +88,7 @@ export default function LandingPage() {
         localStorage.setItem("fts_offline_allowed_at", String(Date.now()));
 
         await load();
-        await runOutboxSync(setStatus);
+        await syncOutbox(setStatus);
         setStatus("");
       } catch (e) {
         setRole(null);
@@ -373,7 +373,7 @@ export default function LandingPage() {
             onClick={async () => {
               try {
                 setStatus("Syncing...");
-                await runOutboxSync(setStatus);
+                await syncOutbox(setStatus);
                 await load();
                 setStatus("Sync complete ✅");
               } catch (e) {
