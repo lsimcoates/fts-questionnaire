@@ -9,6 +9,10 @@ import MedicationSection from "./sections/MedicationSection";
 import AlcoholSection from "./sections/AlcoholSection";
 import HairAndInfluencingSection from "./sections/HairAndInfluencingSection";
 import SignatureSection from "./sections/SignatureSection";
+import OfflineBanner from "../components/OfflineBanner";
+import { saveLocalDraft, loadLocalDraft, queueJob } from "../offline/db";
+import { uuid } from "../offline/utils";
+
 
 import {
   createQuestionnaire,
@@ -172,14 +176,34 @@ export default function QuestionnairePage() {
   useEffect(() => {
     async function loadDraft() {
       if (!qid) return;
+
+      // local drafts
+      if (qid.startsWith("local:")) {
+        const local = await loadLocalDraft(qid);
+        if (local?.data) {
+          reset(local.data);
+          setStatusMsg("Loaded local draft (offline).");
+        } else {
+          setStatusMsg("Local draft not found.");
+        }
+        return;
+      }
+
+      // server first, fallback to local snapshot if available
       try {
         const record = await getQuestionnaire(qid);
         reset(record.data);
         setStatusMsg(`Loaded draft (${record.status})`);
-      } catch (e) {
-        setStatusMsg("Could not load saved draft (clearing saved ID).");
-        localStorage.removeItem("fts_qid");
-        setQid("");
+      } catch {
+        const local = await loadLocalDraft(qid);
+        if (local?.data) {
+          reset(local.data);
+          setStatusMsg("Loaded local fallback draft (offline).");
+        } else {
+          setStatusMsg("Could not load saved draft (clearing saved ID).");
+          localStorage.removeItem("fts_qid");
+          setQid("");
+        }
       }
     }
     loadDraft();
@@ -187,23 +211,42 @@ export default function QuestionnairePage() {
 
   const saveDraft = async () => {
     setStatusMsg("Saving draft...");
-    const payload = watch(); // entire form JSON
+    const payload = watch();
 
+    // OFFLINE -> local save
+    if (!navigator.onLine) {
+      const id = qid || `local:${uuid()}`;
+      await saveLocalDraft(id, payload, { case_number: payload.case_number || "", status: "draft" });
+      setQid(id);
+      localStorage.setItem("fts_qid", id);
+      setStatusMsg("Saved locally ✅ (offline)");
+      navigate("/", { state: { toast: "Draft saved locally ✅" } });
+      return;
+    }
+
+    // ONLINE -> your normal behaviour (+ local snapshot)
     try {
-      if (!qid) {
+      if (!qid || qid.startsWith("local:")) {
         const created = await createQuestionnaire(payload);
         setQid(created.id);
         localStorage.setItem("fts_qid", created.id);
-        setStatusMsg(
-          `Draft created ✅ Case ${created.case_number} v${created.version} (ID: ${created.id})`
-        );
+
+        await saveLocalDraft(created.id, payload, { case_number: created.case_number, status: "draft" });
+
+        setStatusMsg(`Draft created ✅ Case ${created.case_number} v${created.version} (ID: ${created.id})`);
         navigate("/", { state: { toast: "Draft saved ✅" } });
       } else {
         await updateQuestionnaire(qid, payload);
+        await saveLocalDraft(qid, payload, { case_number: payload.case_number, status: "draft" });
         setStatusMsg("Draft updated ✅");
       }
     } catch (e) {
-      setStatusMsg(`Save failed: ${e.message}`);
+      // backend unreachable -> local save
+      const id = qid && !qid.startsWith("local:") ? qid : `local:${uuid()}`;
+      await saveLocalDraft(id, payload, { case_number: payload.case_number || "", status: "draft" });
+      setQid(id);
+      localStorage.setItem("fts_qid", id);
+      setStatusMsg("Server unreachable — saved locally ✅");
     }
   };
 
@@ -217,10 +260,32 @@ export default function QuestionnairePage() {
     setStatusMsg("Submitting...");
     const payload = watch();
 
+    // OFFLINE -> queue finalize
+    if (!navigator.onLine) {
+      const localDraftId = qid && qid.startsWith("local:") ? qid : (qid || `local:${uuid()}`);
+
+      await saveLocalDraft(localDraftId, payload, { case_number: payload.case_number || "", status: "queued" });
+
+      await queueJob({
+        job_id: `job:${uuid()}`,
+        type: "finalize",
+        localDraftId,
+        serverQid: payload.__server_qid || null,
+        created_at: Date.now(),
+      });
+
+      localStorage.removeItem("fts_qid");
+      setQid("");
+      setStatusMsg("Offline: Submission queued ✅ (will sync when online)");
+      navigate("/", { state: { toast: "Queued for sync ✅" } });
+      return;
+    }
+
+    // ONLINE -> normal submit
     try {
       let id = qid;
 
-      if (!id) {
+      if (!id || id.startsWith("local:")) {
         const created = await createQuestionnaire(payload);
         id = created.id;
         setQid(id);
@@ -231,14 +296,30 @@ export default function QuestionnairePage() {
 
       const result = await finalizeQuestionnaire(id);
 
-      // ✅ CLEAR LOCAL DRAFT STATE AFTER SUCCESSFUL SUBMIT
       localStorage.removeItem("fts_qid");
       setQid("");
 
       setStatusMsg(`Submitted ✅ Case ${payload.case_number} (ID: ${result.id})`);
       navigate("/", { state: { toast: "Document Submitted ✅" } });
     } catch (e) {
-      setStatusMsg(`Submit failed: ${e.message}`);
+      // fallback -> queue
+      const localDraftId = qid && !qid.startsWith("local:") ? qid : `local:${uuid()}`;
+
+      await saveLocalDraft(localDraftId, payload, { case_number: payload.case_number || "", status: "queued" });
+
+      await queueJob({
+        job_id: `job:${uuid()}`,
+        type: "finalize",
+        localDraftId,
+        serverQid: payload.__server_qid || null,
+        created_at: Date.now(),
+      });
+
+      localStorage.removeItem("fts_qid");
+      setQid("");
+
+      setStatusMsg("Submit failed — queued for sync ✅");
+      navigate("/", { state: { toast: "Queued for sync ✅" } });
     }
   };
 
@@ -267,6 +348,7 @@ export default function QuestionnairePage() {
 
   return (
     <div style={styles.page}>
+      <OfflineBanner />
       {/* ✅ Header row with Home button + centered title */}
       <div style={styles.headerRow}>
         <button

@@ -9,6 +9,7 @@ import {
   authMe,
   authLogout
 } from "../services/api";
+import { listLocalDrafts } from "../offline/db";
 
 const PAGE_SIZE = 10;
 
@@ -72,10 +73,34 @@ export default function LandingPage() {
 
   useEffect(() => {
     (async () => {
+      const offlineAllowed = localStorage.getItem("fts_offline_allowed") === "1";
+
+      // OFFLINE PATH
+      if (!navigator.onLine) {
+        if (!offlineAllowed) {
+          setStatus("Offline: please login once online on this device to enable offline mode.");
+          setRows([]);
+          return;
+        }
+
+        setStatus("Offline: showing local drafts only.");
+        const locals = await listLocalDrafts();
+        setRows(mapLocalDraftsToRows(locals));
+        setPage(1);
+        setRole(null);
+        return;
+      }
+
+      // ONLINE PATH
       try {
         const me = await authMe();
         setRole(me.role);
-        await load(); // ✅ only load after session confirmed
+
+        // ✅ This is Option A: remember device is allowed offline
+        localStorage.setItem("fts_offline_allowed", "1");
+        localStorage.setItem("fts_offline_allowed_at", String(Date.now()));
+
+        await load();
       } catch (e) {
         setRole(null);
         navigate("/login");
@@ -106,6 +131,21 @@ export default function LandingPage() {
     const start = (safePage - 1) * PAGE_SIZE;
     return filtered.slice(start, start + PAGE_SIZE);
   }, [filtered, safePage]);
+
+  function mapLocalDraftsToRows(locals) {
+    return (locals || [])
+      .map((d) => ({
+        id: d.id, // can be "local:..."
+        case_number: d.data?.case_number || d.meta?.case_number || "—",
+        version: "",
+        status: d.meta?.status || "draft (local)",
+        updated_at: new Date(d.updated_at).toISOString(),
+        submitted_at: null,
+        redo_of_id: null,
+        __isLocal: true,
+      }))
+      .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
+  }
 
   const createNew = async () => {
     const cn = caseNumber.trim();
@@ -410,9 +450,11 @@ export default function LandingPage() {
                     </button>
 
                     <button
+                      disabled={r.__isLocal || !navigator.onLine}
                       style={{
                         ...styles.pdfBtn,
                         ...(hovered === `pdf-${r.id}` ? styles.pdfBtnHover : {}),
+                        ...(r.__isLocal || !navigator.onLine ? { opacity: 0.6, cursor: "not-allowed" } : {}),
                       }}
                       onMouseEnter={() => setHovered(`pdf-${r.id}`)}
                       onMouseLeave={() => setHovered(null)}
@@ -422,9 +464,11 @@ export default function LandingPage() {
                     </button>
 
                     <button
+                      disabled={r.__isLocal || !navigator.onLine}
                       style={{
                         ...styles.copyBtn,
                         ...(hovered === `copy-${r.id}` ? styles.copyBtnHover : {}),
+                        ...(r.__isLocal || !navigator.onLine ? { opacity: 0.6, cursor: "not-allowed" } : {}),
                       }}
                       onMouseEnter={() => setHovered(`copy-${r.id}`)}
                       onMouseLeave={() => setHovered(null)}
@@ -435,9 +479,11 @@ export default function LandingPage() {
 
                     {isAdmin && (
                       <button
+                      disabled={r.__isLocal || !navigator.onLine}
                         style={{
                           ...styles.deleteBtn,
                           ...(hovered === `del-${r.id}` ? styles.deleteBtnHover : {}),
+                          ...(r.__isLocal || !navigator.onLine ? { opacity: 0.6, cursor: "not-allowed" } : {}),
                         }}
                         onMouseEnter={() => setHovered(`del-${r.id}`)}
                         onMouseLeave={() => setHovered(null)}

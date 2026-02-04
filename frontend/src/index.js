@@ -3,6 +3,9 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter, HashRouter } from "react-router-dom";
 import App from "./App";
 
+// ✅ ADD THIS
+import * as serviceWorkerRegistration from "./serviceWorkerRegistration";
+
 const Router = process.env.NODE_ENV === "production" ? HashRouter : BrowserRouter;
 
 ReactDOM.createRoot(document.getElementById("root")).render(
@@ -10,3 +13,6 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     <App />
   </Router>
 );
+
+// ✅ ENABLE OFFLINE APP SHELL
+serviceWorkerRegistration.register();
