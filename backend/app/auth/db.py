@@ -5,19 +5,33 @@ from sqlmodel import SQLModel, Field, create_engine, Session, select
 import os
 from pathlib import Path
 
+# ✅ Import models so SQLModel knows to create tables
+from app.questionnaires.models import Questionnaire  # noqa: F401
 
-DEFAULT_DB_PATH = Path(__file__).resolve().parent.parent / "data" / "auth.sqlite"
-DB_PATH = Path(os.getenv("AUTH_DB_PATH", str(DEFAULT_DB_PATH))).resolve()
 
-DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+# -----------------------------
+# Engine (Postgres in production, SQLite locally)
+# -----------------------------
+DATABASE_URL = os.getenv("DATABASE_URL")
 
-engine = create_engine(f"sqlite:///{DB_PATH}", echo=False)
+if DATABASE_URL:
+    # Render Postgres (recommended)
+    engine = create_engine(DATABASE_URL, echo=False, pool_pre_ping=True)
+else:
+    # Local dev fallback (SQLite file)
+    DEFAULT_DB_PATH = Path(__file__).resolve().parent.parent / "data" / "auth.sqlite"
+    DB_PATH = Path(os.getenv("AUTH_DB_PATH", str(DEFAULT_DB_PATH))).resolve()
+    DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+    engine = create_engine(f"sqlite:///{DB_PATH}", echo=False)
 
 
 def utcnow_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
+# -----------------------------
+# Models (auth)
+# -----------------------------
 class User(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     email: str = Field(index=True, unique=True)
@@ -39,7 +53,6 @@ class AuthToken(SQLModel, table=True):
     """
     id: Optional[int] = Field(default=None, primary_key=True)
 
-    # SQLModel default table name for User is "user"
     user_id: int = Field(index=True, foreign_key="user.id")
 
     purpose: str = Field(index=True)
@@ -51,7 +64,11 @@ class AuthToken(SQLModel, table=True):
     created_at: str = Field(default_factory=utcnow_iso)
 
 
+# -----------------------------
+# DB helpers
+# -----------------------------
 def init_db():
+    # Creates User/AuthToken/Questionnaire tables (because models are imported)
     SQLModel.metadata.create_all(engine)
 
 
@@ -67,7 +84,9 @@ def get_user_by_id(session: Session, user_id: int) -> Optional[User]:
     return session.get(User, user_id)
 
 
-# Token helpers 
+# -----------------------------
+# Token helpers
+# -----------------------------
 def create_auth_token(
     session: Session,
     user_id: int,

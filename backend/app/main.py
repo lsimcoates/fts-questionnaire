@@ -5,6 +5,12 @@ from fastapi.staticfiles import StaticFiles
 from app.api.questionnaires import router as questionnaires_router
 from app.api.admin import router as admin_router
 from app.auth.router import router as auth_router
+from app.auth.db import init_db
+
+
+@app.on_event("startup")
+def _startup():
+    init_db()
 
 app = FastAPI(title="FTS Questionnaire API")
 

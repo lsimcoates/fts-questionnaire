@@ -423,10 +423,6 @@ def export_options(user=Depends(require_admin)):
     """
     Returns dropdown option values derived from SUBMITTED questionnaires only.
     """
-    ensure_storage()
-    idx = load_index()
-    idx = [r for r in idx if norm_lower(r.get("status")) == "submitted"]
-
     hair_colours = set()
     sexes = set()
     testing_types = set()
@@ -456,42 +452,38 @@ def export_options(user=Depends(require_admin)):
     def is_exposed_status(s: Optional[str]) -> bool:
         return norm_lower(s) == "exposed"
 
-    for row in idx:
-        path = q_path(row["id"])
-        try:
-            with open(path, "r", encoding="utf-8") as f:
-                record = json.load(f)
-        except Exception:
-            continue
+    with get_session() as session:
+        qs = session.exec(
+            select(Questionnaire).where(Questionnaire.status == "submitted")
+        ).all()
 
-        data = record.get("data") or {}
+        for q in qs:
+            data = q.data or {}
 
-        add_nonempty(data.get("natural_hair_colour"), hair_colours)
-        add_nonempty(data.get("sex_at_birth"), sexes)
-        add_nonempty(data.get("testing_type"), testing_types)
+            add_nonempty(data.get("natural_hair_colour"), hair_colours)
+            add_nonempty(data.get("sex_at_birth"), sexes)
+            add_nonempty(data.get("testing_type"), testing_types)
 
-        add_nonempty(data.get("hair_dyed_bleached"), dyed_bleached_vals)
-        add_nonempty(data.get("hair_thermal_applications"), thermal_vals)
-        add_nonempty(data.get("frequent_swimming"), swimming_vals)
-        add_nonempty(data.get("frequent_sunbeds"), sunbeds_vals)
-        add_nonempty(data.get("frequent_sprays_on_sites"), sprays_vals)
-        add_nonempty(data.get("pregnant_last_12_months"), pregnant_vals)
-        add_nonempty(data.get("hair_cut_in_last_12_months"), hair_cut_vals)
-        add_nonempty(data.get("hair_removed_body_hair_last_12_months"), body_hair_removed_vals)
+            add_nonempty(data.get("hair_dyed_bleached"), dyed_bleached_vals)
+            add_nonempty(data.get("hair_thermal_applications"), thermal_vals)
+            add_nonempty(data.get("frequent_swimming"), swimming_vals)
+            add_nonempty(data.get("frequent_sunbeds"), sunbeds_vals)
+            add_nonempty(data.get("frequent_sprays_on_sites"), sprays_vals)
+            add_nonempty(data.get("pregnant_last_12_months"), pregnant_vals)
+            add_nonempty(data.get("hair_cut_in_last_12_months"), hair_cut_vals)
+            add_nonempty(data.get("hair_removed_body_hair_last_12_months"), body_hair_removed_vals)
 
-        # Drug use: only include names where status == "used"
-        du = data.get("drug_use") or []
-        if isinstance(du, list):
-            for it in du:
-                if isinstance(it, dict) and is_used_status(it.get("status")):
-                    add_nonempty(it.get("drug_name"), drug_use_used_names)
+            du = data.get("drug_use") or []
+            if isinstance(du, list):
+                for it in du:
+                    if isinstance(it, dict) and is_used_status(it.get("status")):
+                        add_nonempty(it.get("drug_name"), drug_use_used_names)
 
-        # Drug exposure: only include names where status == "exposed"
-        de = data.get("drug_exposure") or []
-        if isinstance(de, list):
-            for it in de:
-                if isinstance(it, dict) and is_exposed_status(it.get("status")):
-                    add_nonempty(it.get("drug_name"), drug_exposure_exposed_names)
+            de = data.get("drug_exposure") or []
+            if isinstance(de, list):
+                for it in de:
+                    if isinstance(it, dict) and is_exposed_status(it.get("status")):
+                        add_nonempty(it.get("drug_name"), drug_exposure_exposed_names)
 
     return {
         "natural_hair_colours": sorted(hair_colours),
@@ -554,29 +546,36 @@ def export_json(
         "drug_exposed_name": drug_exposed_name or "",
     }
 
-    # Debug (safe to leave in while testing)
     print("=== EXPORT JSON HIT ===", params)
 
-    ensure_storage()
-    idx = [r for r in load_index() if norm_lower(r.get("status")) == "submitted"]
-
     out_records = []
-    for row in idx:
-        path = q_path(row["id"])
-        if not os.path.exists(path):
-            continue
-        try:
-            with open(path, "r", encoding="utf-8") as f:
-                record = json.load(f)
-        except Exception:
-            continue
 
-        if not record_passes_filters(record, params):
-            continue
+    with get_session() as session:
+        qs = session.exec(
+            select(Questionnaire).where(Questionnaire.status == "submitted")
+        ).all()
 
-        clean = dict(record)
-        clean["data"] = strip_signatures(clean.get("data") or {})
-        out_records.append(clean)
+        for q in qs:
+            record = {
+                "id": q.id,
+                "case_number": q.case_number,
+                "version": q.version,
+                "status": q.status,
+                "created_at": q.created_at,
+                "updated_at": q.updated_at,
+                "submitted_at": q.submitted_at,
+                "redo_of_id": q.redo_of_id,
+                "user_id": q.user_id,
+                "user_email": q.user_email,
+                "data": q.data or {},
+            }
+
+            if not record_passes_filters(record, params):
+                continue
+
+            clean = dict(record)
+            clean["data"] = strip_signatures(clean.get("data") or {})
+            out_records.append(clean)
 
     payload = json.dumps(out_records, indent=2, ensure_ascii=False).encode("utf-8")
     print("EXPORT JSON count:", len(out_records), "bytes:", len(payload))
@@ -589,6 +588,7 @@ def export_json(
             "X-Export-Count": str(len(out_records)),
         },
     )
+
 
 
 # 3) EXPORT CSV (submitted only, ALL fields, signatures removed)
@@ -635,13 +635,9 @@ def export_csv(
 
     print("=== EXPORT CSV HIT ===", params)
 
-    ensure_storage()
-    idx = [r for r in load_index() if norm_lower(r.get("status")) == "submitted"]
-
     rows: List[Dict[str, Any]] = []
     all_keys = set()
 
-    # Always include these base columns so CSV isn't "empty"
     base_fields = [
         "id",
         "case_number",
@@ -651,40 +647,42 @@ def export_csv(
         "updated_at",
         "submitted_at",
         "redo_of_id",
+        "user_id",
+        "user_email",
     ]
     all_keys.update(base_fields)
 
-    for row in idx:
-        path = q_path(row["id"])
-        if not os.path.exists(path):
-            continue
-        try:
-            with open(path, "r", encoding="utf-8") as f:
-                record = json.load(f)
-        except Exception:
-            continue
+    with get_session() as session:
+        qs = session.exec(
+            select(Questionnaire).where(Questionnaire.status == "submitted")
+        ).all()
 
-        if not record_passes_filters(record, params):
-            continue
+        for q in qs:
+            record = {
+                "id": q.id,
+                "case_number": q.case_number,
+                "version": q.version,
+                "status": q.status,
+                "created_at": q.created_at,
+                "updated_at": q.updated_at,
+                "submitted_at": q.submitted_at,
+                "redo_of_id": q.redo_of_id,
+                "user_id": q.user_id,
+                "user_email": q.user_email,
+                "data": q.data or {},
+            }
 
-        clean_data = strip_signatures(record.get("data") or {})
+            if not record_passes_filters(record, params):
+                continue
 
-        flat = {
-            "id": record.get("id"),
-            "case_number": record.get("case_number"),
-            "version": record.get("version"),
-            "status": record.get("status"),
-            "created_at": record.get("created_at"),
-            "updated_at": record.get("updated_at"),
-            "submitted_at": record.get("submitted_at"),
-            "redo_of_id": record.get("redo_of_id"),
-        }
+            clean_data = strip_signatures(record.get("data") or {})
 
-        flat_data = flatten(clean_data)
-        flat.update({f"data.{k}": v for k, v in flat_data.items()})
+            flat = {k: record.get(k) for k in base_fields}
+            flat_data = flatten(clean_data)
+            flat.update({f"data.{k}": v for k, v in flat_data.items()})
 
-        rows.append(flat)
-        all_keys.update(flat.keys())
+            rows.append(flat)
+            all_keys.update(flat.keys())
 
     fieldnames = sorted(all_keys)
 
@@ -705,7 +703,6 @@ def export_csv(
             "X-Export-Count": str(len(rows)),
         },
     )
-
 
 # Users table for Admin Tools (list / promote / delete)
 
