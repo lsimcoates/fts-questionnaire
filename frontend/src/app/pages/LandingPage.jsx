@@ -81,15 +81,16 @@ export default function LandingPage() {
         const me = await authMe();
         setRole(me.role);
 
-        // remember device is allowed offline
+        // ✅ remember this device is allowed offline
         localStorage.setItem("fts_offline_allowed", "1");
         localStorage.setItem("fts_offline_allowed_at", String(Date.now()));
 
         await load();
+        setStatus("");
       } catch (e) {
         setRole(null);
 
-        // ✅ If device is allowed, show local drafts instead of redirecting to login
+        // ✅ KEY CHANGE: if this device is allowed, stay in-app and show local drafts
         if (offlineAllowed) {
           setStatus("Offline (or server unreachable): showing local drafts only.");
           const locals = await listLocalDrafts();
@@ -105,7 +106,6 @@ export default function LandingPage() {
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navigate]);
-
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();

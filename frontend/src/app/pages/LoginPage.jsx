@@ -42,6 +42,16 @@ export default function LoginPage() {
       setStatus("");
       navigate("/");
     } catch (e) {
+      const offlineAllowed = localStorage.getItem("fts_offline_allowed") === "1";
+      const msg = String(e?.message || "");
+
+      // If we're effectively offline and this device is allowed, go back to the app
+      if (offlineAllowed && (msg.includes("Failed to fetch") || msg.includes("NetworkError"))) {
+        setStatus("You appear to be offline. Returning to offline mode…");
+        setTimeout(() => navigate("/", { replace: true }), 300);
+        return;
+      }
+
       setStatus(e.message || "Login failed");
     }
   };
