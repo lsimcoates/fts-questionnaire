@@ -59,7 +59,7 @@
       margin-bottom: 18px;
     }
 
-    /* --- Drug Use pagination control --- */
+    /* Drug Use pagination control */
     .section.drug-use-section {
       page-break-inside: auto;
       break-inside: auto;
@@ -102,7 +102,7 @@
       break-inside: avoid;
     }
 
-    /* --- Hair & Influencing Factors pagination control --- */
+    /* Hair & Influencing Factors control  */
     .section.hair-section {
       page-break-inside: avoid;
       break-inside: avoid;
@@ -120,7 +120,7 @@
       gap: 8px 14px;
     }
 
-    /* ✅ Personal Details: compact 3x3 grid */
+    /* Personal Details: compact 3x3 grid */
     .pd-grid {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -133,7 +133,7 @@
       padding: 8px;
     }
 
-    /* ✅ PD fields use same “box” styling as other sections */
+    /* PD fields use same “box” styling as other sections */
     .pd-item {
       border: 1px solid #ddd;
       border-radius: 6px;
@@ -157,7 +157,7 @@
       font-weight: 400;
     }
 
-    /* --- ✅ Personal Details single-line label/value --- */
+    /* Personal Details single-line label/value */
     .pd-line {
       display: flex;
       align-items: baseline;
@@ -269,11 +269,7 @@
       object-fit: contain;
     }
 
-    /* =========================================
-       ✅ Child period rows (subtle + numbered)
-       Parent row = period 1 (implicit)
-       Children = "Additional period 2+"
-       ========================================= */
+    /* Child period rows (subtle + numbered) */
     tr.child-period-row {
       background: #f3f4f6; /* light grey tint */
     }
@@ -282,9 +278,8 @@
       color: var(--muted);
     }
 
-    /* =========================================
-   ✅ Soft, document-matching tables
-   ========================================= */
+    
+  /* Soft, document-matching tables */
 
   .table-wrap {
     border: 1px solid #cfcfcf;   /* soft outer edge */
@@ -311,7 +306,7 @@
   }
 
   thead { display: table-header-group; }
-  /* ✅ Do NOT repeat headers for drug tables (but keep normal behaviour elsewhere) */
+  /* Do NOT repeat headers for drug tables (but keep normal behaviour elsewhere) */
   .drug-table thead {
     display: table-row-group;
   }
@@ -324,9 +319,6 @@
     vertical-align: top;
   }
 
-
-
-  /* Remove heavy edges */
   .drug-table tr:last-child td {
     border-bottom: none;
   }
@@ -335,7 +327,6 @@
     border-right: none;
   }
 
-  /* Zebra striping (very subtle) */
   .drug-table tbody tr:nth-child(even):not(.child-period-row) {
     background: #fafafa;
   }
@@ -345,15 +336,12 @@
     font-weight: 600;
   }
 
-  /* Centre non-drug columns */
   .drug-table td:not(:first-child),
   .drug-table th:not(:first-child) {
     text-align: center;
   }
 
-  /* =========================================
-   🔧 Remove global black borders from drug tables
-   ========================================= */
+  /*  Remove global black borders from drug tables */
   .drug-table,
   .drug-table th,
   .drug-table td {
@@ -475,7 +463,7 @@
     <h1 class="header-title">Client Questionnaire</h1>
   </div>
 
-  <!-- ✅ Personal Details in a compact 3x3 grid (single-line label/value) -->
+  <!-- Personal Details in a compact 3x3 grid (single-line label/value) -->
   <section class="section personal-details">
     <div class="section-title">Personal details</div>
 
@@ -554,7 +542,7 @@
   <div class="section drug-use-section">
     <div class="section-title">Drug Use</div>
 
-    <!-- ✅ NEW: wrapper + classed table for rounding/zebra -->
+    <!--  wrapper + classed table for rounding/zebra -->
     <div class="table-wrap">
       <table class="drug-table">
         <thead>
@@ -631,7 +619,7 @@
       </div>
 
     {% elif d.drug_exposure_any == "Yes" %}
-      <!-- ✅ NEW: wrapper + classed table for rounding/zebra -->
+      <!--  wrapper + classed table for rounding/zebra -->
       <div class="table-wrap">
         <table class="drug-table">
           <thead>

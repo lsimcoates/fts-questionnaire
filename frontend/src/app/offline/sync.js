@@ -1,4 +1,3 @@
-// frontend/src/offline/sync.js
 import { listJobs, removeJob, loadLocalDraft, saveLocalDraft } from "./db";
 import {
   createQuestionnaire,
@@ -7,23 +6,16 @@ import {
   authMe,
 } from "../services/api";
 
-/**
- * Sync queued jobs when online.
- *
- * Returns: { synced: number, remaining: number }
- * - Stops on first failure to avoid deleting jobs when backend/auth is down.
- */
+/**Sync queued jobs when online.*/
 export async function syncOutbox() {
   // If offline, do nothing
   if (!navigator.onLine) return { synced: 0, remaining: (await listJobs()).length };
 
-  // If device isn't allowed for offline mode, don't sync (optional safety)
-  // (If you want to allow syncing anyway, remove this block.)
+  // If device isn't allowed for offline mode, don't sync 
   const offlineAllowed = localStorage.getItem("fts_offline_allowed") === "1";
   if (!offlineAllowed) return { synced: 0, remaining: (await listJobs()).length };
 
   // Ensure user is authenticated (important: cookie might not be present)
-  // If this fails, we can't hit protected endpoints.
   try {
     await authMe();
   } catch (e) {
@@ -75,7 +67,6 @@ async function handleFinalizeJob(job) {
   const payload = local.data;
 
   // You can store a server id on the local draft meta, if you want.
-  // For now: if the local id is actually a server id (not local:), use it.
   let serverId = null;
 
   if (typeof localId === "string" && !localId.startsWith("local:")) {

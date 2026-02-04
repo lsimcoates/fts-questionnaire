@@ -12,5 +12,5 @@ ACCESS_TOKEN_EXPIRE_SECONDS = int(os.getenv("ACCESS_TOKEN_EXPIRE_SECONDS", "3600
 # Cookie config
 COOKIE_NAME = os.getenv("COOKIE_NAME", "fts_session")
 COOKIE_SECURE = os.getenv("COOKIE_SECURE", "false").lower() == "true"
-COOKIE_SAMESITE = os.getenv("COOKIE_SAMESITE", "lax")  # "lax" or "none" (for cross-site https)
+COOKIE_SAMESITE = os.getenv("COOKIE_SAMESITE", "lax") 
 COOKIE_DOMAIN = os.getenv("COOKIE_DOMAIN", None)  # optionally set on work server

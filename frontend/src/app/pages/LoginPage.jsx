@@ -8,7 +8,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState("");
 
-  // ✅ If offline + this device has previously authenticated, go back to app (offline mode)
+  // If offline + this device has previously authenticated, go back to app (offline mode)
   useEffect(() => {
     const allowed = localStorage.getItem("fts_offline_allowed") === "1";
     if (!navigator.onLine && allowed) {
@@ -17,7 +17,7 @@ export default function LoginPage() {
   }, [navigate]);
 
   const onLogin = async () => {
-    // ✅ Offline login is not possible (Option A). Give a friendly message.
+    // Offline login not possible.
     if (!navigator.onLine) {
       const allowed = localStorage.getItem("fts_offline_allowed") === "1";
       setStatus(
@@ -35,7 +35,7 @@ export default function LoginPage() {
     try {
       await authLogin({ email, password });
 
-      // ✅ Mark device as offline-capable after a successful login
+      // set device as offline-capable after a successful login
       localStorage.setItem("fts_offline_allowed", "1");
       localStorage.setItem("fts_offline_allowed_at", String(Date.now()));
 
@@ -45,7 +45,7 @@ export default function LoginPage() {
       const offlineAllowed = localStorage.getItem("fts_offline_allowed") === "1";
       const msg = String(e?.message || "");
 
-      // If we're effectively offline and this device is allowed, go back to the app
+      // If offline and this device is allowed,  back to the app
       if (offlineAllowed && (msg.includes("Failed to fetch") || msg.includes("NetworkError"))) {
         setStatus("You appear to be offline. Returning to offline mode…");
         setTimeout(() => navigate("/", { replace: true }), 300);

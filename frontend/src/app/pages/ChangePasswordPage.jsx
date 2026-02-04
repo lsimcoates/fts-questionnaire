@@ -12,7 +12,7 @@ export default function ChangePasswordPage() {
   const [status, setStatus] = useState("");
   const [saving, setSaving] = useState(false);
   
-  // ✅ hover tracking
+  // hover tracking
   const [hovered, setHovered] = useState(null);
   
   const onSubmit = async (e) => {

@@ -17,22 +17,17 @@ from app.auth.router import get_current_user
 from app.auth.security import hash_password
 from app.auth.config import ALLOWED_EMAIL_DOMAIN
 
-# ✅ DB access for managing users (make sure these paths match your project)
+#DB access for managing users
 from sqlmodel import select
 from app.auth.db import get_session, User
 
-# IMPORTANT: This matches your questionnaires JSON storage
+# JSON storage
 DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "data", "questionnaires")
 INDEX_FILE = os.path.join(DATA_DIR, "index.json")
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
-
-# -----------------------------
-# Auth helpers
-# -----------------------------
 def _get_role(user):
-    # supports dict OR pydantic model
     if isinstance(user, dict):
         return user.get("role")
     return getattr(user, "role", None)
@@ -64,9 +59,8 @@ def require_superadmin(user=Depends(get_current_user)):
     return user
 
 
-# -----------------------------
-# User creation helpers (NEW)
-# -----------------------------
+
+# User creation helpers 
 def _require_domain(email: str):
     """
     Reuse the same domain restriction concept as auth router.
@@ -121,9 +115,6 @@ def admin_create_user(payload: AdminCreateUserPayload, user=Depends(require_admi
             password_hash=hash_password(temp_password),
             role=payload.role,
             is_active=True,
-            # If your User model still has these fields, they can remain,
-            # but they are no longer used when you remove email verification:
-            # is_verified=True,
         )
 
         session.add(new_user)
@@ -138,10 +129,7 @@ def admin_create_user(payload: AdminCreateUserPayload, user=Depends(require_admi
         "temp_password": temp_password,  # show once to admin
     }
 
-
-# -----------------------------
-# Storage helpers
-# -----------------------------
+# Storage 
 def ensure_storage():
     os.makedirs(DATA_DIR, exist_ok=True)
     if not os.path.exists(INDEX_FILE):
@@ -167,7 +155,6 @@ def parse_iso(dt: Optional[str]) -> Optional[datetime]:
     if not dt:
         return None
     try:
-        # handle trailing Z
         return datetime.fromisoformat(dt.replace("Z", "+00:00"))
     except Exception:
         return None
@@ -198,9 +185,7 @@ def parse_date_as_day_end(s: Optional[str]) -> Optional[datetime]:
     return d.replace(hour=23, minute=59, second=59, microsecond=999999)
 
 
-# -----------------------------
 # Data sanitization
-# -----------------------------
 SIGNATURE_KEYS = {
     "client_signature_png",
     "collector_signature_png",
@@ -220,9 +205,7 @@ def strip_signatures(data: Dict[str, Any]) -> Dict[str, Any]:
     return clean
 
 
-# -----------------------------
 # Filtering helpers
-# -----------------------------
 def norm(s: Any) -> str:
     return ("" if s is None else str(s)).strip()
 
@@ -341,20 +324,18 @@ def record_passes_filters(record: Dict[str, Any], params: Dict[str, str]) -> boo
     if not matches_yesno(data.get("hair_removed_body_hair_last_12_months"), params.get("hair_removed_body_hair_last_12_months")):
         return False
 
-    # Drug Used filter (implies status == used)
+    # Drug Used filter
     if not matches_drug_used(data, params.get("drug_used_name")):
         return False
 
-    # Drug Exposed filter (implies status == exposed)
+    # Drug Exposed filter 
     if not matches_drug_exposed(data, params.get("drug_exposed_name")):
         return False
 
     return True
 
 
-# -----------------------------
 # CSV flattening
-# -----------------------------
 def flatten(obj: Any, prefix: str = "", out: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     """
     Flattens nested JSON into dot keys. Lists are JSON-stringified.
@@ -374,9 +355,7 @@ def flatten(obj: Any, prefix: str = "", out: Optional[Dict[str, Any]] = None) ->
     return out
 
 
-# -----------------------------
 # User counts (drafts/submissions) from JSON storage
-# -----------------------------
 def questionnaire_owner_key(record: Dict[str, Any]) -> Optional[str]:
     """
     Links a questionnaire to a user.
@@ -437,9 +416,8 @@ def build_user_counts() -> Dict[str, Dict[str, int]]:
     return counts
 
 
-# -----------------------------
-# 1) OPTIONS ENDPOINT (DROPDOWNS)
-# -----------------------------
+
+# 1) Option drop downs
 @router.get("/export/options")
 def export_options(user=Depends(require_admin)):
     """
@@ -534,9 +512,7 @@ def export_options(user=Depends(require_admin)):
     }
 
 
-# -----------------------------
-# 2) EXPORT JSON (submitted only, signatures removed)
-# -----------------------------
+#2) EXPORT JSON (submitted only, signatures removed)
 @router.get("/export/json")
 def export_json(
     user=Depends(require_admin),
@@ -615,9 +591,7 @@ def export_json(
     )
 
 
-# -----------------------------
 # 3) EXPORT CSV (submitted only, ALL fields, signatures removed)
-# -----------------------------
 @router.get("/export/csv")
 def export_csv(
     user=Depends(require_admin),
@@ -733,9 +707,7 @@ def export_csv(
     )
 
 
-# ============================================================
-# ✅ Users table for Admin Tools (list / promote / delete)
-# ============================================================
+# Users table for Admin Tools (list / promote / delete)
 
 class RoleUpdate(BaseModel):
     role: str  # "user" or "admin"
@@ -805,7 +777,7 @@ def admin_create_user(payload: CreateUserPayload, user=Depends(require_admin)):
             password_hash=hash_password(temp_password),
             role=payload.role,
             is_active=True,
-            is_verified=True,   # ✅ since we're removing email verification
+            is_verified=True,  
             verified_at=datetime.utcnow().isoformat(),
         )
         session.add(u)

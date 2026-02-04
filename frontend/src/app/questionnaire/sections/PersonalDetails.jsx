@@ -19,16 +19,15 @@ export default function PersonalDetails({
     eth.includes("Any other White background") ||
     eth.includes("Any other ethnic group");
 
-  // ✅ keep data clean: if they switch away from "Any other..." options, clear the detail box
   useEffect(() => {
     if (!setValue) return;
     if (!needsOther) setValue("ethnicity_other_detail", "");
   }, [needsOther, setValue]);
 
-  // ✅ Blood-borne infections (multi-select)
+  // Blood-borne infections (multi-select)
   const infections = watch?.("blood_borne_infections") || [];
 
-  // ✅ "No" and "Prefer not to say" should be exclusive
+  // "No" and "Prefer not to say" should be exclusive
   useEffect(() => {
     if (!setValue) return;
 
@@ -96,7 +95,7 @@ export default function PersonalDetails({
         )}
       </div>
 
-      {/* ✅ Type of testing */}
+      {/* Type of testing */}
       <div style={styles.field}>
         <label style={styles.label}>Type of testing</label>
         <select
@@ -190,7 +189,7 @@ export default function PersonalDetails({
         </select>
       </div>
 
-      {/* ✅ Blood-borne infections (multi-select) */}
+      {/* Blood-borne infections (multi-select) */}
       <div style={styles.field}>
         <label style={styles.label}>
           Do you have any blood-borne infections that you are aware of?

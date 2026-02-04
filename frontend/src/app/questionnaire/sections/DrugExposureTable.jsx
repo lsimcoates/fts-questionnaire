@@ -23,13 +23,12 @@ const PARENT_LEVEL_OPTIONS = [
   "Unsure",
 ];
 
-// Child rows need "Not exposed" as requested
 const CHILD_LEVEL_OPTIONS = ["Not exposed", ...PARENT_LEVEL_OPTIONS];
 
 function isoMonthsAgo(months) {
   const d = new Date();
   d.setMonth(d.getMonth() - months);
-  return d.toISOString().slice(0, 10); // YYYY-MM-DD for <input type="date">
+  return d.toISOString().slice(0, 10); 
 }
 
 function DateShortcuts({ onToday, onMinus3, onMinus6 }) {
@@ -59,7 +58,6 @@ function blankExposurePeriod() {
   };
 }
 
-// helper: is a period row totally empty (so we can trim)
 function isEmptyPeriod(p) {
   if (!p) return true;
   const typeArr = Array.isArray(p.type_of_exposure) ? p.type_of_exposure : [];
@@ -73,7 +71,6 @@ function isEmptyPeriod(p) {
   );
 }
 
-// helper: is a period row "active" (user interacted / filled something / ticked has_change)
 function isPeriodActive(p) {
   if (!p) return false;
   const typeArr = Array.isArray(p.type_of_exposure) ? p.type_of_exposure : [];
@@ -102,13 +99,13 @@ function DrugExposureRow({
   const periods =
     useWatch({ control, name: `drug_exposure.${index}.periods` }) || [];
 
-  // ✅ watch parent start + unsure for end-date validation
+  // watch parent start + unsure for end-date validation
   const parentStart =
     useWatch({ control, name: `drug_exposure.${index}.start_date_of_exposure` }) || "";
   const parentUnsure =
     useWatch({ control, name: `drug_exposure.${index}.unsure_date` }) || false;
 
-  // ✅ Base checkbox controls whether periods exist at all (rehydration-safe)
+  // Base checkbox controls whether periods exist at all 
   useEffect(() => {
     if (baseHasChange) {
       if (!Array.isArray(periods) || periods.length === 0) {
@@ -123,7 +120,7 @@ function DrugExposureRow({
     }
   }, [baseHasChange, periods, index, setValue]);
 
-  // ✅ Chain behaviour: ensure exactly ONE new blank row exists after the last ticked period
+  // Chain behaviour: ensure exactly one new blank row exists after the last ticked period
   useEffect(() => {
     if (!Array.isArray(periods) || periods.length === 0) return;
 
@@ -132,7 +129,7 @@ function DrugExposureRow({
       if (periods[i]?.has_change) lastTicked = i;
     }
 
-    // none ticked => keep exactly one row
+    // none ticked, keep exactly one row
     if (lastTicked === -1) {
       if (periods.length !== 1) {
         setValue(
@@ -172,7 +169,7 @@ function DrugExposureRow({
       <tr>
         <td style={styles.td}>{drugName}</td>
 
-        {/* ✅ Status column: two radios stacked vertically */}
+        {/* Status column: two  stacked vertically */}
         <td style={styles.tdCenter}>
           <div style={styles.statusStack}>
             {STATUS_OPTIONS.map((label) => (
@@ -224,7 +221,7 @@ function DrugExposureRow({
           />
         </td>
 
-        {/* ✅ End date: cannot be before start date */}
+        {/* End date: cannot be before start date */}
         <td style={styles.td}>
           <input
             style={styles.input}
@@ -297,7 +294,6 @@ function DrugExposureRow({
           const pErr = errors?.drug_exposure?.[index]?.periods?.[pIndex] || {};
           const periodActive = isPeriodActive(p);
 
-          // ✅ use period object directly (no hooks in map)
           const periodStart = (p?.start_date_of_exposure || "").trim();
 
           return (
@@ -356,7 +352,7 @@ function DrugExposureRow({
                   />
                 </td>
 
-                {/* ✅ End date with ordering rule */}
+                {/* End date with ordering rule */}
                 <td style={styles.td}>
                   <input
                     style={styles.input}
@@ -374,7 +370,7 @@ function DrugExposureRow({
                           // existing required rule
                           if (!(end || "").trim()) return "End date is required";
 
-                          // ✅ ordering rule
+                          // ordering rule
                           if (periodStart && end < periodStart) {
                             return "End date cannot be before start date";
                           }
@@ -486,10 +482,10 @@ export default function DrugExposureTable({
   errors,
   showErrors,
 }) {
-  // ✅ overarching yes/no
+  // overarching yes/no
   const anyExposure = useWatch({ control, name: "drug_exposure_any" }) || "";
 
-  // ✅ Optional: when user selects "No", clear table so stale data doesn't submit
+  // Optional: when user selects "No", clear table 
   useEffect(() => {
     if (anyExposure === "No") {
       // Clear array rows
@@ -504,7 +500,7 @@ export default function DrugExposureTable({
     <section style={styles.section}>
       <h2 style={styles.h2}>Passive Exposure to drugs</h2>
 
-      {/* ✅ Overarching question */}
+      {/*  Overarching question */}
       <div style={styles.topQuestionBox}>
         <div style={styles.topQuestionLabel}>
           Have you been exposed to any of the drugs listed above during the 12 months prior to
@@ -531,7 +527,7 @@ export default function DrugExposureTable({
         )}
       </div>
 
-      {/* ✅ Only show the table if Yes */}
+      {/* Only show the table if Yes */}
       {anyExposure === "Yes" && (
         <>
           <p style={styles.infoText}>
@@ -606,7 +602,7 @@ const styles = {
   },
   h2: { marginBottom: 12, color: "#904369" },
 
-  // ✅ Overarching question styling
+  // Overarching question styling
   topQuestionBox: {
     border: "1px solid #eee",
     borderRadius: 8,
@@ -717,7 +713,7 @@ const styles = {
   errorRow: { padding: 10, borderBottom: "1px solid #eee", background: "#fff5f5" },
   errorText: { color: "crimson", fontSize: 12, fontWeight: 600 },
 
-  // ✅ Added: date shortcut buttons (same as DrugUseTable)
+  // Added: date shortcut buttons
   dateShortcuts: {
     display: "flex",
     gap: 6,

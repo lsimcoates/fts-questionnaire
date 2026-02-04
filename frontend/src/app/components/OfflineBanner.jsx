@@ -1,4 +1,3 @@
-// frontend/src/app/components/OfflineBanner.jsx
 import React, { useEffect, useState } from "react";
 import { syncOutbox } from "../offline/sync";
 

@@ -41,7 +41,7 @@ def render_questionnaire_html(
     top_logo_path = os.path.join(STATIC_IMAGES_DIR, "logotext.png")
     bottom_logo_path = os.path.join(STATIC_IMAGES_DIR, "logo.png")
 
-    # ---- computed fields for PDF ----
+    
     ref_sig = (data.get("collector_signature_date") or data.get("client_signature_date"))
     data["hair_last_dyed_bleached_approx_before"] = approx_before_text(
         data.get("hair_last_dyed_bleached_date"),
@@ -50,7 +50,7 @@ def render_questionnaire_html(
 
     return template.render(
         data=data,
-        d=data,  # for backward compatibility in the template
+        d=data,  
         version=version,
         status=status,
         submitted_at=submitted_at,
@@ -71,7 +71,7 @@ def html_to_pdf_bytes(html: str) -> bytes:
             format="A4",
             print_background=True,
 
-            # allow room for page number footer
+        
             margin={"top": "12mm", "right": "12mm", "bottom": "18mm", "left": "12mm"},
 
             display_header_footer=True,

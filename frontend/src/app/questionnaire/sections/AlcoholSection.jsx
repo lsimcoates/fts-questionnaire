@@ -18,10 +18,9 @@ export default function AlcoholSection({
   errors,
   showErrors,
 }) {
-  const consumedAlcohol = watch("alcohol_consumed_last_12_months"); // "Yes" | "No" | ""
-  const unsureLastDate = watch("alcohol_last_date_unsure"); // boolean
-
-  // If they tick unsure, clear the date
+  const consumedAlcohol = watch("alcohol_consumed_last_12_months"); 
+  const unsureLastDate = watch("alcohol_last_date_unsure"); 
+  // If ticked clear the date
   useEffect(() => {
     if (unsureLastDate) {
       setValue("alcohol_last_consumed_date", "", { shouldDirty: false });
@@ -34,7 +33,7 @@ export default function AlcoholSection({
     if (consumedAlcohol === "No") {
       setValue("alcohol_last_consumed_date", "", { shouldDirty: false });
       setValue("alcohol_last_date_unsure", false, { shouldDirty: false });
-      setValue("alcohol_weekly_options", [], { shouldDirty: false }); // array of checked options
+      setValue("alcohol_weekly_options", [], { shouldDirty: false }); 
       setValue("alcohol_other_info", "", { shouldDirty: false });
 
       clearErrors?.([
@@ -52,7 +51,7 @@ export default function AlcoholSection({
     <section style={styles.section}>
       <h2 style={styles.h2}>Alcohol Consumption</h2>
 
-      {/* NEW: 2-column layout (left form, right image) */}
+      {/* 2 column layout (left form, right image) */}
       <div style={styles.grid}>
         {/* LEFT: existing form content */}
         <div>
@@ -118,7 +117,7 @@ export default function AlcoholSection({
             </div>
           </div>
 
-          {/* Weekly consumption (ALL CHECKBOXES) */}
+          {/* Weekly consumption (checkboxes) */}
           <div style={styles.field}>
             <label style={styles.label}>
               Please tick which most closely matches your average weekly alcohol
@@ -166,7 +165,7 @@ export default function AlcoholSection({
           </div>
         </div>
 
-        {/* RIGHT: alcohol units key image */}
+        {/* alcohol units key image */}
         <div style={styles.keyWrap}>
           {(consumedAlcohol === "Yes" || consumedAlcohol === "") && (
             <img
@@ -190,7 +189,7 @@ const styles = {
   },
   h2: { marginBottom: 12, color: "#904369" },
 
-  // NEW: left form + right image column
+  // left form + right image column
   grid: {
     display: "grid",
     gridTemplateColumns: "1fr 360px",

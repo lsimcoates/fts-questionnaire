@@ -150,18 +150,18 @@ export default function QuestionnairePage() {
 
   const [statusMsg, setStatusMsg] = useState("");
 
-  // ✅ hover tracking
+  // hover tracking
   const [hovered, setHovered] = useState(null);
 
   const consent = watch("consent"); // "Yes" | "No" | ""
   const hasConsent = consent === "Yes";
   const refused = consent === "No";
 
-  // ✅ NEW: testing type drives which sections appear
+  // testing type determines which sections appear
   const testingType = watch("testing_type"); // "Drug & Alcohol" | "Drug Only" | "Alcohol Only" | ""
   const isAlcoholOnly = testingType === "Alcohol Only";
 
-  // ✅ if Alcohol Only, clear drug section fields (prevents stale data being saved)
+  // if Alcohol Only, clear drug section fields 
   useEffect(() => {
     if (isAlcoholOnly) {
       setValue("drug_use", [], { shouldDirty: false });
@@ -172,7 +172,7 @@ export default function QuestionnairePage() {
     }
   }, [isAlcoholOnly, setValue, clearErrors]);
 
-  // Load saved draft if we have an ID
+  // Load saved draft if we have an ID that is the same
   useEffect(() => {
     async function loadDraft() {
       if (!qid) return;
@@ -222,7 +222,7 @@ export default function QuestionnairePage() {
         status: "draft (local)",
       });
 
-      // ✅ queue draft job
+      // queue draft job
       await queueJob({
         job_id: `job:${uuid()}`,
         type: "save",          // <= draft upload later (NOT finalize)
@@ -279,7 +279,7 @@ export default function QuestionnairePage() {
     if (routeId && routeId !== qid) {
       setQid(routeId);
     }
-  }, [routeId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [routeId]); 
 
   const submitFinal = async () => {
     setStatusMsg("Submitting...");
@@ -373,7 +373,7 @@ export default function QuestionnairePage() {
   return (
     <div style={styles.page}>
       <OfflineBanner />
-      {/* ✅ Header row with Home button + centered title */}
+      {/* Header row with Home button + centered title */}
       <div style={styles.headerRow}>
         <button
           type="button"
@@ -410,7 +410,7 @@ export default function QuestionnairePage() {
 
         {hasConsent && (
           <>
-            {/* ✅ Only show drug sections when NOT alcohol-only */}
+            {/* Only show drug sections when NOT alcohol-only */}
             {!isAlcoholOnly && (
               <>
                 <DrugUseTable
@@ -537,7 +537,7 @@ const styles = {
     boxShadow: "0 0 0 1px #e6e9ef, 0 8px 24px rgba(0,0,0,0.04)",
   },
 
-  // ✅ header layout
+  // header layout
   headerRow: {
     display: "grid",
     gridTemplateColumns: "auto 1fr auto",
@@ -626,7 +626,7 @@ const styles = {
     fontSize: 14,
     fontWeight: 700,
     transition: "background 120ms ease, transform 120ms ease, box-shadow 120ms ease",
-    marginLeft: "auto", // ✅ push to right
+    marginLeft: "auto", // 
   },
 
   homeBtnBottomHover: {

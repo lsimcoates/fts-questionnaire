@@ -80,7 +80,6 @@ def flatten_record(record: Dict[str, Any], columns: Optional[List[str]] = None) 
             base[key] = _safe_scalar(data.get(key))
         return base
 
-    # Default: include all top-level keys in data (except big signatures already removed upstream)
     for k, v in data.items():
         base[k] = _safe_scalar(v)
 

@@ -11,27 +11,27 @@ export default function HairAndInfluencingSection({
   errors,
   showErrors,
 }) {
-  // NEW: parent scalp cut question
-  const cutInLast12Months = watch("hair_cut_in_last_12_months"); // "Yes"/"No"
+  // parent scalp cut question
+  const cutInLast12Months = watch("hair_cut_in_last_12_months"); 
 
   // scalp hair cut follow-ups
   const cutUnsure = watch("hair_last_cut_unsure");
 
   // body hair removed in last 12 months (Yes/No)
-  const removedBodyHair = watch("hair_removed_body_hair_last_12_months"); // "Yes"/"No"
+  const removedBodyHair = watch("hair_removed_body_hair_last_12_months"); 
 
   // pregnancy
-  const sexAtBirth = watch("sex_at_birth"); // "Male" / "Female" / etc
+  const sexAtBirth = watch("sex_at_birth"); 
   const pregnancyLocked = sexAtBirth === "Male";
-  const pregnant = watch("pregnant_last_12_months"); // "Yes"/"No"
+  const pregnant = watch("pregnant_last_12_months"); 
   const dueUnsure = watch("pregnancy_due_date_unsure");
 
-  // NEW: pregnancy not applicable + outcome
-  const dueNotApplicable = watch("pregnancy_due_date_not_applicable"); // boolean
-  const pregnancyOutcome = watch("pregnancy_outcome"); // string
+  //  pregnancy not applicable + outcome
+  const dueNotApplicable = watch("pregnancy_due_date_not_applicable"); 
+  const pregnancyOutcome = watch("pregnancy_outcome"); 
 
   // dyed/bleached
-  const dyedBleached = watch("hair_dyed_bleached"); // "Yes"/"No"
+  const dyedBleached = watch("hair_dyed_bleached"); 
 
   // sites removed from
   const armsSelected = watch("hair_removed_sites_arms");
@@ -65,23 +65,19 @@ export default function HairAndInfluencingSection({
   );
 
   // influencing parent questions
-  const thermal = watch("hair_thermal_applications"); // "Yes"/"No"
-  const swimming = watch("frequent_swimming"); // "Yes"/"No"
-  const sunbeds = watch("frequent_sunbeds"); // "Yes"/"No"
-  const sprays = watch("frequent_sprays_on_sites"); // "Yes"/"No"
+  const thermal = watch("hair_thermal_applications");   
+  const swimming = watch("frequent_swimming"); 
+  const sunbeds = watch("frequent_sunbeds"); 
+  const sprays = watch("frequent_sprays_on_sites"); 
 
-  // sprays sites (watched so UI reacts; not otherwise used)
+  // sprays sites 
   watch("sprays_sites_scalp");
   watch("sprays_sites_arms");
   watch("sprays_sites_chest");
   watch("sprays_sites_legs");
   watch("sprays_sites_back");
 
-  /**
-   * -------------------------
-   * Scalp cut logic
-   * -------------------------
-   */
+  /** Scalp cut logic */
 
   // If parent is not Yes, clear all cut follow-ups
   useEffect(() => {
@@ -107,11 +103,7 @@ export default function HairAndInfluencingSection({
     ]);
   }, [cutInLast12Months, cutUnsure, trigger]);
 
-  /**
-   * -------------------------
-   * Pregnancy logic
-   * -------------------------
-   */
+  /**Pregnancy logic*/
   useEffect(() => {
     if (!pregnancyLocked) return;
 
@@ -178,11 +170,7 @@ export default function HairAndInfluencingSection({
     ]);
   }, [pregnant, dueUnsure, dueNotApplicable, pregnancyOutcome, trigger]);
 
-  /**
-   * -------------------------
-   * Dyed/bleached logic
-   * -------------------------
-   */
+  /**Dyed/bleached logic*/
 
   // if not dyed/bleached, clear follow-up date
   useEffect(() => {
@@ -191,11 +179,7 @@ export default function HairAndInfluencingSection({
     }
   }, [dyedBleached, setValue]);
 
-  /**
-   * -------------------------
-   * Body hair removal logic
-   * -------------------------
-   */
+  /** Body hair removal logic*/
 
   // if body hair removal is not Yes, clear all sites + per-site details
   useEffect(() => {
@@ -265,7 +249,7 @@ export default function HairAndInfluencingSection({
     }
   }, [removedBodyHair, setValue]);
 
-  // --- Helper: enforce mutual exclusion & clear date if unsure/last-collection
+  //enforce mutual exclusion & clear date if unsure/last-collection
   function handleSiteState({
     selected,
     unsure,
@@ -303,7 +287,6 @@ export default function HairAndInfluencingSection({
       unsureField: "hair_removed_sites_arms_last_shaved_unsure",
       lastCollectionField: "hair_removed_sites_arms_last_shaved_last_collection",
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [armsSelected, armsUnsure, armsLastCollection]);
 
   useEffect(() => {
@@ -315,7 +298,6 @@ export default function HairAndInfluencingSection({
       unsureField: "hair_removed_sites_legs_last_shaved_unsure",
       lastCollectionField: "hair_removed_sites_legs_last_shaved_last_collection",
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [legsSelected, legsUnsure, legsLastCollection]);
 
   useEffect(() => {
@@ -328,7 +310,6 @@ export default function HairAndInfluencingSection({
       lastCollectionField:
         "hair_removed_sites_chest_last_shaved_last_collection",
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chestSelected, chestUnsure, chestLastCollection]);
 
   useEffect(() => {
@@ -340,7 +321,6 @@ export default function HairAndInfluencingSection({
       unsureField: "hair_removed_sites_back_last_shaved_unsure",
       lastCollectionField: "hair_removed_sites_back_last_shaved_last_collection",
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [backSelected, backUnsure, backLastCollection]);
 
   useEffect(() => {
@@ -353,14 +333,9 @@ export default function HairAndInfluencingSection({
       lastCollectionField:
         "hair_removed_sites_underarms_last_shaved_last_collection",
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [underarmsSelected, underarmsUnsure, underarmsLastCollection]);
 
-  /**
-   * -------------------------
-   * Influencing factor clearing
-   * -------------------------
-   */
+  /** Influencing factor clearing */
 
   // clear thermal frequency if "No"
   useEffect(() => {
@@ -392,10 +367,8 @@ export default function HairAndInfluencingSection({
     }
   }, [sprays, setValue]);
 
-  // pregnancy weeks is NOT required (user request)
-  // const weeksRules = undefined;
+  // pregnancy weeks is NOT required
 
-  // Reusable UI chunk for site "unsure/last collection" ticks
   const SiteFlags = ({ unsureName, lastCollectionName }) => {
     const unsureReg = register(unsureName);
     const lastReg = register(lastCollectionName);

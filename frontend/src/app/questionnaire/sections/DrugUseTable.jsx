@@ -16,7 +16,7 @@ const LEVEL_OPTIONS = [
 function isoMonthsAgo(months) {
   const d = new Date();
   d.setMonth(d.getMonth() - months);
-  return d.toISOString().slice(0, 10); // YYYY-MM-DD for <input type="date">
+  return d.toISOString().slice(0, 10); 
 }
 
 function blankPeriod() {
@@ -30,7 +30,7 @@ function blankPeriod() {
   };
 }
 
-// helper: is a period row totally empty (so we can trim)
+// check if a period row is completely empty
 function isEmptyPeriod(p) {
   if (!p) return true;
   return (
@@ -43,7 +43,7 @@ function isEmptyPeriod(p) {
   );
 }
 
-// helper: is a period row "active" (user interacted / filled something / ticked has_change)
+// check a period row is filled in 
 function isPeriodActive(p) {
   if (!p) return false;
   return (
@@ -79,13 +79,11 @@ function DrugUseRow({ drug, index, register, errors, showErrors, control, setVal
   const periods =
     useWatch({ control, name: `drug_use.${index}.periods` }) || [];
 
-  // ✅ watch parent start + unsure so we can validate parent end date
   const parentStart =
     useWatch({ control, name: `drug_use.${index}.start_date_of_use` }) || "";
   const parentUnsure =
     useWatch({ control, name: `drug_use.${index}.unsure_date` }) || false;
 
-  // Base checkbox controls whether periods exist at all
   useEffect(() => {
     if (baseHasChange) {
       if (!Array.isArray(periods) || periods.length === 0) {
@@ -98,7 +96,7 @@ function DrugUseRow({ drug, index, register, errors, showErrors, control, setVal
     }
   }, [baseHasChange, periods, index, setValue]);
 
-  // Chain behaviour: ensure exactly ONE new blank row exists after the last ticked period
+  // Chain behaviour: ensure exactly one new blank row exists after the last ticked period
   useEffect(() => {
     if (!Array.isArray(periods) || periods.length === 0) return;
 
@@ -249,7 +247,7 @@ function DrugUseRow({ drug, index, register, errors, showErrors, control, setVal
           const pErr = errors?.drug_use?.[index]?.periods?.[pIndex] || {};
           const periodActive = isPeriodActive(p);
 
-          // ✅ pull start directly from the period object (no hook needed)
+          // pull start directly from the period object 
           const periodStart = (p?.start_date_of_use || "").trim();
 
           return (
@@ -310,7 +308,7 @@ function DrugUseRow({ drug, index, register, errors, showErrors, control, setVal
                     style={styles.input}
                     type="date"
                     max={todayISO}
-                    min={periodStart || undefined} // UX: prevents selecting earlier
+                    min={periodStart || undefined} // prevents selecting earlier
                     {...register(`drug_use.${index}.periods.${pIndex}.date_of_last_use`, {
                       validate: (end) => {
                         if (!baseHasChange) return true;
@@ -320,7 +318,7 @@ function DrugUseRow({ drug, index, register, errors, showErrors, control, setVal
                         // required rule
                         if (!(end || "").trim()) return "End date is required";
 
-                        // ✅ ordering rule
+                        // ordering rule
                         if (periodStart && end < periodStart) {
                           return "End date cannot be before start date";
                         }

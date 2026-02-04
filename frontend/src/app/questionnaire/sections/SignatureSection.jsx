@@ -1,17 +1,16 @@
-// src/app/questionnaire/sections/SignatureSection.jsx
 import React, { useMemo, useState } from "react";
 import SignaturePadField from "./SignaturePadField";
 import { todayISO } from "../config/dateUtils";
 
 export default function SignatureSection({
   register,
-  control, // not used in this modal-based version, but fine to keep
+  control, 
   watch,
   setValue,
-  mode = "full", // "full" | "refusal-only"
+  mode = "full", 
   errors,
   showErrors,
-  trigger, // ✅ pass trigger from useForm so we can revalidate after signing
+  trigger, 
 }) {
   const [open, setOpen] = useState(false);
   const [activeSigField, setActiveSigField] = useState(""); // e.g. "client_signature_png"
@@ -45,7 +44,7 @@ export default function SignatureSection({
   const saveSignature = async () => {
     if (!activeSigField) return;
 
-    // ✅ Set the signature into the form and revalidate that field
+    // Set the signature into the form and revalidate that field
     setValue(activeSigField, tempPng || "", { shouldDirty: true, shouldTouch: true, shouldValidate: true });
 
     // trigger validation so error disappears immediately after saving
@@ -175,7 +174,7 @@ function SignatureRow({
   errors,
   showErrors,
 }) {
-  // ✅ required rules
+  // required rules
   const nameRules = { required: "Please enter a printed name" };
   const dateRules = { required: "Please select a date" };
   const sigRules = { required: "Signature is required" };
@@ -204,7 +203,7 @@ function SignatureRow({
         <div style={styles.signatureLeft}>
           <span style={styles.signatureTitle}>{titleLeft}</span>
 
-          {/* ✅ Hidden required field for signature png */}
+          {/* Hidden required field for signature png */}
           <input type="hidden" {...register(sigField, sigRules)} />
 
           <button

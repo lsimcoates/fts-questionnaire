@@ -25,7 +25,7 @@ class User(SQLModel, table=True):
     role: str = Field(default="user")  # user | admin | superadmin
     is_active: bool = Field(default=True)
 
-    # Email verification
+    # Email verification - no longer used, but kept for record
     is_verified: bool = Field(default=False)
     verified_at: Optional[str] = Field(default=None)
 
@@ -67,10 +67,7 @@ def get_user_by_id(session: Session, user_id: int) -> Optional[User]:
     return session.get(User, user_id)
 
 
-# ----------------------------
-# Token helpers (Option A)
-# ----------------------------
-
+# Token helpers 
 def create_auth_token(
     session: Session,
     user_id: int,

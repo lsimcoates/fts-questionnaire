@@ -25,19 +25,19 @@ export default function LandingPage() {
   const [rows, setRows] = useState([]);
   const [status, setStatus] = useState("");
 
-  // ✅ pagination
+  // pagination
   const [page, setPage] = useState(1);
 
-  // ✅ hover tracking
+  // hover tracking
   const [hovered, setHovered] = useState(null);
 
-  // ✅ user role for admin tools
+  // user role for admin tools
   const [role, setRole] = useState(null);
   const isAdmin = role === "admin" || role === "superadmin";
 
   const logout = async () => {
     try {
-      await authLogout(); // ✅ clears httponly cookie
+      await authLogout(); 
     } catch {
       // ignore - still clear local state
     }
@@ -60,7 +60,6 @@ export default function LandingPage() {
       setStatus("Loading records...");
       const data = await listQuestionnaires();
 
-      // newest first by updated_at, fallback created_at
       data.sort((a, b) => {
         const da = new Date(a.updated_at || a.created_at || 0).getTime();
         const db = new Date(b.updated_at || b.created_at || 0).getTime();
@@ -84,7 +83,7 @@ export default function LandingPage() {
         const me = await authMe();
         setRole(me.role);
 
-        // ✅ remember this device is allowed offline
+        // remember this device is allowed offline
         localStorage.setItem("fts_offline_allowed", "1");
         localStorage.setItem("fts_offline_allowed_at", String(Date.now()));
 
@@ -94,7 +93,7 @@ export default function LandingPage() {
       } catch (e) {
         setRole(null);
 
-        // ✅ KEY CHANGE: if this device is allowed, stay in-app and show local drafts
+        // if device is allowed, stay in-app and show local drafts
         if (offlineAllowed) {
           setStatus("Offline (or server unreachable): showing local drafts only.");
           const locals = await listLocalDrafts();
@@ -103,7 +102,7 @@ export default function LandingPage() {
           return;
         }
 
-        // Not allowed -> must login online at least once
+        // Not allowed, must login online at least once
         setStatus("Offline: please login once online on this device to enable offline mode.");
         navigate("/login");
       }
@@ -156,14 +155,13 @@ export default function LandingPage() {
       return;
     }
 
-    // ✅ OFFLINE: create local draft and open it
+    // OFFLINE: create local draft and open it
     if (!navigator.onLine) {
       try {
         setStatus("Offline: creating local draft...");
 
         const localId = `local:${uuid()}`;
 
-        // minimal starter payload (your questionnaire page has defaults anyway)
         const payload = { case_number: cn, consent: "" };
 
         await saveLocalDraft(localId, payload, {
@@ -183,7 +181,7 @@ export default function LandingPage() {
       }
     }
 
-    // ✅ ONLINE: normal server draft creation
+    // ONLINE: normal server draft creation
     try {
       setStatus("Creating new draft...");
       const created = await createQuestionnaire({ case_number: cn, consent: "" });
@@ -193,7 +191,6 @@ export default function LandingPage() {
       setStatus("");
       navigate(`/questionnaire/${created.id}`);
     } catch (e) {
-      // If you're "online" but backend unreachable, fallback to local
       try {
         setStatus("Server unreachable — creating local draft...");
         const localId = `local:${uuid()}`;
@@ -252,7 +249,7 @@ export default function LandingPage() {
     window.URL.revokeObjectURL(url);
   };
 
-  // ✅ COPY: duplicates questionnaire into a new version (new draft) with signatures removed
+  // COPY: duplicates questionnaire into a new version with signatures removed
   const onCopy = async (r) => {
     try {
       const ok = window.confirm(
@@ -264,16 +261,12 @@ export default function LandingPage() {
 
       const record = await getQuestionnaire(r.id);
 
-      // your getQuestionnaire returns { data: ... } in QuestionnairePage
       const src = record?.data ?? record;
 
-      // clone + strip fields that should not carry over
       const payload = { ...(src || {}) };
 
-      // Ensure new record is created as next version for same case number
       payload.case_number = src?.case_number || r.case_number || payload.case_number;
 
-      // strip identifiers / system fields if present
       delete payload.id;
       delete payload.version;
       delete payload.status;
@@ -282,7 +275,7 @@ export default function LandingPage() {
       delete payload.submitted_at;
       delete payload.redo_of_id;
 
-      // ✅ signatures removed (png + names + dates)
+      // signatures removed 
       payload.client_signature_png = "";
       payload.client_print_name = "";
       payload.client_signature_date = "";
@@ -307,7 +300,7 @@ export default function LandingPage() {
     }
   };
 
-  // ✅ DELETE: removes entry (needs backend endpoint)
+  // DELETE: removes entry (needs backend endpoint)
   const onDelete = async (r) => {
     try {
       const ok = window.confirm(
@@ -319,7 +312,6 @@ export default function LandingPage() {
 
       await deleteQuestionnaire(r.id);
 
-      // refresh list after delete
       await load();
 
       setStatus("");
@@ -347,7 +339,7 @@ export default function LandingPage() {
         </div>
 
         <div style={styles.headerRight}>
-          {/* ✅ Change Password */}
+          {/* Change Password */}
           <button
             style={{
               ...styles.logoutBtn,
@@ -360,7 +352,7 @@ export default function LandingPage() {
             Change Password
           </button>
 
-          {/* ✅ Admin Tools (only admins/superadmins) */}
+          {/* Admin Tools (only admins/superadmins) */}
           {isAdmin && (
             <button
               style={{
@@ -375,7 +367,7 @@ export default function LandingPage() {
             </button>
           )}
 
-          {/* ✅ Refresh */}
+          {/* Refresh */}
           <button
             style={{
               ...styles.refreshBtn,
@@ -409,7 +401,7 @@ export default function LandingPage() {
             Sync
           </button>
 
-          {/* ✅ Logout (company blue) */}
+          {/* Logout (company blue) */}
           <button
             style={{
               ...styles.logoutBtn,
@@ -637,7 +629,7 @@ const styles = {
     gap: 10,
   },
 
-  // ✅ NEW: Change password button (neutral)
+  // Change password button 
   changePwBtn: {
     padding: "10px 14px",
     borderRadius: 10,
@@ -659,7 +651,7 @@ const styles = {
     borderRadius: 10,
     border: "none",
     cursor: "pointer",
-    background: "#00528c", // company blue
+    background: "#00528c", 
     color: "white",
     fontWeight: 700,
     transition: "background 120ms ease, transform 120ms ease, box-shadow 120ms ease",

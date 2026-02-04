@@ -1,4 +1,3 @@
-// frontend/src/App.js
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 
@@ -18,10 +17,10 @@ export default function App() {
     <>
       <OfflineBanner />
       <Routes>
-        {/* ✅ Public auth route */}
+        {/* Public auth route */}
         <Route path="/login" element={<LoginPage />} />
 
-        {/* ✅ Protected app routes */}
+        {/* Protected app routes */}
         <Route
           path="/"
           element={

@@ -6,9 +6,9 @@ export default function MedicationSection({
   setValue,
   errors,
   showErrors,
-  clearErrors, // ✅ optional: pass from parent (useForm)
+  clearErrors, 
 }) {
-  const hasOtherMeds = watch("has_other_medications"); // "Yes" | "No" | ""
+  const hasOtherMeds = watch("has_other_medications"); 
 
   // If they select "No", clear the details box so you don't store stale text
   useEffect(() => {

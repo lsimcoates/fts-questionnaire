@@ -39,15 +39,12 @@ export default function AdminToolsPage() {
         const data = await adminExportOptions();
         setOpts((prev) => ({ ...prev, ...data }));
       } catch (e) {
-        // non-fatal: page still usable
         console.warn("adminExportOptions failed:", e);
       }
     })();
   }, []);
 
-  // -----------------------------
   // Export filters
-  // -----------------------------
   const [submittedFrom, setSubmittedFrom] = useState("");
   const [submittedTo, setSubmittedTo] = useState("");
 
@@ -140,10 +137,7 @@ export default function AdminToolsPage() {
       setStatus(e.message || "Export failed");
     }
   };
-
-  // -----------------------------
   // Users table state
-  // -----------------------------
   const [users, setUsers] = useState([]);
   const [usersLoading, setUsersLoading] = useState(true);
   const [usersError, setUsersError] = useState("");
@@ -205,9 +199,7 @@ export default function AdminToolsPage() {
     }
   };
 
-  // -----------------------------
-  // ✅ NEW: Create user state
-  // -----------------------------
+  // NEW: Create user state
   const [newEmail, setNewEmail] = useState("");
   const [newRole, setNewRole] = useState("user");
   const [createBusy, setCreateBusy] = useState(false);
@@ -267,9 +259,7 @@ export default function AdminToolsPage() {
         <div />
       </div>
 
-      {/* =======================
-          Card 1: Export
-          ======================= */}
+      {/* Card 1: Export */}
       <div style={styles.card}>
         <h2 style={styles.h2}>Export submitted questionnaires</h2>
 
@@ -504,9 +494,7 @@ export default function AdminToolsPage() {
         </p>
       </div>
 
-      {/* =======================
-          Card 2: Create user (NEW)
-          ======================= */}
+      {/* Card 2: Create user (NEW) */}
       <div style={{ ...styles.card, marginTop: 16 }}>
         <h2 style={styles.h2}>Create user</h2>
 
@@ -570,9 +558,7 @@ export default function AdminToolsPage() {
         )}
       </div>
 
-      {/* =======================
-          Card 3: Users
-          ======================= */}
+      {/* Card 3: Users */}
       <div style={{ ...styles.card, marginTop: 16 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <h2 style={{ ...styles.h2, margin: 0 }}>Users</h2>

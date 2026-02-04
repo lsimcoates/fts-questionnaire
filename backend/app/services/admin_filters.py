@@ -20,7 +20,6 @@ def get_path(obj: Any, path: str) -> Any:
         if isinstance(cur, dict):
             cur = cur.get(part)
         else:
-            # SQLModel object -> getattr
             cur = getattr(cur, part, None)
     return cur
 

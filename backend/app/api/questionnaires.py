@@ -18,9 +18,7 @@ DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "data", "question
 INDEX_FILE = os.path.join(DATA_DIR, "index.json")
 
 
-# -----------------------------
 # Storage helpers
-# -----------------------------
 def ensure_storage():
     os.makedirs(DATA_DIR, exist_ok=True)
     if not os.path.exists(INDEX_FILE):
@@ -63,17 +61,13 @@ def now_iso() -> str:
     return datetime.utcnow().isoformat()
 
 
-# -----------------------------
 # Request model
-# -----------------------------
 class QuestionnairePayload(BaseModel):
     data: Dict[str, Any]
     status: Optional[str] = None  # "draft" | "submitted"
 
 
-# -----------------------------
 # Routes
-# -----------------------------
 @router.post("/questionnaires")
 def create_questionnaire(payload: QuestionnairePayload):
     """
@@ -168,7 +162,6 @@ def update_questionnaire(qid: str, payload: QuestionnairePayload):
     if not incoming_case:
         raise HTTPException(status_code=422, detail="case_number is required")
 
-    # Keep versioning sane: do not allow case_number change after creation
     if incoming_case != normalize_case(record.get("case_number")):
         raise HTTPException(
             status_code=400,
@@ -318,18 +311,14 @@ def delete_questionnaire(qid: str):
     if not os.path.exists(path):
         raise HTTPException(status_code=404, detail="Not found")
 
-    # Optional rule: prevent deleting submitted records
-    # (comment this out if you want to allow delete always)
     with open(path, "r", encoding="utf-8") as f:
         record = json.load(f)
 
-    # Remove the file
     try:
         os.remove(path)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to delete file: {e}")
 
-    # Remove from index
     idx = load_index()
     new_idx = [row for row in idx if row.get("id") != qid]
     save_index(new_idx)

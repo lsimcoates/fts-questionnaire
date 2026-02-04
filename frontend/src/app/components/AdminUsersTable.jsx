@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import api from "../../services/api"; // adjust if your api.js path differs
+import api from "../../services/api"; 
 
 export default function AdminUsersTable() {
   const [users, setUsers] = useState([]);

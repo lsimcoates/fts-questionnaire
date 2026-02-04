@@ -34,13 +34,11 @@ export default function RequireAuth({ children }) {
       } catch (e) {
         const offlineAllowed = allowed();
 
-        // ✅ If it's a real 401, we must go to login
         if (e?.status === 401) {
           setSafe(false, false);
           return;
         }
 
-        // ✅ Otherwise (network down / server unreachable), allow if device was previously allowed
         if (offlineAllowed) {
           setSafe(true, false);
         } else {
@@ -59,7 +57,6 @@ export default function RequireAuth({ children }) {
       window.removeEventListener("online", recheck);
       window.removeEventListener("offline", recheck);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (loading) return <div style={{ padding: 24 }}>Loading...</div>;
