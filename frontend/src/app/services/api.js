@@ -10,16 +10,27 @@ const BASE = `${isGithubPages ? RENDER_BASE : LOCAL_BASE}/api`;
 
 // ✅ Auth: who am I?
 export async function authMe() {
-  const res = await fetch(`${BASE}/auth/me`, {
-    method: "GET",
-    credentials: "include", // ✅ REQUIRED so cookies are sent
-  });
+  try {
+    const res = await fetch(`${BASE}/auth/me`, {
+      method: "GET",
+      credentials: "include",
+    });
 
-  if (!res.ok) {
-    // if not logged in, /me returns 401
-    throw new Error("Not logged in");
+    if (!res.ok) {
+      const err = new Error("Not logged in");
+      err.status = res.status; // ✅ 401 vs others
+      throw err;
+    }
+
+    return res.json();
+  } catch (e) {
+    // ✅ Network/offline errors end up here (no res/status)
+    // Preserve the error but ensure status is undefined for network failures
+    if (e && typeof e === "object" && !("status" in e)) {
+      e.status = undefined;
+    }
+    throw e;
   }
-  return res.json();
 }
 
 // ✅ Auth: logout (clears cookie on server)

@@ -31,8 +31,16 @@ export default function RequireAuth({ children }) {
         localStorage.setItem("fts_offline_allowed_at", String(Date.now()));
 
         setSafe(true, false);
-      } catch {
-        // ✅ Key rule: if this device has been allowed before, treat authMe failure as "offline mode"
+      } catch (e) {
+        const offlineAllowed = allowed();
+
+        // ✅ If it's a real 401, we must go to login
+        if (e?.status === 401) {
+          setSafe(false, false);
+          return;
+        }
+
+        // ✅ Otherwise (network down / server unreachable), allow if device was previously allowed
         if (offlineAllowed) {
           setSafe(true, false);
         } else {
