@@ -213,16 +213,30 @@ export default function QuestionnairePage() {
     setStatusMsg("Saving draft...");
     const payload = watch();
 
-    // OFFLINE -> local save
+    // OFFLINE -> local save + queue "upsert" (draft sync later)
     if (!navigator.onLine) {
       const id = qid || `local:${uuid()}`;
-      await saveLocalDraft(id, payload, { case_number: payload.case_number || "", status: "draft" });
+
+      await saveLocalDraft(id, payload, {
+        case_number: payload.case_number || "",
+        status: "draft (local)",
+      });
+
+      // ✅ queue draft job
+      await queueJob({
+        job_id: `job:${uuid()}`,
+        type: "save",          // <= draft upload later (NOT finalize)
+        localDraftId: id,
+        created_at: Date.now(),
+      });
+
       setQid(id);
       localStorage.setItem("fts_qid", id);
       setStatusMsg("Saved locally ✅ (offline)");
       navigate("/", { state: { toast: "Draft saved locally ✅" } });
       return;
     }
+
 
     // ONLINE -> your normal behaviour (+ local snapshot)
     try {
@@ -241,12 +255,23 @@ export default function QuestionnairePage() {
         setStatusMsg("Draft updated ✅");
       }
     } catch (e) {
-      // backend unreachable -> local save
       const id = qid && !qid.startsWith("local:") ? qid : `local:${uuid()}`;
-      await saveLocalDraft(id, payload, { case_number: payload.case_number || "", status: "draft" });
+
+      await saveLocalDraft(id, payload, {
+        case_number: payload.case_number || "",
+        status: "draft (local)",
+      });
+
+      await queueJob({
+        job_id: `job:${uuid()}`,
+        type: "save",
+        localDraftId: id,
+        created_at: Date.now(),
+      });
+
       setQid(id);
       localStorage.setItem("fts_qid", id);
-      setStatusMsg("Server unreachable — saved locally ✅");
+      setStatusMsg("Server unreachable — saved locally ✅ (will sync)");
     }
   };
 

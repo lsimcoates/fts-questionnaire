@@ -9,8 +9,9 @@ import {
   authMe,
   authLogout
 } from "../services/api";
-import { listLocalDrafts, createLocalDraft } from "../offline/db";
+import { saveLocalDraft, listLocalDrafts, createLocalDraft } from "../offline/db";
 import { syncOutbox } from "../offline/sync";
+import { uuid } from "../offline/utils";
 
 
 
@@ -155,38 +156,62 @@ export default function LandingPage() {
       return;
     }
 
-    // If offline-allowed device, try server but fallback to local
-    const offlineAllowed = localStorage.getItem("fts_offline_allowed") === "1";
+    // ✅ OFFLINE: create local draft and open it
+    if (!navigator.onLine) {
+      try {
+        setStatus("Offline: creating local draft...");
 
-    // If browser reports offline, go local immediately
-    if (!navigator.onLine && offlineAllowed) {
-      setStatus("Offline: creating local draft...");
-      const local = await createLocalDraft({ case_number: cn, consent: "" }, { status: "draft" });
-      localStorage.setItem("fts_qid", local.id);
-      setStatus("");
-      navigate(`/questionnaire/${local.id}`);
-      return;
+        const localId = `local:${uuid()}`;
+
+        // minimal starter payload (your questionnaire page has defaults anyway)
+        const payload = { case_number: cn, consent: "" };
+
+        await saveLocalDraft(localId, payload, {
+          case_number: cn,
+          status: "draft (local)",
+          created_at: Date.now(),
+        });
+
+        localStorage.setItem("fts_qid", localId);
+
+        setStatus("");
+        navigate(`/questionnaire/${localId}`);
+        return;
+      } catch (e) {
+        setStatus(`Offline draft failed: ${e.message || e}`);
+        return;
+      }
     }
 
-    // Otherwise try server
+    // ✅ ONLINE: normal server draft creation
     try {
       setStatus("Creating new draft...");
       const created = await createQuestionnaire({ case_number: cn, consent: "" });
+
       localStorage.setItem("fts_qid", created.id);
+
       setStatus("");
       navigate(`/questionnaire/${created.id}`);
     } catch (e) {
-      // Server unreachable -> fallback to local draft (if allowed)
-      if (offlineAllowed) {
-        setStatus("Server unreachable: creating local draft...");
-        const local = await createLocalDraft({ case_number: cn, consent: "" }, { status: "draft" });
-        localStorage.setItem("fts_qid", local.id);
-        setStatus("");
-        navigate(`/questionnaire/${local.id}`);
-        return;
-      }
+      // If you're "online" but backend unreachable, fallback to local
+      try {
+        setStatus("Server unreachable — creating local draft...");
+        const localId = `local:${uuid()}`;
+        const payload = { case_number: cn, consent: "" };
 
-      setStatus(`Create failed: ${e.message}`);
+        await saveLocalDraft(localId, payload, {
+          case_number: cn,
+          status: "draft (local)",
+          created_at: Date.now(),
+        });
+
+        localStorage.setItem("fts_qid", localId);
+
+        setStatus("");
+        navigate(`/questionnaire/${localId}`);
+      } catch (e2) {
+        setStatus(`Create failed: ${e.message}`);
+      }
     }
   };
 
