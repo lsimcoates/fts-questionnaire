@@ -322,8 +322,6 @@ def delete_questionnaire(qid: str):
     # (comment this out if you want to allow delete always)
     with open(path, "r", encoding="utf-8") as f:
         record = json.load(f)
-    if record.get("status") == "submitted":
-        raise HTTPException(status_code=400, detail="Submitted records cannot be deleted.")
 
     # Remove the file
     try:
