@@ -3,8 +3,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import Response
 from typing import Any, Dict, List, Optional
-from datetime import datetime
-import os
+from datetime import datetime, timezone
 import json
 import csv
 import io
@@ -12,31 +11,24 @@ import secrets
 import string
 
 from pydantic import BaseModel, EmailStr
+from sqlmodel import select
 
 from app.auth.router import get_current_user
 from app.auth.security import hash_password
 from app.auth.config import ALLOWED_EMAIL_DOMAIN
-
-#DB access for managing users
-from sqlmodel import select
 from app.auth.db import get_session, User
-
-# JSON storage
-DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "data", "questionnaires")
-INDEX_FILE = os.path.join(DATA_DIR, "index.json")
+from app.questionnaires.models import Questionnaire
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
+
+# -----------------------------
+# Auth helpers
+# -----------------------------
 def _get_role(user):
     if isinstance(user, dict):
         return user.get("role")
     return getattr(user, "role", None)
-
-
-def _get_user_id(user):
-    if isinstance(user, dict):
-        return user.get("id")
-    return getattr(user, "id", None)
 
 
 def require_admin(user=Depends(get_current_user)):
@@ -49,121 +41,41 @@ def require_admin(user=Depends(get_current_user)):
     return user
 
 
-def require_superadmin(user=Depends(get_current_user)):
-    role = _get_role(user)
-    if role != "superadmin":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Superadmin access required",
-        )
-    return user
+# -----------------------------
+# Common helpers
+# -----------------------------
+def norm(s: Any) -> str:
+    return ("" if s is None else str(s)).strip()
 
 
+def norm_lower(s: Any) -> str:
+    return norm(s).lower()
 
-# User creation helpers 
-def _require_domain(email: str):
+
+def parse_iso(dt: Optional[Any]) -> Optional[datetime]:
     """
-    Reuse the same domain restriction concept as auth router.
-    """
-    domain = email.split("@")[-1].lower().strip()
-    if domain != ALLOWED_EMAIL_DOMAIN.lower():
-        raise HTTPException(
-            status_code=400,
-            detail=f"Email must end with @{ALLOWED_EMAIL_DOMAIN}",
-        )
-
-
-def _generate_temp_password(length: int = 12) -> str:
-    """
-    Simple temp password generator (no symbols to avoid copy/paste issues).
-    """
-    alphabet = string.ascii_letters + string.digits
-    return "".join(secrets.choice(alphabet) for _ in range(length))
-
-
-class AdminCreateUserPayload(BaseModel):
-    email: EmailStr
-    role: str = "user"  # "user" | "admin" (superadmin blocked here)
-
-
-@router.post("/users")
-def admin_create_user(payload: AdminCreateUserPayload, user=Depends(require_admin)):
-    """
-    Admin creates a user (no email flows).
-    Returns a one-time temporary password for the admin to share securely.
-
-    Safeguards:
-      - Enforces ALLOWED_EMAIL_DOMAIN
-      - Disallows creating superadmin via this endpoint
-    """
-    email = payload.email.lower().strip()
-
-    _require_domain(email)
-
-    if payload.role not in ("user", "admin"):
-        raise HTTPException(status_code=400, detail="role must be 'user' or 'admin'")
-
-    temp_password = _generate_temp_password()
-
-    with get_session() as session:
-        existing = session.exec(select(User).where(User.email == email)).first()
-        if existing:
-            raise HTTPException(status_code=400, detail="Account already exists")
-
-        new_user = User(
-            email=email,
-            password_hash=hash_password(temp_password),
-            role=payload.role,
-            is_active=True,
-        )
-
-        session.add(new_user)
-        session.commit()
-        session.refresh(new_user)
-
-    return {
-        "ok": True,
-        "id": new_user.id,
-        "email": new_user.email,
-        "role": new_user.role,
-        "temp_password": temp_password,  # show once to admin
-    }
-
-# Storage 
-def ensure_storage():
-    os.makedirs(DATA_DIR, exist_ok=True)
-    if not os.path.exists(INDEX_FILE):
-        with open(INDEX_FILE, "w", encoding="utf-8") as f:
-            json.dump([], f)
-
-
-def load_index() -> List[Dict[str, Any]]:
-    ensure_storage()
-    with open(INDEX_FILE, "r", encoding="utf-8") as f:
-        return json.load(f)
-
-
-def q_path(qid: str) -> str:
-    return os.path.join(DATA_DIR, f"{qid}.json")
-
-
-def parse_iso(dt: Optional[str]) -> Optional[datetime]:
-    """
-    Accepts either full ISO datetime or YYYY-MM-DD.
-    Returns datetime (naive or aware depending on stored format).
+    Accepts datetime or ISO string (or YYYY-MM-DD).
+    Returns naive UTC datetime for consistent comparisons.
     """
     if not dt:
         return None
-    try:
-        return datetime.fromisoformat(dt.replace("Z", "+00:00"))
-    except Exception:
-        return None
+
+    if isinstance(dt, datetime):
+        d = dt
+    else:
+        try:
+            d = datetime.fromisoformat(str(dt).replace("Z", "+00:00"))
+        except Exception:
+            return None
+
+    # normalise to naive UTC
+    if d.tzinfo is not None:
+        d = d.astimezone(timezone.utc).replace(tzinfo=None)
+
+    return d
 
 
 def parse_date_as_day_start(s: Optional[str]) -> Optional[datetime]:
-    """
-    UI date input gives YYYY-MM-DD. Interpret as start of day.
-    """
     if not s:
         return None
     d = parse_iso(s)
@@ -173,10 +85,6 @@ def parse_date_as_day_start(s: Optional[str]) -> Optional[datetime]:
 
 
 def parse_date_as_day_end(s: Optional[str]) -> Optional[datetime]:
-    """
-    UI date input gives YYYY-MM-DD. Interpret as end of day (23:59:59.999999),
-    so 'Submitted to' includes the entire day.
-    """
     if not s:
         return None
     d = parse_iso(s)
@@ -185,7 +93,6 @@ def parse_date_as_day_end(s: Optional[str]) -> Optional[datetime]:
     return d.replace(hour=23, minute=59, second=59, microsecond=999999)
 
 
-# Data sanitization
 SIGNATURE_KEYS = {
     "client_signature_png",
     "collector_signature_png",
@@ -194,24 +101,13 @@ SIGNATURE_KEYS = {
 
 
 def strip_signatures(data: Dict[str, Any]) -> Dict[str, Any]:
-    """Remove signature PNGs from the questionnaire 'data' payload."""
     if not isinstance(data, dict):
-        return data
-
+        return {}
     clean = dict(data)
     for k in SIGNATURE_KEYS:
         if k in clean:
             clean[k] = ""
     return clean
-
-
-# Filtering helpers
-def norm(s: Any) -> str:
-    return ("" if s is None else str(s)).strip()
-
-
-def norm_lower(s: Any) -> str:
-    return norm(s).lower()
 
 
 def matches_yesno(value: Any, expected: Optional[str]) -> bool:
@@ -241,9 +137,7 @@ def matches_drug_used(data: Dict[str, Any], drug_name: Optional[str]) -> bool:
     for it in du:
         if not isinstance(it, dict):
             continue
-        name_ok = norm(it.get("drug_name")) == drug_name
-        status_ok = norm_lower(it.get("status")) == "used"
-        if name_ok and status_ok:
+        if norm(it.get("drug_name")) == drug_name and norm_lower(it.get("status")) == "used":
             return True
     return False
 
@@ -263,29 +157,23 @@ def matches_drug_exposed(data: Dict[str, Any], drug_name: Optional[str]) -> bool
     for it in de:
         if not isinstance(it, dict):
             continue
-        name_ok = norm(it.get("drug_name")) == drug_name
-        status_ok = norm_lower(it.get("status")) == "exposed"
-        if name_ok and status_ok:
+        if norm(it.get("drug_name")) == drug_name and norm_lower(it.get("status")) == "exposed":
             return True
     return False
 
 
 def record_passes_filters(record: Dict[str, Any], params: Dict[str, str]) -> bool:
-    """
-    record is full json file:
-      { id, status, submitted_at, data:{...} }
-    params are query params from frontend.
-    """
-
     # Only submitted records for export
     if norm_lower(record.get("status")) != "submitted":
         return False
 
+    # Prefer submitted_at; fallback to updated/created so exports don't go blank
     submitted_at = parse_iso(record.get("submitted_at"))
     if not submitted_at:
-        return False
+        submitted_at = parse_iso(record.get("updated_at")) or parse_iso(record.get("created_at"))
+        if not submitted_at:
+            return False
 
-    # Date range
     submitted_from = parse_date_as_day_start(params.get("submitted_from"))
     submitted_to = parse_date_as_day_end(params.get("submitted_to"))
 
@@ -298,7 +186,7 @@ def record_passes_filters(record: Dict[str, Any], params: Dict[str, str]) -> boo
     if not isinstance(data, dict):
         data = {}
 
-    # Simple exact-match fields
+    # Exact match fields
     if not matches_text(data.get("natural_hair_colour"), params.get("natural_hair_colour")):
         return False
     if not matches_text(data.get("sex_at_birth"), params.get("sex_at_birth")):
@@ -306,7 +194,7 @@ def record_passes_filters(record: Dict[str, Any], params: Dict[str, str]) -> boo
     if not matches_text(data.get("testing_type"), params.get("testing_type")):
         return False
 
-    # Influencing yes/no fields
+    # Yes/No fields
     if not matches_yesno(data.get("hair_dyed_bleached"), params.get("hair_dyed_bleached")):
         return False
     if not matches_yesno(data.get("hair_thermal_applications"), params.get("hair_thermal_applications")):
@@ -324,18 +212,15 @@ def record_passes_filters(record: Dict[str, Any], params: Dict[str, str]) -> boo
     if not matches_yesno(data.get("hair_removed_body_hair_last_12_months"), params.get("hair_removed_body_hair_last_12_months")):
         return False
 
-    # Drug Used filter
+    # Drug filters
     if not matches_drug_used(data, params.get("drug_used_name")):
         return False
-
-    # Drug Exposed filter 
     if not matches_drug_exposed(data, params.get("drug_exposed_name")):
         return False
 
     return True
 
 
-# CSV flattening
 def flatten(obj: Any, prefix: str = "", out: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     """
     Flattens nested JSON into dot keys. Lists are JSON-stringified.
@@ -355,69 +240,9 @@ def flatten(obj: Any, prefix: str = "", out: Optional[Dict[str, Any]] = None) ->
     return out
 
 
-# User counts (drafts/submissions) from JSON storage
-def questionnaire_owner_key(record: Dict[str, Any]) -> Optional[str]:
-    """
-    Links a questionnaire to a user.
-    Prefer record["user_id"]; fallback to record["user_email"].
-    """
-    uid = record.get("user_id")
-    if uid is not None:
-        return f"user_id:{uid}"
-
-    email = record.get("user_email")
-    if email:
-        return f"user_email:{str(email).strip().lower()}"
-
-    return None
-
-
-def build_user_counts() -> Dict[str, Dict[str, int]]:
-    """
-    Scans all questionnaire JSON files and returns per-user counts.
-    Requires each questionnaire JSON to include user_id or user_email.
-    """
-    ensure_storage()
-    idx = load_index()
-
-    counts: Dict[str, Dict[str, int]] = {}
-
-    for row in idx:
-        qid = row.get("id")
-        if not qid:
-            continue
-
-        path = q_path(qid)
-        if not os.path.exists(path):
-            continue
-
-        try:
-            with open(path, "r", encoding="utf-8") as f:
-                record = json.load(f)
-        except Exception:
-            continue
-
-        owner = questionnaire_owner_key(record)
-        if not owner:
-            continue
-
-        st = norm_lower(record.get("status"))
-        if st not in ("draft", "submitted"):
-            continue
-
-        if owner not in counts:
-            counts[owner] = {"drafts": 0, "submissions": 0}
-
-        if st == "draft":
-            counts[owner]["drafts"] += 1
-        elif st == "submitted":
-            counts[owner]["submissions"] += 1
-
-    return counts
-
-
-
-# 1) Option drop downs
+# -----------------------------
+# Export option dropdowns
+# -----------------------------
 @router.get("/export/options")
 def export_options(user=Depends(require_admin)):
     """
@@ -440,8 +265,6 @@ def export_options(user=Depends(require_admin)):
     drug_exposure_exposed_names = set()
 
     def add_nonempty(s, target):
-        if s is None:
-            return
         v = norm(s)
         if v:
             target.add(v)
@@ -504,7 +327,9 @@ def export_options(user=Depends(require_admin)):
     }
 
 
-#2) EXPORT JSON (submitted only, signatures removed)
+# -----------------------------
+# Export JSON
+# -----------------------------
 @router.get("/export/json")
 def export_json(
     user=Depends(require_admin),
@@ -546,9 +371,7 @@ def export_json(
         "drug_exposed_name": drug_exposed_name or "",
     }
 
-    print("=== EXPORT JSON HIT ===", params)
-
-    out_records = []
+    out_records: List[Dict[str, Any]] = []
 
     with get_session() as session:
         qs = session.exec(
@@ -577,8 +400,7 @@ def export_json(
             clean["data"] = strip_signatures(clean.get("data") or {})
             out_records.append(clean)
 
-    payload = json.dumps(out_records, indent=2, ensure_ascii=False).encode("utf-8")
-    print("EXPORT JSON count:", len(out_records), "bytes:", len(payload))
+    payload = json.dumps(out_records, indent=2, ensure_ascii=False, default=str).encode("utf-8")
 
     return Response(
         content=payload,
@@ -590,8 +412,9 @@ def export_json(
     )
 
 
-
-# 3) EXPORT CSV (submitted only, ALL fields, signatures removed)
+# -----------------------------
+# Export CSV
+# -----------------------------
 @router.get("/export/csv")
 def export_csv(
     user=Depends(require_admin),
@@ -632,8 +455,6 @@ def export_csv(
         "drug_used_name": drug_used_name or "",
         "drug_exposed_name": drug_exposed_name or "",
     }
-
-    print("=== EXPORT CSV HIT ===", params)
 
     rows: List[Dict[str, Any]] = []
     all_keys = set()
@@ -693,7 +514,6 @@ def export_csv(
         writer.writerow({k: r.get(k, "") for k in fieldnames})
 
     csv_bytes = out.getvalue().encode("utf-8")
-    print("EXPORT CSV count:", len(rows), "bytes:", len(csv_bytes))
 
     return Response(
         content=csv_bytes,
@@ -704,14 +524,17 @@ def export_csv(
         },
     )
 
-# Users table for Admin Tools (list / promote / delete)
 
-class RoleUpdate(BaseModel):
-    role: str  # "user" or "admin"
-
+# -----------------------------
+# Users management
+# -----------------------------
 class CreateUserPayload(BaseModel):
     email: EmailStr
     role: str = "user"  # user | admin
+
+
+class RoleUpdate(BaseModel):
+    role: str  # "user" or "admin"
 
 
 def _require_domain(email: str):
@@ -724,19 +547,14 @@ def _require_domain(email: str):
 
 
 def _generate_temp_password(length: int = 14) -> str:
-    # Avoid ambiguous characters
     alphabet = string.ascii_letters + string.digits + "!@#$%^&*"
     return "".join(secrets.choice(alphabet) for _ in range(length))
 
 
 @router.get("/users")
 def admin_list_users(user=Depends(require_admin)):
-    """
-    List all users for admin tools table.
-    """
     with get_session() as session:
         users = session.exec(select(User).order_by(User.id.desc())).all()
-
         return [
             {
                 "id": u.id,
@@ -748,14 +566,9 @@ def admin_list_users(user=Depends(require_admin)):
             for u in users
         ]
 
+
 @router.post("/users")
 def admin_create_user(payload: CreateUserPayload, user=Depends(require_admin)):
-    """
-    Create a user with a generated temporary password.
-    - Admins can create users/admins (but not superadmin)
-    - Email domain restricted
-    - Marks users as verified because email verification is removed
-    """
     email = payload.email.strip().lower()
     _require_domain(email)
 
@@ -774,7 +587,7 @@ def admin_create_user(payload: CreateUserPayload, user=Depends(require_admin)):
             password_hash=hash_password(temp_password),
             role=payload.role,
             is_active=True,
-            is_verified=True,  
+            is_verified=True,
             verified_at=datetime.utcnow().isoformat(),
         )
         session.add(u)
@@ -789,19 +602,13 @@ def admin_create_user(payload: CreateUserPayload, user=Depends(require_admin)):
             "temp_password": temp_password,
         }
 
+
 @router.patch("/users/{user_id}/role")
 def admin_update_user_role(
     user_id: int,
     payload: RoleUpdate,
     user=Depends(require_admin),
 ):
-    """
-    Promote/demote a user:
-      - Allowed roles: user <-> admin
-      - Not allowed: setting superadmin via this endpoint
-      - Protects superadmin from modification
-      - Prevents changing your own role (safety)
-    """
     if payload.role not in ("user", "admin"):
         raise HTTPException(status_code=400, detail="role must be 'user' or 'admin'")
 
@@ -827,16 +634,7 @@ def admin_update_user_role(
 
 
 @router.delete("/users/{user_id}")
-def admin_delete_user(
-    user_id: int,
-    user=Depends(require_admin),
-):
-    """
-    Delete a user with safeguards:
-      - cannot delete superadmin
-      - cannot delete yourself
-      - optional: only superadmin can delete admins
-    """
+def admin_delete_user(user_id: int, user=Depends(require_admin)):
     requester_id = user.get("id") if isinstance(user, dict) else getattr(user, "id", None)
     requester_role = user.get("role") if isinstance(user, dict) else getattr(user, "role", None)
 
@@ -851,7 +649,7 @@ def admin_delete_user(
         if requester_id == target.id:
             raise HTTPException(status_code=400, detail="Cannot delete your own account")
 
-        # Optional stricter rule: only superadmin can delete admins
+        # only superadmin can delete admins
         if requester_role != "superadmin" and target.role == "admin":
             raise HTTPException(status_code=403, detail="Only superadmin can delete admins")
 

@@ -807,7 +807,10 @@ export default function HairAndInfluencingSection({
               value="Yes"
               disabled={pregnancyLocked}
               {...register("pregnant_last_12_months", {
-                required: "Please select an option",
+                validate: (v) => {
+                  if (pregnancyLocked) return true;         // Male: not applicable
+                  return v ? true : "Please select an option";
+               },
               })}
             />{" "}
             Yes
@@ -818,7 +821,10 @@ export default function HairAndInfluencingSection({
               value="No"
               disabled={pregnancyLocked}
               {...register("pregnant_last_12_months", {
-                required: "Please select an option",
+                validate: (v) => {
+                  if (pregnancyLocked) return true;         // Male: not applicable
+                  return v ? true : "Please select an option";
+                },
               })}
             />{" "}
             No
@@ -844,6 +850,7 @@ export default function HairAndInfluencingSection({
             disabled={pregnancyLocked || pregnant !== "Yes" || dueUnsure || dueNotApplicable}
             {...register("pregnancy_due_or_birth_date", {
               validate: (v) => {
+                if (pregnancyLocked) return true;
                 if (pregnant !== "Yes") return true;
                 if (dueUnsure || dueNotApplicable) return true;
                 return (v || "").trim()
@@ -861,6 +868,7 @@ export default function HairAndInfluencingSection({
               disabled={pregnant !== "Yes"}
               {...register("pregnancy_due_date_unsure", {
                 validate: (v) => {
+                  if (pregnancyLocked) return true;
                   if (pregnant !== "Yes") return true;
                   if (v) return true;
                   const naVal = watch("pregnancy_due_date_not_applicable");
@@ -898,6 +906,7 @@ export default function HairAndInfluencingSection({
               disabled={pregnancyLocked || pregnant !== "Yes"}
               {...register("pregnancy_due_date_not_applicable", {
                 validate: (v) => {
+                  if (pregnancyLocked) return true;
                   if (pregnant !== "Yes") return true;
                   if (v) return true;
                   const unsureVal = watch("pregnancy_due_date_unsure");
@@ -951,6 +960,7 @@ export default function HairAndInfluencingSection({
             style={styles.select}
             {...register("pregnancy_outcome", {
               validate: (v) => {
+                if (pregnancyLocked) return true;         
                 if (pregnant !== "Yes") return true;
                 if (!dueNotApplicable) return true;
                 return v ? true : "Please select an option";
