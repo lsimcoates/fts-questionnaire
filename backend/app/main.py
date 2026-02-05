@@ -7,12 +7,12 @@ from app.api.admin import router as admin_router
 from app.auth.router import router as auth_router
 from app.auth.db import init_db
 
+app = FastAPI(title="FTS Questionnaire API")
 
 @app.on_event("startup")
 def _startup():
     init_db()
 
-app = FastAPI(title="FTS Questionnaire API")
 
 # CORS (cookies require allow_credentials + explicit origins)
 app.add_middleware(
