@@ -6,7 +6,7 @@ import os
 
 # Use JSONB on Postgres; fallback to JSON on SQLite for local dev
 DATABASE_URL = os.getenv("DATABASE_URL", "")
-IS_POSTGRES = DATABASE_URL.startswith("postgresql://") or DATABASE_URL.startswith("postgres://")
+IS_POSTGRES = DATABASE_URL.startswith("postgresql://") or DATABASE_URL.startswith("postgres://") or DATABASE_URL.startswith("postgresql+psycopg2://")
 
 if IS_POSTGRES:
     from sqlalchemy.dialects.postgresql import JSONB as JSON_TYPE
