@@ -5,25 +5,22 @@ from sqlmodel import SQLModel, Field, create_engine, Session, select
 import os
 from pathlib import Path
 
+from dotenv import load_dotenv
+load_dotenv()  # ✅ ensure .env is loaded before os.getenv()
+
 # ✅ Import models so SQLModel knows to create tables
 from app.questionnaires.models import Questionnaire  # noqa: F401
 
-
-# -----------------------------
-# Engine (Postgres in production, SQLite locally)
-# -----------------------------
+print("DEBUG DATABASE_URL =", os.getenv("DATABASE_URL"))
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 if DATABASE_URL:
-    # Render Postgres (recommended)
     engine = create_engine(DATABASE_URL, echo=False, pool_pre_ping=True)
 else:
-    # Local dev fallback (SQLite file)
     DEFAULT_DB_PATH = Path(__file__).resolve().parent.parent / "data" / "auth.sqlite"
     DB_PATH = Path(os.getenv("AUTH_DB_PATH", str(DEFAULT_DB_PATH))).resolve()
     DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     engine = create_engine(f"sqlite:///{DB_PATH}", echo=False)
-
 
 def utcnow_iso() -> str:
     return datetime.now(timezone.utc).isoformat()

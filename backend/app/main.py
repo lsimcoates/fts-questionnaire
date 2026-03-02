@@ -6,6 +6,8 @@ from app.api.questionnaires import router as questionnaires_router
 from app.api.admin import router as admin_router
 from app.auth.router import router as auth_router
 from app.auth.db import init_db
+from dotenv import load_dotenv
+load_dotenv()
 
 app = FastAPI(title="FTS Questionnaire API")
 
